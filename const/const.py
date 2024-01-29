@@ -34,3 +34,88 @@ PhotovoltaicPanelVerticalDiffMargin = round(
 # 横斜梁限制
 distanceBeamExceed = round(43 / UNIT)  # 横梁要超出组件的距离
 distanceBeamDiagonalBeam = round(50 / UNIT)  # 横梁要超出斜梁的距离
+columNlimit = 10000
+# 立柱排布 a[0][1]=竖1横0
+# 182-78组件
+column_78_normal = [
+    [[], [1100], [1900, 1750], [1900, 3200], [1700, 2600, 3200], [1700, 2600, 2600, 3750]],
+    [[1250], [2600], [1350, 2950], [1700, 2600, 2450], [1700, 2600, 2600, 2500]]
+]  # 182-78常规
+limit_78_normal = [
+    [[], [250, columNlimit], [250, columNlimit], [800, columNlimit], [250, columNlimit], [250, columNlimit]],
+    [[250, columNlimit], [250, columNlimit], [500, columNlimit], [250, columNlimit], [250, columNlimit]]
+]  # 182-78常规_左右限制
+
+column_78_Abutments = [
+    [[], [1200], [1900, 1750], [1300, 2000, 1700], [1700, 1700, 1800, 2300], []],
+    [[1250], [], [], [], []]
+]  # 182-78基墩
+limit_78_Abutments = [
+    [[], [300, columNlimit], [300, columNlimit], [450, columNlimit], [865, columNlimit], [300, columNlimit]],
+    [[300, columNlimit], [300, columNlimit], [300, columNlimit], [300, columNlimit], [300, columNlimit]]
+]  # 182-78基墩_左右限制
+
+column_78_raise = [
+    [[], [], [2000, 1800], [2000, 3100], [1700, 2600, 3400], [1700, 2600, 2600, 2300]],
+    [[], [1400, 2400], [1900, 2300, 2600], [2600, 2600, 2500, 1400], []]
+]  # 182-78抬高
+limit_78_raise = [
+    [[], [250, columNlimit], [250, columNlimit], [800, columNlimit], [250, columNlimit], [1713, columNlimit]],
+    [[250, columNlimit], [670, 670], [440, columNlimit], [350, columNlimit], [250, columNlimit]]
+]  # 182-78抬高_左右限制
+
+# 182-72组件
+column_72_normal = [
+    [[], [1100], [1900, 1250], [1900, 3200], [1700, 2600, 3200], [1700, 2650, 2550, 2450]],
+    [[1250], [2550], [1500, 2800], [1700, 2600, 2450], [1700, 2600, 2600, 2500]]
+]  # 182-72常规
+limit_72_normal = [
+    [[], [250, columNlimit], [250, columNlimit], [800, columNlimit], [250, columNlimit], [250, columNlimit]],
+    [[250, columNlimit], [250, columNlimit], [250, columNlimit], [250, columNlimit], [250, columNlimit]]
+]  # 182-72常规_左右限制
+
+column_72_Abutments = [
+    [[], [1100], [1900, 1250], [1300, 2000, 1700], [1700, 1700, 1800, 2300], []],
+    [[1250], [], [], [], []]
+]  # 182-72基墩
+limit_72_Abutments = [
+    [[], [300, columNlimit], [300, columNlimit], [600, columNlimit], [300, columNlimit], [300, columNlimit]],
+    [[300, columNlimit], [300, columNlimit], [300, columNlimit], [300, columNlimit], [300, columNlimit]]
+]  # 182-72基墩_左右限制
+
+column_72_raise = [
+    [[], [], [2000, 1800], [2000, 3100], [1700, 2600, 3400], [1700, 2450, 2750, 2300]],
+    [[], [], [1400, 2400], [1900, 2300, 2600], [2600, 2600, 2500, 1400]]
+]  # 182-72抬高
+limit_72_raise = [
+    [[], [250, columNlimit], [250, columNlimit], [250, columNlimit], [250, columNlimit], [811, columNlimit]],
+    [[250, columNlimit], [670, 670], [440, columNlimit], [350, columNlimit], [250, columNlimit]]
+]  # 182-72抬高_左右限制
+
+# 210-60组件
+column_60_normal = [
+    [[], [1100], [1100, 2000], [1900, 3200], [1700, 2600, 3099], [1700, 2600, 2600, 2600]],
+    [[1200], [2600], [1350, 2950], [1700, 2600, 1700], [1700, 2600, 2600, 1600]]
+]  # 210-60常规
+limit_60_normal = [
+    [[], [250, columNlimit], [250, columNlimit], [250, columNlimit], [250, columNlimit], [250, columNlimit]],
+    [[250, columNlimit], [250, columNlimit], [450, columNlimit], [250, columNlimit], [250, columNlimit]]
+]  # 210-60常规_左右限制
+
+column_60_Abutments = [
+    [[], [1300], [1100, 2000], [1300, 2000, 1700], [1700, 1700, 1800, 2400], []],
+    [[1200], [], [], [], []]
+]  # 210-60基墩
+limit_60_Abutments = [
+    [[], [300, columNlimit], [300, columNlimit], [300, columNlimit], [300, columNlimit], [300, columNlimit]],
+    [[300, columNlimit], [300, columNlimit], [300, columNlimit], [300, columNlimit], [300, columNlimit]]
+]  # 210-60基墩_左右限制
+
+column_60_raise = [
+    [[], [], [1400, 1700], [2000, 3000], [1700, 2200, 3500], [1700, 2600, 2600, 2200]],
+    [[], [], [1400, 2400], [1900, 2300, 1750], [2600, 2600, 2500]]
+]  # 210-60抬高
+limit_60_raise = [
+    [[], [250, columNlimit], [250, columNlimit], [250, columNlimit], [250, columNlimit], [450, columNlimit]],
+    [[250, columNlimit], [350, columNlimit], [670, columNlimit], [1047, 1047], [250, columNlimit]]
+]  # 210-60抬高_左右限制
