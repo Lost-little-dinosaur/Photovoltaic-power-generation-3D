@@ -1,6 +1,9 @@
 from classes.component import Component, components
 from const.const import INF, PhotovoltaicPanelCrossMargin, PhotovoltaicPanelVerticalMargin, \
-    PhotovoltaicPanelVerticalDiffMargin
+    PhotovoltaicPanelVerticalDiffMargin, column_78_normal, limit_78_normal, column_78_Abutments, limit_78_Abutments, \
+    column_78_raise, limit_78_raise, column_72_normal, limit_72_normal, limit_72_Abutments, column_72_Abutments, \
+    column_72_raise, limit_72_raise, column_60_normal, limit_60_normal, column_60_Abutments, limit_60_Abutments, \
+    column_60_raise, limit_60_raise
 
 ID = 0
 
@@ -245,6 +248,80 @@ class Arrangement:
                 x += self.component.verticalshortsidesize + PhotovoltaicPanelVerticalMargin
         return crossarray
 
+    def arrange_column(self):  # 立柱排布
+
+            if self.crossPosition == 0:  # 只有横排布（横一）
+                self.crossNum = self.componentPositionsArray[0]
+                self.crossCount = 1
+                self.verticalCount = 0
+                self.verticalNum = 0
+            elif self.crossPosition == INF:  # 只有竖排
+                self.crossNum = 0
+                self.crossCount = 0
+                self.verticalCount = len(self.componentPositionsArray)
+                self.verticalNum = self.componentPositionsArray[0]
+            elif len(self.componentPositionsArray) == 2 and (
+                    self.componentPositionsArray[0] != self.componentPositionsArray[1]):  # 竖一横一
+                self.crossNum = self.componentPositionsArray[1]
+                self.crossCount = 1
+                self.verticalCount = 1
+                self.verticalNum = self.componentPositionsArray[0]
+            else:  # 其他横竖情况
+                self.crossCount = 1
+                self.verticalCount = len(self.componentPositionsArray)
+                self.crossNum = self.componentPositionsArray[-2]
+                self.verticalNum = self.componentPositionsArray[0]
+            if self.isRule == "true":
+                array_y = []
+                if self.component.specification == "182-78" and self.arrangeType == "膨胀常规":
+                    array_y = column_78_normal[self.crossCount][self.verticalCount]
+                    array_limit = limit_78_normal[self.crossCount][self.verticalCount]
+                elif self.component.specification == "182-78" and self.arrangeType == "基墩":
+                    array_y = column_78_Abutments[self.crossCount][self.verticalCount]
+                    array_limit = limit_78_Abutments[self.crossCount][self.verticalCount]
+                elif self.component.specification == "182-78" and self.arrangeType == "膨胀抬高":
+                    array_y = column_78_raise[self.crossCount][self.verticalCount]
+                    array_limit = limit_78_raise[self.crossCount][self.verticalCount]
+                elif self.component.specification == "182-72" and self.arrangeType == "膨胀常规":
+                    array_y = column_72_normal[self.crossCount][self.verticalCount]
+                    array_limit = limit_72_normal[self.crossCount][self.verticalCount]
+                elif self.component.specification == "182-72" and self.arrangeType == "基墩":
+                    array_y = column_72_Abutments[self.crossCount][self.verticalCount]
+                    array_limit = limit_72_Abutments[self.crossCount][self.verticalCount]
+                elif self.component.specification == "182-72" and self.arrangeType == "膨胀抬高":
+                    array_y = column_72_raise[self.crossCount][self.verticalCount]
+                    array_limit = limit_72_raise[self.crossCount][self.verticalCount]
+                elif self.component.specification == "210-60" and self.arrangeType == "膨胀常规":
+                    array_y = column_60_normal[self.crossCount][self.verticalCount]
+                    array_limit = limit_60_normal[self.crossCount][self.verticalCount]
+                elif self.component.specification == "210-60" and self.arrangeType == "基墩":
+                    array_y = column_60_Abutments[self.crossCount][self.verticalCount]
+                    array_limit = limit_60_Abutments[self.crossCount][self.verticalCount]
+                elif self.component.specification == "210-60" and self.arrangeType == "膨胀抬高":
+                    array_y = column_60_raise[self.crossCount][self.verticalCount]
+                    array_limit = limit_60_raise[self.crossCount][self.verticalCount]
+                le = self.length - sum(array_y) - array_limit[0]
+                if (le + array_limit[0]) / 2 < array_limit[0]:
+                    array_y.append(array_limit[0])
+                    array_y.insert(0, le - array_limit[0])
+                else:
+                    if (le + array_limit[0]) / 2 > array_limit[1]:
+                        array_y.append(array_limit[1])
+                        array_y.insert(0, le - array_limit[1])
+                    else:
+                        array_y.append((le + array_limit[0]) / 2)
+                        array_y.insert(0, (le + array_limit[0]) / 2)
+
+                array_x = [250]
+                for i in range(int((self.width - 500) / 700)):
+                    array_x.append(array_x[-1] + 700)
+                if (self.width - array_x[-1]) < 250:
+                    array_x.pop()
+                result = []
+                for x in array_x:
+                    for y in array_y:
+                        result.append([x, y])
+                return result
         # if self.verticalCount == 2 and self.crossCount == 0:  # 竖二
         #    for i in range(2):
         #        for j in range(self.num):
