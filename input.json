@@ -43,20 +43,6 @@
       },
       "obstacles": [
         {
-          "id": "通用障碍物1",
-          "type": "通用障碍物",
-          "isRound": false,
-          "length": 20,
-          "width": 20,
-          "height": 20,
-          "upLeftPosition": [
-            100,
-            200
-          ],
-          "adjustedHeight": 0,
-          "removable": 1
-        },
-        {
           "id": "无烟烟囱1",
           "type": "无烟烟囱",
           "isRound": true,
@@ -75,11 +61,12 @@
           "length": 20,
           "width": 20,
           "height": 20,
-          "centerPosition": [
+          "upLeftPosition": [
             100,
             200
           ],
-          "adjustedHeight": 0
+          "adjustedHeight": 0,
+          "removable": 1
         },
         {
           "id": "热水器1",
@@ -223,13 +210,13 @@
         "northHeight": 20,
         "removable": 2
       }
-    ],
-    "arrangeType": "膨胀螺栓",
-    "component": {
-      "specification": "182-78",
-      "power": 595,
-      "thickness": 0.35
-    }
+    ]
+  },
+  "arrangeType": "膨胀螺栓",
+  "component": {
+    "specification": "182-78",
+    "power": 595,
+    "thickness": 0.35
   }
 }
 

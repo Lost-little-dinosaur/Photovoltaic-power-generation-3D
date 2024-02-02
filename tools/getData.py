@@ -71,7 +71,7 @@ def getDictFromExcel(excelPath):
     return resultDict
 
 
-filePath = 'static/冬至日各纬度下1m长竖直线在地面上投影范围表.xlsx'
+filePath = '../static/冬至日各纬度下1m长竖直线在地面上投影范围表.xlsx'
 dataDict = getDictFromExcel(filePath)
 
 # 示例使用
