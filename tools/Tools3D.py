@@ -139,7 +139,7 @@ def getOnePointShadow(point: List[int], latitude):  # x,y,z
     else:
         if latitude not in dataDict:
             print("纬度 ", latitude, " 不在字典中")
-    return returnList
+    return final_list
 if __name__ == '__main__':
 # 示例节点
    node1 = [2, 0, 0]  # A
