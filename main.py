@@ -8,22 +8,16 @@ import json
 if __name__ == '__main__':
     with open('input.json', 'r', encoding='utf-8') as f:
         jsonData = json.load(f)
-    roof = classes.roof.Roof(jsonData["scene"]["roof"])
+    roof = classes.roof.Roof(jsonData["scene"]["roof"],jsonData["scene"]["location"]["latitude"])
     for obstacle in jsonData["scene"]["roof"]["obstacles"]:
         roof.addObstacle(obstacle)
     for obstacle in jsonData["scene"]["obstacles"]:
         roof.addSceneObstacle(obstacle)
-    tempObject = {}
-    for component in jsonData["Components"]:
-        tempObject[component["specification"]] = {"power": component["power"], "thickness": component["thickness"]}
-    assignComponentParameters(tempObject)
-    screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["SelectedArrangement"]["specification"],
-                                              jsonData["SelectedArrangement"]["arrangeType"],
-                                              jsonData["SelectedArrangement"]["windPressure"])
+    assignComponentParameters(jsonData["component"])
+    screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"], jsonData["arrangeType"],
+                                              jsonData["scene"]["location"]["windPressure"])
 
     roof.getBestOption(screenedArrangements)  # 计算铺设光伏板的最佳方案
-
-    roof.calculateShadow()
 
     roof.removeComponentsWithFalseFool()
     roof.renewRects2Array()

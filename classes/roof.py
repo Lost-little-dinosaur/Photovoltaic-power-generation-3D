@@ -3,18 +3,18 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 from const.const import *
-from data.getData import dataDict
-from data.hullCalculation import getConvexHull, isPointInsideConvexHull
+from pkg.getData import dataDict
+from pkg.hullCalculation import getConvexHull, isPointInsideConvexHull
 from math import tan, radians, cos, sin, sqrt
 from classes.component import Component
-from obstacle import Obstacle
+from classes.obstacle import Obstacle
 
 
 # 输入都是以毫米为单位的
 class Roof:
-    def __init__(self, jsonRoof):
-        self.eastExtend, self.westExtend, self.southExtend, self.northExtend = jsonRoof["extendArray"]
-        if not ["isComplex"]:
+    def __init__(self, jsonRoof, latitude):
+        self.eastExtend, self.westExtend, self.southExtend, self.northExtend = jsonRoof["extensibleDistance"]
+        if not jsonRoof["isComplex"]:
             self.length = round((jsonRoof["length"] + self.southExtend + self.northExtend) / UNIT)
             self.width = round((jsonRoof["width"] + self.eastExtend + self.westExtend) / UNIT)
             self.height = jsonRoof["height"]
@@ -27,7 +27,7 @@ class Roof:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
         self.roofDirection = jsonRoof["roofDirection"]
-        self.latitude = jsonRoof["latitude"]
+        self.latitude = latitude
         self.obstacles = []
         self.sceneObstacles = []
         self.maxRects = []
@@ -35,8 +35,8 @@ class Roof:
     def addObstacle(self, obstacle):
         self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray))
 
-    def addSceneObstacle(self, obstacle):
-        self.sceneObstacles.append(Obstacle(obstacle, self.obstacleArray))
+    def addSceneObstacle(self, obstacle):  # todo: 有可能没用
+        self.sceneObstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray))
 
     def paintBoolArray(self, lib):
         time1 = time.time()
@@ -531,3 +531,18 @@ class Roof:
 #         print("最佳方案计算完成，耗时", time.time() - time1, "秒，最多可以放置", maxCount,
 #               "块光伏板" + "，光伏组件规格为", component.specification, "，当前精度为", UNIT, "米\n")
 #         return self.maxRects
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 from const.const import UNIT
+from tools import Tools3D
 
 
 class Obstacle:
@@ -12,7 +13,7 @@ class Obstacle:
                 self.length = round(obstacle["length"] / UNIT)
                 self.upLeftPosition = [round(obstacle["upLeftPosition"][0] / UNIT),
                                        round(obstacle["upLeftPosition"][1] / UNIT)]
-                calculateShadow([[self.upLeftPosition[0], self.upLeftPosition[1]],
+                Tools3D.calculateShadow([[self.upLeftPosition[0], self.upLeftPosition[1]],
                                  self.height + roofArray[int(self.upLeftPosition[0])][int(self.upLeftPosition[1])],
                                  [self.upLeftPosition[0] + self.width, self.upLeftPosition[1]],
                                  self.height + roofArray[int(self.upLeftPosition[0] + self.width)][
@@ -27,7 +28,7 @@ class Obstacle:
                 self.diameter = obstacle["diameter"] / UNIT
                 self.centerPosition = [obstacle["centerPosition"][0] / UNIT, obstacle["centerPosition"][1] / UNIT]
                 # todo: 圆形的烟囱暂时不做计算阴影
-        elif obstacle["type"] == "热水器":  # 暂时只支持热水器输入
+        elif obstacle["type"] == "热水器":  # 暂时只支持烟囱输入
             pass  # todo
         elif obstacle["type"] == "水塔":
             pass  # todo
@@ -35,5 +36,3 @@ class Obstacle:
             pass  # todo
 
 
-def calculateShadow(nodeArray, obstacleArray):
-    pass
