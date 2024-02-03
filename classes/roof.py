@@ -33,10 +33,10 @@ class Roof:
         self.maxRects = []
 
     def addObstacle(self, obstacle):
-        self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray))
+        self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
 
     def addSceneObstacle(self, obstacle):  # todo: 有可能没用
-        self.sceneObstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray))
+        self.sceneObstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
 
     def paintBoolArray(self, lib):
         time1 = time.time()
@@ -531,18 +531,3 @@ class Roof:
 #         print("最佳方案计算完成，耗时", time.time() - time1, "秒，最多可以放置", maxCount,
 #               "块光伏板" + "，光伏组件规格为", component.specification, "，当前精度为", UNIT, "米\n")
 #         return self.maxRects
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
