@@ -1,9 +1,9 @@
 from const.const import UNIT
-from tools import Tools3D
+from tools import tools3D
 
 
 class Obstacle:
-    def __init__(self, obstacle, obstacleArray, roofArray):
+    def __init__(self, obstacle, obstacleArray, roofArray, latitude):
         self.type = obstacle["type"]
         self.ID = obstacle["id"]
         if obstacle["type"] == "有烟烟囱" or obstacle["type"] == "无烟烟囱":
@@ -14,16 +14,18 @@ class Obstacle:
                 self.upLeftPosition = [round(obstacle["upLeftPosition"][0] / UNIT),
                                        round(obstacle["upLeftPosition"][1] / UNIT)]
                 Tools3D.calculateShadow([[self.upLeftPosition[0], self.upLeftPosition[1]],
-                                 self.height + roofArray[int(self.upLeftPosition[0])][int(self.upLeftPosition[1])],
-                                 [self.upLeftPosition[0] + self.width, self.upLeftPosition[1]],
-                                 self.height + roofArray[int(self.upLeftPosition[0] + self.width)][
-                                     int(self.upLeftPosition[1])],
-                                 [self.upLeftPosition[0] + self.width, self.upLeftPosition[1] + self.length],
-                                 self.height + roofArray[int(self.upLeftPosition[0] + self.width)][
-                                     int(self.upLeftPosition[1] + self.length)],
-                                 [self.upLeftPosition[0], self.upLeftPosition[1] + self.length],
-                                 self.height + roofArray[int(self.upLeftPosition[0])][
-                                     int(self.upLeftPosition[1] + self.length)]], obstacleArray)
+                                         self.height + roofArray[int(self.upLeftPosition[0])][
+                                             int(self.upLeftPosition[1])],
+                                         [self.upLeftPosition[0] + self.width, self.upLeftPosition[1]],
+                                         self.height + roofArray[int(self.upLeftPosition[0] + self.width)][
+                                             int(self.upLeftPosition[1])],
+                                         [self.upLeftPosition[0] + self.width, self.upLeftPosition[1] + self.length],
+                                         self.height + roofArray[int(self.upLeftPosition[0] + self.width)][
+                                             int(self.upLeftPosition[1] + self.length)],
+                                         [self.upLeftPosition[0], self.upLeftPosition[1] + self.length],
+                                         self.height + roofArray[int(self.upLeftPosition[0])][
+                                             int(self.upLeftPosition[1] + self.length)]], False, latitude,
+                                        obstacleArray)
             else:
                 self.diameter = obstacle["diameter"] / UNIT
                 self.centerPosition = [obstacle["centerPosition"][0] / UNIT, obstacle["centerPosition"][1] / UNIT]
@@ -34,5 +36,3 @@ class Obstacle:
             pass  # todo
         elif obstacle["type"] == "上人通道":
             pass  # todo
-
-
