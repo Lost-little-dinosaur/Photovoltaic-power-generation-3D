@@ -202,16 +202,18 @@ def getTriangleFlatNodes(node1, node2, node3):
             max_y = node[1]
     final_list = []
     f = -1
-    for x in range(min_x, max_x):
-        for y in range(min_y, max_y):
+    for x in range(min_x, max_x + 1):
+        for y in range(min_y, max_y + 1):
             for node in returnList:
                 if node[0] == x and node[1] == y:
                     f = node[2]
                     break
             if f != -1:
-                final_list.append([x, y, f])
+                final_list.append(f)
                 f = -1
-    return np.array(final_list)
+            else:
+                final_list.append(0)
+    return min_x, min_y, np.array(final_list)
 
 
 def calculateShadow(nodeArray, isRound, latitude, obstacleArray=None):
@@ -280,5 +282,6 @@ if __name__ == '__main__':
     # 测试获取线段上的点函数
     # print(getLineSegmentNodes([0, 0, 0], [3, 3, 0]))
     # 测试calculateShadow函数
-    calculateShadow([[0, 0, 0], [3, 0, 0], [0, 3, 3], [3, 3, 3]], False, 0.5,
-                    np.array([[0 for _ in range(100)] for _ in range(100)]))
+    #calculateShadow([[0, 0, 0], [3, 0, 0], [0, 3, 3], [3, 3, 3]], False, 0.5,
+    #                np.array([[0 for _ in range(100)] for _ in range(100)]))
+    print(getTriangleFlatNodes((2, 0, 0), (0, 2, 0), (0, 0, 1)))
