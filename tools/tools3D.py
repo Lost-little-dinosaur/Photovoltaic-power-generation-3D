@@ -206,15 +206,17 @@ def getOnePointShadow(point: List[int], latitude):  # x,y,z
     final_list = []
     f = -1
     min_x, min_y, max_x, max_y = round(min_x), round(min_y), round(max_x), round(max_y)
-    for x in range(round(min_x), round(max_x)):
-        for y in range(round(min_y), round(max_y)):
+    for x in range(round(min_x), round(max_x) + 1):
+        for y in range(round(min_y), round(max_y) + 1):
             for node in merged_array:
                 if node[0] == x and node[1] == y:
                     f = node[2]
                     break
             if f != -1:
-                final_list.append([x, y, f])
+                final_list.append(f)
                 f = -1
+            else:
+                final_list.append(0)
     return min_x, min_y, np.array(final_list)
 
 
@@ -232,16 +234,18 @@ def getTriangleFlatNodes(node1, node2, node3):
             max_y = node[1]
     final_list = []
     f = -1
-    for x in range(min_x, max_x):
-        for y in range(min_y, max_y):
+    for x in range(min_x, max_x + 1):
+        for y in range(min_y, max_y + 1):
             for node in returnList:
                 if node[0] == x and node[1] == y:
                     f = node[2]
                     break
             if f != -1:
-                final_list.append([x, y, f])
+                final_list.append(f)
                 f = -1
-    return np.array(final_list)
+            else:
+                final_list.append(0)
+    return min_x, min_y, np.array(final_list)
 
 
 def calculateShadow(nodeArray, isRound, latitude, obstacleArray=None):
@@ -315,3 +319,4 @@ if __name__ == '__main__':
     # 测试draw3dModel函数
     model3DArray = [[1, 1, 1], [2, 2, 2]]
     draw3dModel(model3DArray)
+
