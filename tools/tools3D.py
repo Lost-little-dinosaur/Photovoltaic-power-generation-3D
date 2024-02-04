@@ -1,9 +1,39 @@
 from const.const import INF
 import time
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from math import tan, radians, cos, sin, sqrt
 import numpy as np
 from tools.getData import dataDict
 from typing import List
+
+
+def draw3dModel(model3DArray):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # 生成每个柱子的x，y坐标
+    numRows, numCols = len(model3DArray), len(model3DArray[0])
+    x = np.arange(numCols)
+    y = np.arange(numRows)
+    xpos, ypos = np.meshgrid(x, y)
+
+    xpos = xpos.flatten()
+    ypos = ypos.flatten()
+    zpos = np.zeros(numCols * numRows)
+
+    # 生成每个柱子的dx，dy，dz值
+    dx = dy = np.ones_like(zpos)
+    dz = np.array(model3DArray).flatten()
+
+    ax.bar3d(xpos, ypos, zpos, dx, dy, dz, shade=True)
+
+    ax.set_xlabel('X Axis')
+    ax.set_ylabel('Y Axis')
+    ax.set_zlabel('Z Axis')
+    ax.set_title('3D Grid Model Visualization')
+
+    plt.show()
 
 
 def arePointsCoplanar(nodeArray):
@@ -284,6 +314,9 @@ if __name__ == '__main__':
     # 测试获取线段上的点函数
     # print(getLineSegmentNodes([0, 0, 0], [3, 3, 0]))
     # 测试calculateShadow函数
-    #calculateShadow([[0, 0, 0], [3, 0, 0], [0, 3, 3], [3, 3, 3]], False, 0.5,
-    #                np.array([[0 for _ in range(100)] for _ in range(100)]))
-    print(getTriangleFlatNodes((2, 0, 0), (0, 2, 0), (0, 0, 1)))
+    # calculateShadow([[0, 0, 0], [3, 0, 0], [0, 3, 3], [3, 3, 3]], False, 0.5,
+    #                 np.array([[0 for _ in range(100)] for _ in range(100)]))
+    # 测试draw3dModel函数
+    model3DArray = [[1, 1, 1], [2, 2, 2]]
+    draw3dModel(model3DArray)
+
