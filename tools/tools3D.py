@@ -1,4 +1,4 @@
-from const.const import INF
+from const.const import INF, UNIT
 import time
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -6,6 +6,7 @@ from math import tan, radians, cos, sin, sqrt
 import numpy as np
 from tools.getData import dataDict
 from typing import List
+from copy import deepcopy
 
 
 def draw3dModel(model3DArray):
@@ -41,6 +42,12 @@ def arePointsCoplanar(nodeArray):
     if len(nodeArray) != 4 or any(len(node) != 3 for node in nodeArray):
         return False
 
+    tempNodeArray = deepcopy(nodeArray)  # 要把z坐标转换成UNIT单位
+    tempNodeArray[0][2] /= UNIT
+    tempNodeArray[1][2] /= UNIT
+    tempNodeArray[2][2] /= UNIT
+    tempNodeArray[3][2] /= UNIT
+
     # 检查任意三点是否共线
     def isCollinear(p1, p2, p3):
         # 计算向量p1p2和向量p1p3
@@ -52,13 +59,13 @@ def arePointsCoplanar(nodeArray):
         return np.linalg.norm(cross_product) == 0
 
     # 对nodeArray中的每个三点组合进行检查
-    for i in range(len(nodeArray)):
-        node1, node2, node3 = nodeArray[i], nodeArray[(i + 1) % 4], nodeArray[(i + 2) % 4]
+    for i in range(len(tempNodeArray)):
+        node1, node2, node3 = tempNodeArray[i], tempNodeArray[(i + 1) % 4], tempNodeArray[(i + 2) % 4]
         if isCollinear(node1, node2, node3):
             raise Exception("物体有三点共线！")
 
     # 如果行列式的值为零，则点共面，否则不共面
-    return abs(np.linalg.det(np.array([node + [1] for node in nodeArray]))) < 1e-6  # 使用小的阈值来处理浮点数的精度问题
+    return abs(np.linalg.det(np.array([node + [1] for node in tempNodeArray]))) < 1e-6  # 使用小的阈值来处理浮点数的精度问题
 
 
 def interpolateZ(x, y, x0, y0, z0, dx, dy, dz):
@@ -173,16 +180,15 @@ def getOnePointShadow(point: List[int], latitude):  # x,y,z
         return INF, INF, []
     returnList = []
     h = point[2]
-    m = 0.1
     # 检查纬度是否在字典中
     if latitude in dataDict:
         for k, v in dataDict[latitude].items():
             # 获取阴影长度和方向
             shadowLength, shadowDirection = v
-            shadowLength /= 1000  # 将单位转换为米，只有在这里计算的时候用到的是米，其他都是UNIT
-            adjustedLength = shadowLength * h / point[2]
-            x = round((point[0] + adjustedLength * cos(radians(shadowDirection))) / m)
-            y = round((point[1] + adjustedLength * sin(radians(shadowDirection))) / m)
+            shadowLength = h * shadowLength / 1000
+            shadowLength /= UNIT
+            x = round(point[0] + shadowLength * cos(radians(shadowDirection)))
+            y = round(point[1] + shadowLength * sin(radians(shadowDirection)))
             z = 0
             returnList.append([x, y, z])  # 这里先不取整
     else:
@@ -199,24 +205,23 @@ def getOnePointShadow(point: List[int], latitude):  # x,y,z
     merged_array = np.concatenate(tempAllArray)
 
     for node in merged_array:
-        min_x = min(min_x, node[0])
-        max_x = max(max_x, node[0])
-        min_y = min(min_y, node[1])
-        max_y = max(max_y, node[1])
-    final_list = []
+        min_x = round(min(min_x, node[0]))
+        max_x = round(max(max_x, node[0]))
+        min_y = round(min(min_y, node[1]))
+        max_y = round(max(max_y, node[1]))
     f = -1
-    min_x, min_y, max_x, max_y = round(min_x), round(min_y), round(max_x), round(max_y)
-    for x in range(round(min_x), round(max_x) + 1):
-        for y in range(round(min_y), round(max_y) + 1):
+    final_list = [[0] * (max_y - min_y + 1) for _ in range(max_x - min_x + 1)]
+    for x in range(0, max_x - min_x + 1):
+        for y in range(0, max_y - min_y + 1):
             for node in merged_array:
-                if node[0] == x and node[1] == y:
+                if node[0] == x + min_x and node[1] == y + min_y:
                     f = node[2]
                     break
             if f != -1:
-                final_list.append(f)
+                final_list[x][y] = f
                 f = -1
             else:
-                final_list.append(0)
+                final_list[x][y] = 0
     return min_x, min_y, np.array(final_list)
 
 
@@ -232,19 +237,19 @@ def getTriangleFlatNodes(node1, node2, node3):
             min_y = node[1]
         if node[1] > max_y:
             max_y = node[1]
-    final_list = []
+    final_list = [[0] * (max_y - min_y + 1) for _ in range(max_x - min_x + 1)]
     f = -1
-    for x in range(min_x, max_x + 1):
-        for y in range(min_y, max_y + 1):
+    for x in range(0, max_x - min_y + 1):
+        for y in range(0, max_y - min_y + 1):
             for node in returnList:
-                if node[0] == x and node[1] == y:
+                if node[0] == x + min_x and node[1] == y + min_y:
                     f = node[2]
                     break
             if f != -1:
-                final_list.append(f)
+                final_list[x][y] = f
                 f = -1
             else:
-                final_list.append(0)
+                final_list[x][y] = 0
     return min_x, min_y, np.array(final_list)
 
 
@@ -254,12 +259,8 @@ def calculateShadow(nodeArray, isRound, latitude, obstacleArray=None):
         if not arePointsCoplanar(nodeArray):
             raise Exception("点不共面或者点的数量不为4")
         if obstacleArray is None:  # 返回阴影数组
-            tempArray = [[min(nodeArray[0][0], nodeArray[1][0], nodeArray[2][0]),
-                          min(nodeArray[0][1], nodeArray[1][1], nodeArray[2][1]),
-                          getTriangleFlatNodes(nodeArray[0], nodeArray[1], nodeArray[2])],
-                         [min(nodeArray[1][0], nodeArray[2][0], nodeArray[3][0]),
-                          min(nodeArray[1][1], nodeArray[2][1], nodeArray[3][1]),
-                          getTriangleFlatNodes(nodeArray[1], nodeArray[2], nodeArray[3])]]  # 把物体本体也加入阴影数组
+            tempArray = [getTriangleFlatNodes(nodeArray[0], nodeArray[1], nodeArray[2]),
+                         getTriangleFlatNodes(nodeArray[2], nodeArray[3], nodeArray[0])]  # 把物体本体也加入阴影数组
             for i in range(len(nodeArray) - 1):
                 lineSegmentNodes = getLineSegmentNodes(nodeArray[i], nodeArray[i + 1])
                 for node in lineSegmentNodes:
@@ -268,6 +269,14 @@ def calculateShadow(nodeArray, isRound, latitude, obstacleArray=None):
                         tempArray.append([startX, startY, tempShadowArray])
                         minX, minY, maxX, maxY = min(minX, startX), min(minY, startY), max(maxX, startX + len(
                             tempShadowArray)), max(maxY, startY + len(tempShadowArray[0]))
+            lineSegmentNodes = getLineSegmentNodes(nodeArray[-1], nodeArray[0])
+            for node in lineSegmentNodes:
+                startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
+                if len(tempShadowArray) != 0:
+                    tempArray.append([startX, startY, tempShadowArray])
+                    minX, minY, maxX, maxY = min(minX, startX), min(minY, startY), max(maxX, startX + len(
+                        tempShadowArray)), max(maxY, startY + len(tempShadowArray[0]))
+
             returnArray = np.array([[0 for _ in range(round(maxY - minY) + 1)] for _ in range(round(maxX - minX) + 1)])
             detaX = 0 if minX >= 0 else -minX
             detaY = 0 if minY >= 0 else -minY
@@ -281,29 +290,39 @@ def calculateShadow(nodeArray, isRound, latitude, obstacleArray=None):
             return minX, minY, returnArray
 
         else:  # 在obstacleArray上更新每个点的最高阴影
-            # todo: 加一个判断，对于超出了obstacleArray的范围不更新
             # todo: 更改代码结构，适应后续可能变化的getTriangleFlatNodes
             tempArray = getTriangleFlatNodes(nodeArray[0], nodeArray[1], nodeArray[2])
-            for tempNode in tempArray:  # 把物体本身的阴影加入阴影数组（第一个三角形）
-                obstacleArray[round(tempNode[0])][round(tempNode[1])] = max(
-                    obstacleArray[round(tempNode[0])][round(tempNode[1])], tempNode[2])
-            tempArray = getTriangleFlatNodes(nodeArray[1], nodeArray[2], nodeArray[3])
-            for tempNode in tempArray:  # 把物体本身的阴影加入阴影数组（第二个三角形）
-                obstacleArray[round(tempNode[0])][round(tempNode[1])] = max(
-                    obstacleArray[round(tempNode[0])][round(tempNode[1])], tempNode[2])
+            sX, sY = max(0, tempArray[0]), max(0, tempArray[1])
+            eX = min(obstacleArray.shape[0], tempArray[0] + tempArray[2].shape[0])
+            eY = min(obstacleArray.shape[1], tempArray[1] + tempArray[2].shape[1])
+            obstacleArray[sX:eX, sY:eY] = np.maximum(obstacleArray[sX:eX, sY:eY], tempArray[2])
+            tempArray = getTriangleFlatNodes(nodeArray[2], nodeArray[3], nodeArray[0])
+            sX, sY = max(0, tempArray[0]), max(0, tempArray[1])
+            eX = min(obstacleArray.shape[0], tempArray[0] + tempArray[2].shape[0])
+            eY = min(obstacleArray.shape[1], tempArray[1] + tempArray[2].shape[1])
+            obstacleArray[sX:eX, sY:eY] = np.maximum(obstacleArray[sX:eX, sY:eY], tempArray[2])
 
             for i in range(len(nodeArray) - 1):  # 把物体的边缘的阴影加入阴影数组
                 lineSegmentNodes = getLineSegmentNodes(nodeArray[i], nodeArray[i + 1])  # 获取线段上的点
                 for node in lineSegmentNodes:  # todo:可能有边界问题
                     startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
                     if len(tempShadowArray) != 0:
-                        # sX = max(0, startX)
                         sX, sY, = max(0, startX), max(0, startY)
                         eX = min(obstacleArray.shape[0], startX + tempShadowArray.shape[0])
                         eY = min(obstacleArray.shape[1], startY + tempShadowArray.shape[1])
                         obstacleArray[sX:eX, sY:eY] = np.maximum(obstacleArray[sX:eX, sY:eY],
                                                                  tempShadowArray[sX - startX:eX - startX,
                                                                  sY - startY:eY - startY])  # todo: 检查这里的边界问题
+            lineSegmentNodes = getLineSegmentNodes(nodeArray[-1], nodeArray[0])
+            for node in lineSegmentNodes:  # todo:可能有边界问题
+                startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
+                if len(tempShadowArray) != 0:
+                    sX, sY, = max(0, startX), max(0, startY)
+                    eX = min(obstacleArray.shape[0], startX + tempShadowArray.shape[0])
+                    eY = min(obstacleArray.shape[1], startY + tempShadowArray.shape[1])
+                    obstacleArray[sX:eX, sY:eY] = np.maximum(obstacleArray[sX:eX, sY:eY],
+                                                             tempShadowArray[sX - startX:eX - startX,
+                                                             sY - startY:eY - startY])
     else:
         pass  # 圆形的阴影暂时不做计算
 
@@ -314,9 +333,14 @@ if __name__ == '__main__':
     # 测试获取线段上的点函数
     # print(getLineSegmentNodes([0, 0, 0], [3, 3, 0]))
     # 测试calculateShadow函数
-    # calculateShadow([[0, 0, 0], [3, 0, 0], [0, 3, 3], [3, 3, 3]], False, 0.5,
-    #                 np.array([[0 for _ in range(100)] for _ in range(100)]))
+    # a, b, c = calculateShadow([[0, 0, 300], [30, 0, 300], [30, 30, 300], [0, 30, 300]], False, 0.5)
+    tempObstacleArray = np.array([[0 for _ in range(60)] for _ in range(60)])
+    calculateShadow([[10, 10, 300], [40, 10, 300], [40, 40, 300], [10, 40, 300]], False, 0.5, tempObstacleArray)
+    draw3dModel(tempObstacleArray)
+    # 测试getOnePointShadow函数
+    # a = getOnePointShadow([300, 300, 300.0], 0.5)
+    # draw3dModel(a[2])
+    # print(getOnePointShadow([2, 1, 1.0], 0.5))
     # 测试draw3dModel函数
-    model3DArray = [[1, 1, 1], [2, 2, 2]]
-    draw3dModel(model3DArray)
-
+    # model3DArray = [[1, 1, 1], [2, 2, 2]]
+    # draw3dModel(model3DArray)

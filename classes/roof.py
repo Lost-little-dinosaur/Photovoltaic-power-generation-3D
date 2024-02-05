@@ -3,8 +3,8 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 from const.const import *
-from pkg.getData import dataDict
-from pkg.hullCalculation import getConvexHull, isPointInsideConvexHull
+from tools.getData import dataDict
+from tools.hullCalculation import getConvexHull, isPointInsideConvexHull
 from math import tan, radians, cos, sin, sqrt
 from classes.component import Component
 from classes.obstacle import Obstacle
@@ -30,7 +30,8 @@ class Roof:
         self.latitude = latitude
         self.obstacles = []
         self.sceneObstacles = []
-        self.maxRects = []
+        # self.maxRects = []
+        self.allPlacements = []
 
     def addObstacle(self, obstacle):
         self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
@@ -127,60 +128,35 @@ class Roof:
         print("阴影计算完成，耗时", time.time() - time1, "秒\n")
 
     def getBestOption(self, arrangements):
-        time1 = time.time()
-        print("正在计算最佳方案...当前时间为", time.strftime("%m-%d %H:%M:%S", time.localtime()))
+        def dfs(arrangeArray, current_value=0, placements=None, position=0):
+            if placements is None:
+                placements = []
 
-        def updateMaxRects(arrange, sY, sX, maxRects, max_count):  # 用于竖排放置方式的更新
-            def overlaps(rect1, rect2):
-                return not (
-                        rect1.endX < rect2.startX or rect1.endY < rect2.startY or rect2.endX < rect1.startX or rect2.endY < rect1.startY)
+            # 为了收集所有可能的解，我们移除了best_value的检查和更新
+            # 检查当前排布是否满足条件并加入到结果列表中
+            if isValidPlacement(placements):
+                self.allPlacements.append((placements.copy(), current_value))
 
-            for eachRect in arrange.relativePositionArray:
-                # 判断是否和maxRects中的矩形重叠
-                startX, startY = eachRect[0]
-                endX, endY = eachRect[1]
-                absoluteEndX, absoluteEndY = sX + endX, sY + endY
-                newRect = Component("tmp", INF, INF, INF, INF, sX + startX, sY + startY, absoluteEndX, absoluteEndY,
-                                    1, 0, 0)
-                if any(overlaps(existingRect, newRect) for existingRect in maxRects):
-                    return max_count, False
-            arrange.calculateComponentArray(sX, sY)
-            maxRects.extend(arrange.componentArray)
-            return max_count + len(arrange.componentArray), True
+            for arrangement in arrangeArray:
+                for x in range(self.length):
+                    for y in range(self.width):
+                        if canPlace(arrangement, placements, x, y):
+                            new_placement = {'id': arrangement['id'], 'x': x, 'y': y, 'value': arrangement['value']}
+                            placements.append(new_placement)
+                            dfs(arrangeArray, current_value + arrangement['value'], placements, position + 1)
+                            placements.pop()
 
-        # def renewJ(y, x, maxRects):
-        #     for r in maxRects:
-        #         if r.startY <= y <= r.endY and r.startX <= x <= r.endX:
-        #             return r.endX - x + 1
-        #     return 1
+        def canPlace(arrangement, placements, x, y):
+            # 实现检查逻辑，确保当前arrangement可以放置在(x, y)位置
+            # 需要考虑阴影覆盖和排布冲突
+            return True  # 此处应填入具体逻辑
 
-        # 先对arrangements按不同关键字排序，verticalCount从大到小，crossCount从大到小
-        arrangements.sort(key=lambda x: x.value, reverse=True)
-        maxCount = 0
-        self.maxRects = []
-        breakFlag = False
-        for k in range(len(arrangements)):
-            print("正在计算第", k + 1, "/", len(arrangements), "个组件的最佳方案，当前时间为",
-                  time.strftime("%m-%d %H:%M:%S", time.localtime()))
-            i = 0
-            while i < self.length:
-                j = 0
-                while j < self.width:
-                    if self.canPlaceArrangement(i, j, arrangements[k]):
-                        maxCount, addFlag = updateMaxRects(arrangements[k], i, j, self.maxRects, maxCount)
-                        # 更新光伏板之间的间距（在最后利用maxRects一起更新bool数组和show数组）
-                        if addFlag:
-                            # j += width - 2
-                            breakFlag = True
-                            break
-                    # j += renewJ(i - length + 1, j - width + 1, self.maxRects)  # 快速更新j（非常重要！！！）
-                    j += 1
-                if breakFlag:
-                    break
-                i += 1
-        print("最佳方案计算完成，耗时", time.time() - time1, "秒，最多可以放置", maxCount, "块光伏板" + "，当前精度为",
-              UNIT, "米\n")
-        return self.maxRects
+        def isValidPlacement(placements):
+            # 根据需要，此处可以添加额外的验证逻辑，例如检查排布之间的阴影冲突
+            return True  # 默认所有排布都有效，您可以根据具体情况修改
+
+        dfs(arrangements)
+        return self.allPlacements
 
     def canPlaceArrangement(self, i, j, arrangement):
         # 前缀和数组优化
@@ -291,7 +267,57 @@ class Roof:
 
         print("已更新show_array和bool_array，耗时", time.time() - time1, "秒\n")
 
-# dp排布的arrangement排布函数（留着备用！！！）
+# dp排布的arrangement排布函数1（留着备用！！！）
+# time1 = time.time()
+#         print("正在计算最佳方案...当前时间为", time.strftime("%m-%d %H:%M:%S", time.localtime()))
+#
+#         def updateMaxRects(arrange, sY, sX, maxRects, max_count):  # 用于竖排放置方式的更新
+#             def overlaps(rect1, rect2):
+#                 return not (
+#                         rect1.endX < rect2.startX or rect1.endY < rect2.startY or rect2.endX < rect1.startX or rect2.endY < rect1.startY)
+#
+#             for eachRect in arrange.relativePositionArray:
+#                 # 判断是否和maxRects中的矩形重叠
+#                 startX, startY = eachRect[0]
+#                 endX, endY = eachRect[1]
+#                 absoluteEndX, absoluteEndY = sX + endX, sY + endY
+#                 newRect = Component("tmp", INF, INF, INF, INF, sX + startX, sY + startY, absoluteEndX, absoluteEndY,
+#                                     1, 0, 0)
+#                 if any(overlaps(existingRect, newRect) for existingRect in maxRects):
+#                     return max_count, False
+#             arrange.calculateComponentArray(sX, sY)
+#             maxRects.extend(arrange.componentArray)
+#             return max_count + len(arrange.componentArray), True
+#
+#         # 先对arrangements按不同关键字排序，verticalCount从大到小，crossCount从大到小
+#         arrangements.sort(key=lambda x: x.value, reverse=True)
+#         maxCount = 0
+#         self.maxRects = []
+#         breakFlag = False
+#         for k in range(len(arrangements)):
+#             print("正在计算第", k + 1, "/", len(arrangements), "个组件的最佳方案，当前时间为",
+#                   time.strftime("%m-%d %H:%M:%S", time.localtime()))
+#             i = 0
+#             while i < self.length:
+#                 j = 0
+#                 while j < self.width:
+#                     if self.canPlaceArrangement(i, j, arrangements[k]):
+#                         maxCount, addFlag = updateMaxRects(arrangements[k], i, j, self.maxRects, maxCount)
+#                         # 更新光伏板之间的间距（在最后利用maxRects一起更新bool数组和show数组）
+#                         if addFlag:
+#                             # j += width - 2
+#                             breakFlag = True
+#                             break
+#                     # j += renewJ(i - length + 1, j - width + 1, self.maxRects)  # 快速更新j（非常重要！！！）
+#                     j += 1
+#                 if breakFlag:
+#                     break
+#                 i += 1
+#         print("最佳方案计算完成，耗时", time.time() - time1, "秒，最多可以放置", maxCount, "块光伏板" + "，当前精度为",
+#               UNIT, "米\n")
+#         return self.maxRects
+
+# dp排布的arrangement排布函数2（留着备用！！！）
 #     def getBestOption(self, arrangements):
 #         time1 = time.time()
 #         print("正在计算最佳方案...当前时间为", time.strftime("%m-%d %H:%M:%S", time.localtime()))
