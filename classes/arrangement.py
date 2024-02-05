@@ -89,7 +89,8 @@ class Arrangement:
             self.verticalNum = 0
             for i in range(self.crossNum):
                 cp = Component(self.component.specification, self.component.width, self.component.length,
-                               self.component.verticalspacing, self.component.verticalshortsidesize, self.component.crossspacing,
+                               self.component.verticalspacing, self.component.verticalshortsidesize,
+                               self.component.crossspacing,
                                self.component.crossshortsidesize, self.component.power, self.component.thickness)
                 cp.startX = startX
                 cp.startY = startY
@@ -106,7 +107,8 @@ class Arrangement:
             for i in range(self.verticalCount):
                 for j in range(self.verticalNum):
                     cp = Component(self.component.specification, self.component.width, self.component.length,
-                                   self.component.verticalspacing, self.component.verticalshortsidesize, self.component.crossspacing,
+                                   self.component.verticalspacing, self.component.verticalshortsidesize,
+                                   self.component.crossspacing,
                                    self.component.crossshortsidesize, self.component.power, self.component.thickness)
                     cp.startX = startX
                     cp.startY = startY
@@ -117,7 +119,8 @@ class Arrangement:
                     startX += self.component.width + PhotovoltaicPanelCrossMargin
                 startX -= (self.component.width + PhotovoltaicPanelCrossMargin) * self.verticalNum
                 startY += self.component.length + PhotovoltaicPanelVerticalMargin
-        elif len(self.componentPositionsArray) == 2 and (self.componentPositionsArray[0] != self.componentPositionsArray[1]):  # 竖一横一
+        elif len(self.componentPositionsArray) == 2 and (
+                self.componentPositionsArray[0] != self.componentPositionsArray[1]):  # 竖一横一
             self.crossNum = self.componentPositionsArray[1]
             self.crossCount = 1
             self.verticalCount = 1
@@ -250,106 +253,106 @@ class Arrangement:
 
     def arrange_column(self):  # 立柱排布
 
-            if self.crossPosition == 0:  # 只有横排布（横一）
-                self.crossNum = self.componentPositionsArray[0]
-                self.crossCount = 1
-                self.verticalCount = 0
-                self.verticalNum = 0
-            elif self.crossPosition == INF:  # 只有竖排
-                self.crossNum = 0
-                self.crossCount = 0
-                self.verticalCount = len(self.componentPositionsArray)
-                self.verticalNum = self.componentPositionsArray[0]
-            elif len(self.componentPositionsArray) == 2 and (
-                    self.componentPositionsArray[0] != self.componentPositionsArray[1]):  # 竖一横一
-                self.crossNum = self.componentPositionsArray[1]
-                self.crossCount = 1
-                self.verticalCount = 1
-                self.verticalNum = self.componentPositionsArray[0]
-            else:  # 其他横竖情况
-                self.crossCount = 1
-                self.verticalCount = len(self.componentPositionsArray)
-                self.crossNum = self.componentPositionsArray[-2]
-                self.verticalNum = self.componentPositionsArray[0]
-            if self.isRule == "true":
-                array_y = []
-                if self.component.specification == "182-78" and self.arrangeType == "膨胀常规":
-                    array_y = column_78_normal[self.crossCount][self.verticalCount]
-                    array_limit = limit_78_normal[self.crossCount][self.verticalCount]
-                elif self.component.specification == "182-78" and self.arrangeType == "基墩":
-                    array_y = column_78_Abutments[self.crossCount][self.verticalCount]
-                    array_limit = limit_78_Abutments[self.crossCount][self.verticalCount]
-                elif self.component.specification == "182-78" and self.arrangeType == "膨胀抬高":
-                    array_y = column_78_raise[self.crossCount][self.verticalCount]
-                    array_limit = limit_78_raise[self.crossCount][self.verticalCount]
-                elif self.component.specification == "182-72" and self.arrangeType == "膨胀常规":
-                    array_y = column_72_normal[self.crossCount][self.verticalCount]
-                    array_limit = limit_72_normal[self.crossCount][self.verticalCount]
-                elif self.component.specification == "182-72" and self.arrangeType == "基墩":
-                    array_y = column_72_Abutments[self.crossCount][self.verticalCount]
-                    array_limit = limit_72_Abutments[self.crossCount][self.verticalCount]
-                elif self.component.specification == "182-72" and self.arrangeType == "膨胀抬高":
-                    array_y = column_72_raise[self.crossCount][self.verticalCount]
-                    array_limit = limit_72_raise[self.crossCount][self.verticalCount]
-                elif self.component.specification == "210-60" and self.arrangeType == "膨胀常规":
-                    array_y = column_60_normal[self.crossCount][self.verticalCount]
-                    array_limit = limit_60_normal[self.crossCount][self.verticalCount]
-                elif self.component.specification == "210-60" and self.arrangeType == "基墩":
-                    array_y = column_60_Abutments[self.crossCount][self.verticalCount]
-                    array_limit = limit_60_Abutments[self.crossCount][self.verticalCount]
-                elif self.component.specification == "210-60" and self.arrangeType == "膨胀抬高":
-                    array_y = column_60_raise[self.crossCount][self.verticalCount]
-                    array_limit = limit_60_raise[self.crossCount][self.verticalCount]
-                le = self.length - sum(array_y) - array_limit[0]
-                if (le + array_limit[0]) / 2 < array_limit[0]:
-                    array_y.append(array_limit[0])
-                    array_y.insert(0, le - array_limit[0])
+        if self.crossPosition == 0:  # 只有横排布（横一）
+            self.crossNum = self.componentPositionsArray[0]
+            self.crossCount = 1
+            self.verticalCount = 0
+            self.verticalNum = 0
+        elif self.crossPosition == INF:  # 只有竖排
+            self.crossNum = 0
+            self.crossCount = 0
+            self.verticalCount = len(self.componentPositionsArray)
+            self.verticalNum = self.componentPositionsArray[0]
+        elif len(self.componentPositionsArray) == 2 and (
+                self.componentPositionsArray[0] != self.componentPositionsArray[1]):  # 竖一横一
+            self.crossNum = self.componentPositionsArray[1]
+            self.crossCount = 1
+            self.verticalCount = 1
+            self.verticalNum = self.componentPositionsArray[0]
+        else:  # 其他横竖情况
+            self.crossCount = 1
+            self.verticalCount = len(self.componentPositionsArray)
+            self.crossNum = self.componentPositionsArray[-2]
+            self.verticalNum = self.componentPositionsArray[0]
+        if self.isRule == "true":
+            array_y = []
+            if self.component.specification == "182-78" and self.arrangeType == "膨胀常规":
+                array_y = column_78_normal[self.crossCount][self.verticalCount]
+                array_limit = limit_78_normal[self.crossCount][self.verticalCount]
+            elif self.component.specification == "182-78" and self.arrangeType == "基墩":
+                array_y = column_78_Abutments[self.crossCount][self.verticalCount]
+                array_limit = limit_78_Abutments[self.crossCount][self.verticalCount]
+            elif self.component.specification == "182-78" and self.arrangeType == "膨胀抬高":
+                array_y = column_78_raise[self.crossCount][self.verticalCount]
+                array_limit = limit_78_raise[self.crossCount][self.verticalCount]
+            elif self.component.specification == "182-72" and self.arrangeType == "膨胀常规":
+                array_y = column_72_normal[self.crossCount][self.verticalCount]
+                array_limit = limit_72_normal[self.crossCount][self.verticalCount]
+            elif self.component.specification == "182-72" and self.arrangeType == "基墩":
+                array_y = column_72_Abutments[self.crossCount][self.verticalCount]
+                array_limit = limit_72_Abutments[self.crossCount][self.verticalCount]
+            elif self.component.specification == "182-72" and self.arrangeType == "膨胀抬高":
+                array_y = column_72_raise[self.crossCount][self.verticalCount]
+                array_limit = limit_72_raise[self.crossCount][self.verticalCount]
+            elif self.component.specification == "210-60" and self.arrangeType == "膨胀常规":
+                array_y = column_60_normal[self.crossCount][self.verticalCount]
+                array_limit = limit_60_normal[self.crossCount][self.verticalCount]
+            elif self.component.specification == "210-60" and self.arrangeType == "基墩":
+                array_y = column_60_Abutments[self.crossCount][self.verticalCount]
+                array_limit = limit_60_Abutments[self.crossCount][self.verticalCount]
+            elif self.component.specification == "210-60" and self.arrangeType == "膨胀抬高":
+                array_y = column_60_raise[self.crossCount][self.verticalCount]
+                array_limit = limit_60_raise[self.crossCount][self.verticalCount]
+            le = self.length - sum(array_y) - array_limit[0]
+            if (le + array_limit[0]) / 2 < array_limit[0]:
+                array_y.append(array_limit[0])
+                array_y.insert(0, le - array_limit[0])
+            else:
+                if (le + array_limit[0]) / 2 > array_limit[1]:
+                    array_y.append(array_limit[1])
+                    array_y.insert(0, le - array_limit[1])
                 else:
-                    if (le + array_limit[0]) / 2 > array_limit[1]:
-                        array_y.append(array_limit[1])
-                        array_y.insert(0, le - array_limit[1])
-                    else:
-                        array_y.append((le + array_limit[0]) / 2)
-                        array_y.insert(0, (le + array_limit[0]) / 2)
+                    array_y.append((le + array_limit[0]) / 2)
+                    array_y.insert(0, (le + array_limit[0]) / 2)
 
-                array_x = [250]
-                for i in range(int((self.width - 500) / 700)):
-                    array_x.append(array_x[-1] + 700)
-                if (self.width - array_x[-1]) < 250:
-                    array_x.pop()
-                result = []
-                for x in array_x:
-                    for y in array_y:
-                        result.append([x, y])
-                return result
-        # if self.verticalCount == 2 and self.crossCount == 0:  # 竖二
-        #    for i in range(2):
-        #        for j in range(self.num):
-        #            self.componentArray.append(Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35,
-        #                                                 startX, startY, startX + 1.134, startY + 2.279, 1, i))
-        #            startX += round((self.component.width + 0.006) / UNIT)
-        #    startX -= round((self.component.width + 0.006) * self.num / UNIT)
-        #    startY += round((self.component.length + 0.012) / UNIT)
-        # if self.verticalCount == 4 and self.crossCount == 1:  # 竖四横一
-        #    for i in range(3):
-        #        for j in range(self.num):
-        #            self.componentArray.append(Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35,
-        #                                                 startX, startY, startX + 1.134, startY + 2.279, 1, i))
-        #            # startX = startX + self.component.width + 0.006
-        #            startX += round((self.component.width + 0.006) / UNIT)
-        #    startX -= round((self.component.width + 0.006) * self.num / UNIT)
-        #    startY += round((self.component.length + 0.012) / UNIT)
-        #    for j in range(3):
-        #        self.componentArray.append(Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35,
-        #                                             startX, startY, startX + 2.279, startY + 1.134, 2, 4))
-        #        startX += round((self.component.length + 0.006) / UNIT)
-        #    startX -= round((self.component.length + 0.006) * 3 / UNIT)
-        #    for i in range(3):
-        #        for j in range(self.num):
-        #            self.componentArray.append(Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35,
-        #                                                 startX, startY, startX + 1.134, startY + 2.279, 1, i))
-        #            startX += round((self.component.width + 0.006) / UNIT)
-        # return self.componentArray
+            array_x = [250]
+            for i in range(int((self.width - 500) / 700)):
+                array_x.append(array_x[-1] + 700)
+            if (self.width - array_x[-1]) < 250:
+                array_x.pop()
+            result = []
+            for x in array_x:
+                for y in array_y:
+                    result.append([x, y])
+            return result
+    # if self.verticalCount == 2 and self.crossCount == 0:  # 竖二
+    #    for i in range(2):
+    #        for j in range(self.num):
+    #            self.componentArray.append(Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35,
+    #                                                 startX, startY, startX + 1.134, startY + 2.279, 1, i))
+    #            startX += round((self.component.width + 0.006) / UNIT)
+    #    startX -= round((self.component.width + 0.006) * self.num / UNIT)
+    #    startY += round((self.component.length + 0.012) / UNIT)
+    # if self.verticalCount == 4 and self.crossCount == 1:  # 竖四横一
+    #    for i in range(3):
+    #        for j in range(self.num):
+    #            self.componentArray.append(Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35,
+    #                                                 startX, startY, startX + 1.134, startY + 2.279, 1, i))
+    #            # startX = startX + self.component.width + 0.006
+    #            startX += round((self.component.width + 0.006) / UNIT)
+    #    startX -= round((self.component.width + 0.006) * self.num / UNIT)
+    #    startY += round((self.component.length + 0.012) / UNIT)
+    #    for j in range(3):
+    #        self.componentArray.append(Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35,
+    #                                             startX, startY, startX + 2.279, startY + 1.134, 2, 4))
+    #        startX += round((self.component.length + 0.006) / UNIT)
+    #    startX -= round((self.component.length + 0.006) * 3 / UNIT)
+    #    for i in range(3):
+    #        for j in range(self.num):
+    #            self.componentArray.append(Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35,
+    #                                                 startX, startY, startX + 1.134, startY + 2.279, 1, i))
+    #            startX += round((self.component.width + 0.006) / UNIT)
+    # return self.componentArray
 
     # def chooseLayout(self):
     #     if self.specification == "竖二" and self.type == "基墩":
@@ -374,55 +377,55 @@ def calculateCrossWidth(crossNum, componentLength):
 
 
 def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeType, windPressure):
-    tempArrangements = [[1, 0, "182-78", "膨胀常规", 1.2614], [1, 1, "182-78", "膨胀常规", 1.2614],
-                        [2, 0, "182-78", "膨胀常规", 1.2614], [2, 1, "182-78", "膨胀常规", 1.2614],
-                        [3, 0, "182-78", "膨胀常规", 1.2614], [3, 1, "182-78", "膨胀常规", 1.2614],
-                        [4, 0, "182-78", "膨胀常规", 1.2614], [4, 1, "182-78", "膨胀常规", 1.2614],
-                        [5, 0, "182-78", "膨胀常规", 1.2614],
+    tempArrangements = [[1, 0, "182-78", "膨胀常规", "高压"], [1, 1, "182-78", "膨胀常规", "高压"],
+                        [2, 0, "182-78", "膨胀常规", "高压"], [2, 1, "182-78", "膨胀常规", "高压"],
+                        [3, 0, "182-78", "膨胀常规", "高压"], [3, 1, "182-78", "膨胀常规", "高压"],
+                        [4, 0, "182-78", "膨胀常规", "高压"], [4, 1, "182-78", "膨胀常规", "高压"],
+                        [5, 0, "182-78", "膨胀常规", "高压"],
 
-                        [1, 0, "210-60", "膨胀常规", 0.9785], [1, 1, "210-60", "膨胀常规", 0.9785],
-                        [0, 1, "210-60", "膨胀常规", 0.9785], [2, 0, "210-60", "膨胀常规", 0.9785],
-                        [2, 1, "210-60", "膨胀常规", 0.9785], [3, 0, "210-60", "膨胀常规", 0.9785],
-                        [3, 1, "210-60", "膨胀常规", 0.9785], [4, 0, "210-60", "膨胀常规", 0.9785],
-                        [4, 1, "210-60", "膨胀常规", 0.9785], [5, 0, "210-60", "膨胀常规", 0.9785],
+                        [1, 0, "210-60", "膨胀常规", "低压"], [1, 1, "210-60", "膨胀常规", "低压"],
+                        [0, 1, "210-60", "膨胀常规", "低压"], [2, 0, "210-60", "膨胀常规", "低压"],
+                        [2, 1, "210-60", "膨胀常规", "低压"], [3, 0, "210-60", "膨胀常规", "低压"],
+                        [3, 1, "210-60", "膨胀常规", "低压"], [4, 0, "210-60", "膨胀常规", "低压"],
+                        [4, 1, "210-60", "膨胀常规", "低压"], [5, 0, "210-60", "膨胀常规", "低压"],
 
-                        [0, 1, "210-60", "基墩", 0.9785], [2, 0, "210-60", "基墩", 0.9785],
-                        [3, 0, "210-60", "基墩", 0.9785], [4, 0, "210-60", "基墩", 0.9785],
-                        [1, 0, "210-60", "基墩", 0.9785],
+                        [0, 1, "210-60", "基墩", "低压"], [2, 0, "210-60", "基墩", "低压"],
+                        [3, 0, "210-60", "基墩", "低压"], [4, 0, "210-60", "基墩", "低压"],
+                        [1, 0, "210-60", "基墩", "低压"],
 
-                        [2, 0, "210-60", "膨胀抬高", 0.9785], [2, 1, "210-60", "膨胀抬高", 0.9785],
-                        [3, 0, "210-60", "膨胀抬高", 0.9785], [3, 1, "210-60", "膨胀抬高", 0.9785],
-                        [4, 0, "210-60", "膨胀抬高", 0.9785], [4, 1, "210-60", "膨胀抬高", 0.9785],
-                        [5, 0, "210-60", "膨胀抬高", 0.9785],
+                        [2, 0, "210-60", "膨胀抬高", "低压"], [2, 1, "210-60", "膨胀抬高", "低压"],
+                        [3, 0, "210-60", "膨胀抬高", "低压"], [3, 1, "210-60", "膨胀抬高", "低压"],
+                        [4, 0, "210-60", "膨胀抬高", "低压"], [4, 1, "210-60", "膨胀抬高", "低压"],
+                        [5, 0, "210-60", "膨胀抬高", "低压"],
 
-                        [0, 1, "182-72", "基墩", 0.9785], [2, 0, "182-72", "基墩", 0.9785],
-                        [3, 0, "182-72", "基墩", 0.9785], [4, 0, "182-72", "基墩", 0.9785],
-                        [1, 0, "182-72", "基墩", 0.9785],
+                        [0, 1, "182-72", "基墩", "低压"], [2, 0, "182-72", "基墩", "低压"],
+                        [3, 0, "182-72", "基墩", "低压"], [4, 0, "182-72", "基墩", "低压"],
+                        [1, 0, "182-72", "基墩", "低压"],
 
-                        [1, 0, "182-72", "膨胀常规", 0.9785], [1, 1, "182-72", "膨胀常规", 0.9785],
-                        [0, 1, "182-72", "膨胀常规", 0.9785], [2, 0, "182-72", "膨胀常规", 0.9785],
-                        [2, 1, "182-72", "膨胀常规", 0.9785], [3, 0, "182-72", "膨胀常规", 0.9785],
-                        [3, 1, "182-72", "膨胀常规", 0.9785], [4, 0, "182-72", "膨胀常规", 0.9785],
-                        [4, 1, "182-72", "膨胀常规", 0.9785], [5, 0, "182-72", "膨胀常规", 0.9785],
-                        [2, 0, "182-72", "膨胀抬高", 0.9785], [2, 1, "182-72", "膨胀抬高", 0.9785],
-                        [3, 0, "182-72", "膨胀抬高", 0.9785], [3, 1, "182-72", "膨胀抬高", 0.9785],
-                        [4, 0, "182-72", "膨胀抬高", 0.9785], [4, 1, "182-72", "膨胀抬高", 0.9785],
-                        [5, 0, "182-72", "膨胀抬高", 0.9785],
+                        [1, 0, "182-72", "膨胀常规", "低压"], [1, 1, "182-72", "膨胀常规", "低压"],
+                        [0, 1, "182-72", "膨胀常规", "低压"], [2, 0, "182-72", "膨胀常规", "低压"],
+                        [2, 1, "182-72", "膨胀常规", "低压"], [3, 0, "182-72", "膨胀常规", "低压"],
+                        [3, 1, "182-72", "膨胀常规", "低压"], [4, 0, "182-72", "膨胀常规", "低压"],
+                        [4, 1, "182-72", "膨胀常规", "低压"], [5, 0, "182-72", "膨胀常规", "低压"],
+                        [2, 0, "182-72", "膨胀抬高", "低压"], [2, 1, "182-72", "膨胀抬高", "低压"],
+                        [3, 0, "182-72", "膨胀抬高", "低压"], [3, 1, "182-72", "膨胀抬高", "低压"],
+                        [4, 0, "182-72", "膨胀抬高", "低压"], [4, 1, "182-72", "膨胀抬高", "低压"],
+                        [5, 0, "182-72", "膨胀抬高", "低压"],
 
-                        [1, 0, "182-78", "膨胀常规", 0.9785], [1, 1, "182-78", "膨胀常规", 0.9785],
-                        [0, 1, "182-78", "膨胀常规", 0.9785], [2, 0, "182-78", "膨胀常规", 0.9785],
-                        [2, 1, "182-78", "膨胀常规", 0.9785], [3, 0, "182-78", "膨胀常规", 0.9785],
-                        [3, 1, "182-78", "膨胀常规", 0.9785], [4, 0, "182-78", "膨胀常规", 0.9785],
-                        [4, 1, "182-78", "膨胀常规", 0.9785], [5, 0, "182-78", "膨胀常规", 0.9785],
+                        [1, 0, "182-78", "膨胀常规", "低压"], [1, 1, "182-78", "膨胀常规", "低压"],
+                        [0, 1, "182-78", "膨胀常规", "低压"], [2, 0, "182-78", "膨胀常规", "低压"],
+                        [2, 1, "182-78", "膨胀常规", "低压"], [3, 0, "182-78", "膨胀常规", "低压"],
+                        [3, 1, "182-78", "膨胀常规", "低压"], [4, 0, "182-78", "膨胀常规", "低压"],
+                        [4, 1, "182-78", "膨胀常规", "低压"], [5, 0, "182-78", "膨胀常规", "低压"],
 
-                        [0, 1, "182-78", "基墩", 0.9785], [2, 0, "182-78", "基墩", 0.9785],
-                        [3, 0, "182-78", "基墩", 0.9785], [4, 0, "182-78", "基墩", 0.9785],
-                        [1, 0, "182-78", "基墩", 0.9785],
+                        [0, 1, "182-78", "基墩", "低压"], [2, 0, "182-78", "基墩", "低压"],
+                        [3, 0, "182-78", "基墩", "低压"], [4, 0, "182-78", "基墩", "低压"],
+                        [1, 0, "182-78", "基墩", "低压"],
 
-                        [2, 0, "182-78", "膨胀抬高", 0.9785], [2, 1, "182-78", "膨胀抬高", 0.9785],
-                        [3, 0, "182-78", "膨胀抬高", 0.9785], [3, 1, "182-78", "膨胀抬高", 0.9785],
-                        [4, 0, "182-78", "膨胀抬高", 0.9785], [4, 1, "182-78", "膨胀抬高", 0.9785],
-                        [5, 0, "182-78", "膨胀抬高", 0.9785]]
+                        [2, 0, "182-78", "膨胀抬高", "低压"], [2, 1, "182-78", "膨胀抬高", "低压"],
+                        [3, 0, "182-78", "膨胀抬高", "低压"], [3, 1, "182-78", "膨胀抬高", "低压"],
+                        [4, 0, "182-78", "膨胀抬高", "低压"], [4, 1, "182-78", "膨胀抬高", "低压"],
+                        [5, 0, "182-78", "膨胀抬高", "低压"]]
     arrangementArray = []
     for tempElement in tempArrangements:
         if tempElement[1] == 0:  # 只有竖排
@@ -467,13 +470,15 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
     # 通过输入的屋顶宽度、屋顶长度、组件类型、排布类型和风压，筛选出合适的排布
     result = []
     for arrangement in arrangementArray:
-        if arrangement.component.specification == componentSpecification and arrangement.arrangeType == arrangeType and arrangement.maxWindPressure + 0.00001 >= windPressure:
+        if arrangement.component.specification == componentSpecification and arrangement.arrangeType[0:2] == \
+                arrangeType[0:2] and arrangement.maxWindPressure == windPressure:
             for tempElement in arrangement.relativePositionArray:
                 if tempElement[1][0] > roofWidth or tempElement[1][1] > roofLength:
                     break
             else:
                 result.append(arrangement)
     return result
+
 
 # 组件排布的规格
 # component1 = Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35)  # 以米、瓦为单位
@@ -527,5 +532,4 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
 # print(tempArrangements)
 
 if __name__ == '__main__':
-   result = screenArrangements
-
+    result = screenArrangements
