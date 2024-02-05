@@ -13,18 +13,18 @@ class Obstacle:
                 self.length = round(obstacle["length"] / UNIT)
                 self.upLeftPosition = [round(obstacle["upLeftPosition"][0] / UNIT),
                                        round(obstacle["upLeftPosition"][1] / UNIT)]
-                Tools3D.calculateShadow([[self.upLeftPosition[0], self.upLeftPosition[1]],
-                                         self.height + roofArray[int(self.upLeftPosition[0])][
-                                             int(self.upLeftPosition[1])],
-                                         [self.upLeftPosition[0] + self.width, self.upLeftPosition[1]],
+                tools3D.calculateShadow([[self.upLeftPosition[0], self.upLeftPosition[1],
+                                          self.height + roofArray[int(self.upLeftPosition[0])][
+                                              int(self.upLeftPosition[1])]],
+                                         [self.upLeftPosition[0] + self.width, self.upLeftPosition[1],
+                                          self.height + roofArray[int(self.upLeftPosition[0] + self.width)][
+                                              int(self.upLeftPosition[1])]],
+                                         [self.upLeftPosition[0] + self.width, self.upLeftPosition[1] + self.length,
                                          self.height + roofArray[int(self.upLeftPosition[0] + self.width)][
-                                             int(self.upLeftPosition[1])],
-                                         [self.upLeftPosition[0] + self.width, self.upLeftPosition[1] + self.length],
-                                         self.height + roofArray[int(self.upLeftPosition[0] + self.width)][
-                                             int(self.upLeftPosition[1] + self.length)],
-                                         [self.upLeftPosition[0], self.upLeftPosition[1] + self.length],
+                                             int(self.upLeftPosition[1] + self.length)]],
+                                         [self.upLeftPosition[0], self.upLeftPosition[1] + self.length,
                                          self.height + roofArray[int(self.upLeftPosition[0])][
-                                             int(self.upLeftPosition[1] + self.length)]], False, latitude,
+                                             int(self.upLeftPosition[1] + self.length)]]], False, latitude,
                                         obstacleArray)
             else:
                 self.diameter = obstacle["diameter"] / UNIT
