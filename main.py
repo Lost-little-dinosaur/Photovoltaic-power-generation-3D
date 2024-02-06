@@ -17,7 +17,7 @@ if __name__ == '__main__':
     screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                               jsonData["arrangeType"], jsonData["scene"]["location"]["windPressure"])
 
-    roof.getBestOption(screenedArrangements)  # 计算铺设光伏板的最佳方案
+    roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
 
     roof.removeComponentsWithFalseFool()
     roof.renewRects2Array()

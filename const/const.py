@@ -30,7 +30,7 @@ PhotovoltaicPanelBorderColor = (0.0, 0.0, 0.0, 1.0)  # 光伏板边框
 PhotovoltaicPanelCrossMargin = round(6 / UNIT)  # 光伏板的横向缝隙
 PhotovoltaicPanelVerticalMargin = round(6 / UNIT)  # 竖光伏板和竖光伏板y轴方向的缝隙
 PhotovoltaicPanelVerticalDiffMargin = round(
-    0.012 / UNIT) - PhotovoltaicPanelVerticalMargin  # 横光伏板和竖光伏板y轴方向与PhotovoltaicPanelVerticalMargin的差值
+    12 / UNIT) - PhotovoltaicPanelVerticalMargin  # 横光伏板和竖光伏板y轴方向与PhotovoltaicPanelVerticalMargin的差值
 # 横斜梁限制
 distanceBeamExceed = round(43 / UNIT)  # 横梁要超出组件的距离
 distanceBeamDiagonalBeam = round(50 / UNIT)  # 横梁要超出斜梁的距离

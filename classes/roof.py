@@ -19,8 +19,8 @@ class Roof:
             self.width = round((jsonRoof["width"] + self.eastExtend + self.westExtend) / UNIT)
             self.height = jsonRoof["height"]
             self.roofArray = np.full((self.length, self.width), 0)
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
-            self.componentArray = np.full((self.length, self.width), 0)
             self.standColumnArray = np.full((self.length, self.width), 0)
             self.showArray = np.full((self.length, self.width, 4), EmptyColor)
         else:
@@ -63,33 +63,53 @@ class Roof:
             raise Exception("lib参数错误: ", lib)
         print("屋顶排布示意图绘制完成，耗时", time.time() - time1, "秒\n")
 
-    def getBestOption(self, arrangements):
+    def getValidOptions(self, arrangements):
         def dfs(arrangeArray, current_value=0, placements=None, position=0):
             if placements is None:
                 placements = []
-
-            # 为了收集所有可能的解，我们移除了best_value的检查和更新
-            # 检查当前排布是否满足条件并加入到结果列表中
-            if isValidPlacement(placements):
-                self.allPlacements.append((placements.copy(), current_value))
-
-            for arrangement in arrangeArray:
-                for x in range(self.length):
-                    for y in range(self.width):
-                        if canPlace(arrangement, placements, x, y):
-                            new_placement = {'id': arrangement['id'], 'x': x, 'y': y, 'value': arrangement['value']}
-                            placements.append(new_placement)
+            for x in range(self.length):
+                for y in range(self.width):
+                    for arrangement in arrangeArray:
+                        if canPlaceArrangement(arrangement, placements, x, y):
+                            newPlacement = {'ID': arrangement['ID'], 'startX': x, 'startY': y}
+                            placements.append(newPlacement)
                             dfs(arrangeArray, current_value + arrangement['value'], placements, position + 1)
                             placements.pop()
+            self.allPlacements.append((placements.copy(), current_value))
 
-        def canPlace(arrangement, placements, x, y):
-            # 实现检查逻辑，确保当前arrangement可以放置在(x, y)位置
-            # 需要考虑阴影覆盖和排布冲突
-            return True  # 此处应填入具体逻辑
-
-        def isValidPlacement(placements):
-            # 根据需要，此处可以添加额外的验证逻辑，例如检查排布之间的阴影冲突
-            return True  # 默认所有排布都有效，您可以根据具体情况修改
+        #     def canPlaceComponent(self, i, j, length, width):
+        #         if i > length - 1 and j > width - 1:
+        #             if self.boolArraySum[i, j] - self.boolArraySum[i - length, j] - self.boolArraySum[i, j - width] + \
+        #                     self.boolArraySum[i - length, j - width] != length * width:
+        #                 return False
+        #         elif i == length - 1 and j > width - 1:
+        #             if self.boolArraySum[i, j] - self.boolArraySum[i, j - width] != length * width:
+        #                 return False
+        #         elif i > length - 1 and j == width - 1:
+        #             if self.boolArraySum[i, j] - self.boolArraySum[i - length, j] != length * width:
+        #                 return False
+        #         else:
+        #             if self.boolArraySum[i, j] != length * width:
+        #                 return False
+        #         return True
+        def canPlaceArrangement(x, y, arrange):
+            for eachRect in arrange['relativePositionArray']:
+                startX, startY = eachRect[0]
+                endX, endY = eachRect[1]
+                absoluteEndX, absoluteEndY = x + endX, y + endY
+                if self.width > absoluteEndX and self.length > absoluteEndY:
+                    total = self.roofSumArray[absoluteEndY][absoluteEndX]
+                    if startX > 0:
+                        total -= self.roofSumArray[absoluteEndY][x + startX - 1]
+                    if startY > 0:
+                        total -= self.roofSumArray[y + startY - 1][absoluteEndX]
+                    if startX > 0 and startY > 0:
+                        total += self.roofSumArray[y + startY - 1][x + startX - 1]
+                    if total != (endX - startX + 1) * (endY - startY + 1):
+                        return False
+                else:
+                    return False
+            return True
 
         dfs(arrangements)
         return self.allPlacements
@@ -116,22 +136,6 @@ class Roof:
                 if total != (endX - startX + 1) * (endY - startY + 1):
                     return False
             else:
-                return False
-        return True
-
-    def canPlaceComponent(self, i, j, length, width):
-        if i > length - 1 and j > width - 1:
-            if self.boolArraySum[i, j] - self.boolArraySum[i - length, j] - self.boolArraySum[i, j - width] + \
-                    self.boolArraySum[i - length, j - width] != length * width:
-                return False
-        elif i == length - 1 and j > width - 1:
-            if self.boolArraySum[i, j] - self.boolArraySum[i, j - width] != length * width:
-                return False
-        elif i > length - 1 and j == width - 1:
-            if self.boolArraySum[i, j] - self.boolArraySum[i - length, j] != length * width:
-                return False
-        else:
-            if self.boolArraySum[i, j] != length * width:
                 return False
         return True
 
