@@ -35,11 +35,11 @@
       "haveParapetWall": true,
       "haveOverhangingEave": false,
       "parapetWall": {
-        "thick": 0.5,
-        "eastHeight": 1.2,
-        "southHeight": 1.2,
-        "westHeight": 1.2,
-        "northHeight": 1.2
+        "thick": 50,
+        "eastHeight": 1200,
+        "southHeight": 1200,
+        "westHeight": 1200,
+        "northHeight": 1200
       },
       "obstacles": [
         {
@@ -216,7 +216,7 @@
   "component": {
     "specification": "182-78",
     "power": 595,
-    "thickness": 0.35
+    "thickness": 350
   }
 }
 
