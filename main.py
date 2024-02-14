@@ -17,6 +17,16 @@ if __name__ == '__main__':
     screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                               jsonData["arrangeType"], jsonData["scene"]["location"]["windPressure"])
 
+    # for a in screenedArrangements:
+    #     if a.ID!=1226 and a.ID!=1124:
+    i = 0
+    while i < len(screenedArrangements):
+        if screenedArrangements[i].ID != 1226 and screenedArrangements[i].ID != 1124:
+            del screenedArrangements[i]
+        else:
+            i += 1
+
+
     roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
 
     roof.removeComponentsWithFalseFool()

@@ -64,36 +64,37 @@ class Roof:
         print("屋顶排布示意图绘制完成，耗时", time.time() - time1, "秒\n")
 
     def getValidOptions(self, arrangements):
-        def dfs(arrangeArray, current_value=0, placements=None, position=0):
+        def dfs(arrangeArray, startX=0, startY=0, currentValue=0, placements=None):
             if placements is None:
                 placements = []
-            for x in range(self.length):
-                for y in range(self.width):
+            betterFlag = False
+            for y in range(startY, self.length):
+                for x in range(startX, self.width):
                     for arrangement in arrangeArray:
-                        if canPlaceArrangement(arrangement, placements, x, y):
-                            newPlacement = {'ID': arrangement['ID'], 'startX': x, 'startY': y}
+                        if canPlaceArrangement(x, y, arrangement) and not overlaps(x, y, arrangement, placements):
+                            newPlacement = {'ID': arrangement.ID, 'start': [x, y],
+                                            "relativePositionArray": arrangement.relativePositionArray}
                             placements.append(newPlacement)
-                            dfs(arrangeArray, current_value + arrangement['value'], placements, position + 1)
+                            # print("当前placements的ID为：", [placement['ID'] for placement in placements], "startX为：",
+                            #       x, "startY为：", y)
+                            temp = dfs(arrangeArray, x + arrangement.relativePositionArray[0][1][0], y,
+                                       currentValue + arrangement.value, placements)
+                            if temp:
+                                betterFlag = True
+                            else:
+                                # print("得到一个排布方案：", [placement['ID'] for placement in placements],
+                                #       "，当前value为", currentValue,
+                                #       "，时间为", time.strftime("%m-%d %H:%M:%S", time.localtime()))
+                                self.allPlacements.append((placements.copy(), currentValue))
+                                if len(self.allPlacements) % 100000 == 0:
+                                    print(
+                                        f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
                             placements.pop()
-            self.allPlacements.append((placements.copy(), current_value))
+                startX = 0
+            return betterFlag
 
-        #     def canPlaceComponent(self, i, j, length, width):
-        #         if i > length - 1 and j > width - 1:
-        #             if self.boolArraySum[i, j] - self.boolArraySum[i - length, j] - self.boolArraySum[i, j - width] + \
-        #                     self.boolArraySum[i - length, j - width] != length * width:
-        #                 return False
-        #         elif i == length - 1 and j > width - 1:
-        #             if self.boolArraySum[i, j] - self.boolArraySum[i, j - width] != length * width:
-        #                 return False
-        #         elif i > length - 1 and j == width - 1:
-        #             if self.boolArraySum[i, j] - self.boolArraySum[i - length, j] != length * width:
-        #                 return False
-        #         else:
-        #             if self.boolArraySum[i, j] != length * width:
-        #                 return False
-        #         return True
         def canPlaceArrangement(x, y, arrange):
-            for eachRect in arrange['relativePositionArray']:
+            for eachRect in arrange.relativePositionArray:
                 startX, startY = eachRect[0]
                 endX, endY = eachRect[1]
                 absoluteEndX, absoluteEndY = x + endX, y + endY
@@ -105,39 +106,30 @@ class Roof:
                         total -= self.roofSumArray[y + startY - 1][absoluteEndX]
                     if startX > 0 and startY > 0:
                         total += self.roofSumArray[y + startY - 1][x + startX - 1]
-                    if total != (endX - startX + 1) * (endY - startY + 1):
+                    if total >= INF:
                         return False
                 else:
                     return False
             return True
 
+        def overlaps(x, y, arrange, placements):
+            for eachRect in arrange.relativePositionArray:
+                for placement in placements:
+                    startX, startY = placement['start']
+                    for eachPlacementRect in placement["relativePositionArray"]:
+                        if not (x + eachRect[0][0] > startX + eachPlacementRect[1][0] or
+                                x + eachRect[1][0] < startX + eachPlacementRect[0][0] or
+                                y + eachRect[0][1] > startY + eachPlacementRect[1][1] or
+                                y + eachRect[1][1] < startY + eachPlacementRect[0][1]):
+                            return True
+            return False
+
+        arrangements.sort(key=lambda x: x.value, reverse=True)
         dfs(arrangements)
+        print(self.allPlacements)
+        print(f"共有{len(self.allPlacements)}个排布方案")
+        exit(0)
         return self.allPlacements
-
-    def canPlaceArrangement(self, i, j, arrangement):
-        # 前缀和数组优化
-        for eachRect in arrangement.relativePositionArray:
-            # 调整坐标，考虑矩形边界
-            startX, startY = eachRect[0]
-            endX, endY = eachRect[1]
-            absoluteEndX, absoluteEndY = i + endX, j + endY
-
-            if self.width > absoluteEndX and self.length > absoluteEndY:
-                # 计算矩形区域的前缀和
-                total = self.boolArraySum[absoluteEndY][absoluteEndX]
-                if startX > 0:
-                    total -= self.boolArraySum[absoluteEndY][i + startX - 1]
-                if startY > 0:
-                    total -= self.boolArraySum[j + startY - 1][absoluteEndX]
-                if startX > 0 and startY > 0:
-                    total += self.boolArraySum[j + startY - 1][i + startX - 1]
-
-                # 检查矩形区域是否满足条件
-                if total != (endX - startX + 1) * (endY - startY + 1):
-                    return False
-            else:
-                return False
-        return True
 
     def removeComponentsWithFalseFool(self):
         # 创建一个新的列表用于存储要保留的元素
