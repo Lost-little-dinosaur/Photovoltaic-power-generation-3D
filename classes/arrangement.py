@@ -3,7 +3,10 @@ from const.const import INF, PhotovoltaicPanelCrossMargin, PhotovoltaicPanelVert
     PhotovoltaicPanelVerticalDiffMargin, column_78_normal, limit_78_normal, column_78_Abutments, limit_78_Abutments, \
     column_78_raise, limit_78_raise, column_72_normal, limit_72_normal, limit_72_Abutments, column_72_Abutments, \
     column_72_raise, limit_72_raise, column_60_normal, limit_60_normal, column_60_Abutments, limit_60_Abutments, \
-    column_60_raise, limit_60_raise
+    column_60_raise, limit_60_raise, arrangement_height
+from math import radians, sin
+
+# from tools.tools3D import calculateShadow
 
 ID = 0
 
@@ -479,6 +482,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
     return result
 
 
+
 # 组件排布的规格
 # component1 = Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35)  # 以米、瓦为单位
 # component2 = Component("182-78", 1.134, 2.465, 580, 600, 0.30, 0.35)  # 以米、瓦为单位
@@ -529,6 +533,63 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
 #         i += 1
 # print(len(tempArrangements))
 # print(tempArrangements)
+def calculate_ar_Shadow(self, startX, startY, latitude, obstacleArray=[]):
+    str = self.component.specification + self.arrangeType
+
+    if len(self.relativePositionArray) == 1:
+        h_min = arrangement_height[(str, self.componentLayoutArray[0], 0, 0, 0, 0)]
+        # h_min = arrangement_height[("182-78膨胀常规", 2, 1, 0)]
+        h_max = h_min + (self.relativePositionArray[0][1][1] - self.relativePositionArray[0][0][1]) * sin(radians(20))
+        nodearray = [
+            [self.relativePositionArray[0][0][0] + startX, self.relativePositionArray[0][0][1] + startY, h_max],
+            [self.relativePositionArray[0][1][0] + startX, self.relativePositionArray[0][0][1] + startY, h_max],
+            [self.relativePositionArray[0][0][0] + startX, self.relativePositionArray[0][1][1] + startY, h_min],
+            [self.relativePositionArray[0][1][0] + startX, self.relativePositionArray[0][1][0] + startY, h_min]
+        ]
+        calculateShadow(nodearray, False,  latitude, obstacleArray)
+    else:
+        if self.crossPosition == INF:  # 只有竖排
+            first_element = self.componentLayoutArray[0]
+            count = 0
+            for num in self.componentLayoutArray:
+                if num == first_element:
+                    count += 1
+            if self.componentLayoutArray[0] < self.componentLayoutArray[-1]:
+                h_min = arrangement_height[(str, len(self.componentLayoutArray), 0, count, 0, 0)]
+            else:
+                h_min = arrangement_height[(str, len(self.componentLayoutArray), 0, 0, 0, count)]
+
+        elif len(self.componentLayoutArray) == 2 and (
+            self.componentLayoutArray[0] != self.componentLayoutArray[1]):  # 竖一横一
+            h_min = arrangement_height[(str, 1, 1, 0, 0, 0)]
+        else:
+            normal_vertical = max(self.componentLayoutArray[0], self.componentLayoutArray[-1])  # 正常的一排列数
+            normal_cross = round((normal_vertical * self.component.width + (normal_vertical - 1) *
+                                 PhotovoltaicPanelCrossMargin) / self.component.length)
+            count1 = 0
+            count2 = 0
+            count3 = 0
+            for i in range(len(self.componentLayoutArray) - 2):
+                if self.componentLayoutArray[i] < normal_vertical:
+                    count1 += 1
+            if self.componentLayoutArray[-2] < normal_cross:
+                count2 = 1
+            if self.componentLayoutArray[-1] < normal_vertical:
+                count3 = 1
+            h_min = arrangement_height[(str, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
+        for node in self.relativePositionArray:
+            h_max = h_min + (node[1][1] - node[0][1]) * sin(radians(20))
+            nodearray = [
+                [node[0][0] + startX, node[0][1] + startY, h_max],
+                [node[1][0] + startX, node[0][1] + startY, h_max],
+                [node[0][0] + startX, node[1][1] + startY, h_min],
+                [node[1][0] + startX, node[1][0] + startY, h_min]
+            ]
+            calculateShadow(nodearray, False, latitude, obstacleArray)
+
+
 
 if __name__ == '__main__':
-    result = screenArrangements
+    a = [[[0, 0], [1, 1]],[[2, 2], [3, 3]]]
+    for node in a:
+        print(node[0])
