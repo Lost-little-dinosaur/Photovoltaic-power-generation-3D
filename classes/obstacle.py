@@ -9,6 +9,7 @@ class Obstacle:
         if obstacle["type"] == "有烟烟囱" or obstacle["type"] == "无烟烟囱":
             self.height = obstacle["height"]
             if not obstacle["isRound"]:
+                self.isRound = False
                 self.width = round(obstacle["width"] / UNIT)
                 self.length = round(obstacle["length"] / UNIT)
                 self.upLeftPosition = [round(obstacle["upLeftPosition"][0] / UNIT),
@@ -24,9 +25,10 @@ class Obstacle:
                                              int(self.upLeftPosition[1] + self.length)]],
                                          [self.upLeftPosition[0], self.upLeftPosition[1] + self.length,
                                          self.height + roofArray[int(self.upLeftPosition[0])][
-                                             int(self.upLeftPosition[1] + self.length)]]], False, latitude,
+                                             int(self.upLeftPosition[1] + self.length)]]], False, latitude, True,
                                         obstacleArray)
             else:
+                self.isRound = True
                 self.diameter = obstacle["diameter"] / UNIT
                 self.centerPosition = [obstacle["centerPosition"][0] / UNIT, obstacle["centerPosition"][1] / UNIT]
                 # todo: 圆形的烟囱暂时不做计算阴影
