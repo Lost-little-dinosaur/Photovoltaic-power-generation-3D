@@ -17,9 +17,10 @@ class Roof:
             self.roofArray = np.full((self.length, self.width), 0)
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
-            self.standColumnArray = np.full((self.length, self.width), 0)
+            self.standColumnArray = []
             self.showArray = np.full((self.length, self.width, 4), EmptyColor)
-            # self.obstacleArraySelf = self.calculateObstacleSelf()
+            self.obstacleArraySelf = []
+            # self.calculateObstacleSelf()
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
@@ -220,9 +221,17 @@ class Roof:
         # exit(0)
         return self.allPlacements
 
+    def calculate_column(self, screenedArrangements):
+        for node in self.allPlacements:
+            startX, startY = node[0][0]['start']
+            self.standColumnArray.append(screenedArrangements[node[0][0]['ID']].calculateStandColumn(startX, startY,
+                                                                  self.length, self.width, self.obstacleArraySelf))
+        return 0
+
 
 def drawPlacement(data, width, length, borderN=1, borderM=1):
     # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
+
     matrix = np.ones((length, width, 3))
 
     # 添加大矩阵的红色边界
@@ -259,3 +268,4 @@ def drawPlacement(data, width, length, borderN=1, borderM=1):
     plt.imshow(matrix)
     plt.axis('off')
     plt.show()
+
