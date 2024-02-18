@@ -57,25 +57,25 @@ class Roof:
                                                                                     arrange['start'][1])
                 tempArray = screenedArrangements[arrange['ID']].componentPositionArray
                 deletedIndices = []
-                try:
-                    for i in tempArray:  # 判断每个光伏板是否有被遮挡（i是[startX,startY,endX,endY]）
-                        # 用前缀和数组简单判断是否有遮挡，再用高度判断是否有遮挡
-                        totalComponent = tempObstacleSumArray[i[3]][i[2]]
-                        if i[0] > 0:
-                            totalComponent -= tempObstacleSumArray[i[3]][i[0] - 1]
-                        if i[1] > 0:
-                            totalComponent -= tempObstacleSumArray[i[1] - 1][i[2]]
-                        if i[0] > 0 and i[1] > 0:
-                            totalComponent += tempObstacleSumArray[i[1] - 1][i[0] - 1]
-                        if totalComponent == 0 and (placement[2][i[1]:i[3] + 1, i[0]:i[2] + 1] <
-                                                    screenedArrangements[arrange['ID']].componentHeightArray[
-                                                    i[1] - arrange['start'][1]:i[3] - arrange['start'][1] + 1,
-                                                    i[0] - arrange['start'][0]:i[2] - arrange['start'][0] + 1]).all():
-                            continue
-                        else:  # 有遮挡
-                            deletedIndices.append(i)
-                except:
-                    pass
+                for i in tempArray:  # 判断每个光伏板是否有被遮挡（i是[[startX,startY],[endX,endY]]）
+                    # 用前缀和数组简单判断是否有遮挡，再用高度判断是否有遮挡
+                    try:
+                        totalComponent = tempObstacleSumArray[i[1][1], i[1][0]]
+                    except:
+                        print()
+                    if i[0][0] > 0:
+                        totalComponent -= tempObstacleSumArray[i[1][1], i[0][0] - 1]
+                    if i[0][1] > 0:
+                        totalComponent -= tempObstacleSumArray[i[0][1] - 1, i[1][0]]
+                    if i[0][0] > 0 and i[0][1] > 0:
+                        totalComponent += tempObstacleSumArray[i[0][1] - 1, i[0][0] - 1]
+                    if totalComponent == 0 and (placement[2][i[1]:i[3] + 1, i[0]:i[2] + 1] <
+                                                screenedArrangements[arrange['ID']].componentHeightArray[
+                                                i[1] - arrange['start'][1]:i[3] - arrange['start'][1] + 1,
+                                                i[0] - arrange['start'][0]:i[2] - arrange['start'][0] + 1]).all():
+                        continue
+                    else:  # 有遮挡
+                        deletedIndices.append(i)
                 screenedArrangements[arrange['ID']].componentPositionArray = []  # 清空componentPositionArray
                 placement[1] -= len(deletedIndices) * screenedArrangements[arrange['ID']].component.power
                 placement.append(deletedIndices)
