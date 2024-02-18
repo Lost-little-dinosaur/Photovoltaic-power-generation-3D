@@ -17,9 +17,9 @@ class Roof:
             self.roofArray = np.full((self.length, self.width), 0)
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
-            self.standColumnArray = np.full((self.length, self.width), 0)
+            self.standColumnArray = []
             self.showArray = np.full((self.length, self.width, 4), EmptyColor)
-            # self.obstacleArraySelf = self.calculateObstacleSelf()
+            self.obstacleArraySelf = []
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
@@ -32,10 +32,8 @@ class Roof:
 
     def calculateObstacleSelf(self):
         return_list = [[0] * (self.length + 1) for _ in range(self.width + 1)]
-        for obstacle in self.obstacleArray:  # 有问题
-            if obstacle.isRound:
-                pass  # todo: 圆形的烟囱暂时不做计算阴影
-            else:
+        for obstacle in self.obstacles:  # 有问题
+            if obstacle.type == '有烟烟囱':
                 for x in range(obstacle.upLeftPosition[0], obstacle.upLeftPosition[0] + obstacle.width):
                     for y in range(obstacle.upLeftPosition[1], obstacle.upLeftPosition[1] + obstacle.length):
                         return_list[x][y] = 1
@@ -220,9 +218,17 @@ class Roof:
         # exit(0)
         return self.allPlacements
 
+    def calculate_column(self, screenedArrangements):
+        for node in self.allPlacements:
+            startX, startY = node[0][0]['start']
+            self.standColumnArray.append(screenedArrangements[node[0][0]['ID']].calculateStandColumn(startX, startY,
+                                                                  self.length, self.width, self.obstacleArraySelf))
+        return 0
+
 
 def drawPlacement(data, width, length, borderN=1, borderM=1):
     # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
+
     matrix = np.ones((length, width, 3))
 
     # 添加大矩阵的红色边界
@@ -259,3 +265,4 @@ def drawPlacement(data, width, length, borderN=1, borderM=1):
     plt.imshow(matrix)
     plt.axis('off')
     plt.show()
+

@@ -17,7 +17,13 @@ if __name__ == '__main__':
 
     # 排布完光伏板后再添加障碍物并分析阴影
     roof.addObstaclesConcern(jsonData["scene"]["roof"]["obstacles"], screenedArrangements)
-    # roof.addSceneObstacles(jsonData["scene"]["obstacles"])
+    roof.obstacleArraySelf = roof.calculateObstacleSelf()
+    roof.calculate_column(screenedArrangements)
 
+
+
+
+    # roof.addSceneObstacles(jsonData["scene"]["obstacles"])
     # roof.paintBoolArray("plt")  # img库会打开一张图片，更方便观察细节，但稍微慢个几秒钟；plt库不会打开图片，更快，适合批量处理
     # test commit
+
