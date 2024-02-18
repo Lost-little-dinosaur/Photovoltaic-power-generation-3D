@@ -14,12 +14,11 @@ if __name__ == '__main__':
                                               jsonData["arrangeType"], jsonData["scene"]["location"]["windPressure"])
 
     roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
-    roof.calculate_column(screenedArrangements)
 
     # 排布完光伏板后再添加障碍物并分析阴影
-#    roof.addObstaclesConcern(jsonData["scene"]["roof"]["obstacles"], screenedArrangements)
-
-
+    roof.addObstaclesConcern(jsonData["scene"]["roof"]["obstacles"], screenedArrangements)
+    roof.obstacleArraySelf = roof.calculateObstacleSelf()
+    roof.calculate_column(screenedArrangements)
 
 
 
