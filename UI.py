@@ -12,7 +12,6 @@ panel_info = {}
 frame_width = 420
 frame_height = 320
 draw_gap = 10
-root = None
 
 chn2eng = {
     "省份": "province",
@@ -496,84 +495,87 @@ def get_input_json():
         input_json["component"][chn2eng[key]] = value
 
     return input_json
+
+
+root = tk.Tk()
+root.title("光伏板排布计算")
+
+# 创建左侧的按钮
+left_frame = tk.Frame(root)
+left_frame.pack(side=tk.LEFT, padx=20, pady=20)
+
+# Buttons for adding information
+location_btn = tk.Button(left_frame, text="添加位置信息", command=open_location_window)
+location_btn.pack(fill=tk.X, pady=5)
+
+roof_btn = tk.Button(left_frame, text="添加屋顶信息", command=open_roof_window)
+roof_btn.pack(fill=tk.X, pady=5)
+
+obstacle_btn = tk.Button(left_frame, text="添加屋内障碍物信息", command=open_obstacle_window)
+obstacle_btn.pack(fill=tk.X, pady=5)
+
+outside_obstacle_btn = tk.Button(left_frame, text="添加屋外障碍物信息", command=open_obstacle_window)
+outside_obstacle_btn.pack(fill=tk.X, pady=5)
+
+panel_btn = tk.Button(left_frame, text="添加光伏板信息", command=open_panel_window)
+panel_btn.pack(fill=tk.X, pady=5)
+
+clear_btn = tk.Button(left_frame, text="清空输入信息", command=clear_info)
+clear_btn.pack(fill=tk.X, pady=5)
+
+# Frame for installation scheme selection
+scheme_frame = tk.Frame(left_frame)
+scheme_frame.pack(fill=tk.X)
+
+# Installation scheme selection
+scheme_label = tk.Label(scheme_frame, text="安装方案")
+scheme_label.pack(side=tk.LEFT)
+
+scheme_options = ["膨胀常规", "膨胀抬高", "基墩"]
+scheme_var = tk.StringVar(scheme_frame)
+scheme_var.set(scheme_options[0])
+scheme_menu = tk.OptionMenu(scheme_frame, scheme_var, *scheme_options, )
+scheme_menu.config(width=10)
+scheme_menu.pack(side=tk.LEFT)
+
+# Button to calculate PV panel layout
+draw_btn = tk.Button(left_frame, text="展示屋面场景", command=draw_roofscene)
+draw_btn.pack(fill=tk.X, pady=20)
+
+calculate_btn = tk.Button(left_frame, text="计算光伏板排布", command=calculate_layout)
+calculate_btn.pack(fill=tk.X, pady=20)
+
+# 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
+arrangement_frame = tk.Frame(root)
+arrangement_frame.pack(side=tk.RIGHT, padx=20, pady=20)
+
+# “原始拓扑”文字标签放置在右侧区域的顶部
+arrangement_text = tk.Label(arrangement_frame, text="组件排布", font=("Arial", 12))
+arrangement_text.pack()
+
+# 图片显示区域放置在“原始拓扑”文字标签下方
+arrangement_frame = tk.Frame(arrangement_frame, width=frame_width, height=frame_height, bg='grey')
+arrangement_frame.pack()
+arrangement_frame.pack_propagate(0)  # 防止内部元素影响尺寸
+
+# 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
+roofscene_frame = tk.Frame(root)
+roofscene_frame.pack(side=tk.RIGHT, padx=20, pady=20)
+
+# “原始拓扑”文字标签放置在右侧区域的顶部
+roofscene_text = tk.Label(roofscene_frame, text="屋面场景", font=("Arial", 12))
+roofscene_text.pack()
+
+# 图片显示区域放置在“原始拓扑”文字标签下方
+roofscene_frame = tk.Frame(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
+roofscene_frame.pack()
+roofscene_frame.pack_propagate(0)  # 防止内部元素影响尺寸
+
+roofscene_canvas = tk.Canvas(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
+roofscene_canvas.pack()
+
+
 def main():
-    root = tk.Tk()
-    root.title("光伏板排布计算")
-
-    # 创建左侧的按钮
-    left_frame = tk.Frame(root)
-    left_frame.pack(side=tk.LEFT, padx=20, pady=20)
-
-    # Buttons for adding information
-    location_btn = tk.Button(left_frame, text="添加位置信息", command=open_location_window)
-    location_btn.pack(fill=tk.X, pady=5)
-
-    roof_btn = tk.Button(left_frame, text="添加屋顶信息", command=open_roof_window)
-    roof_btn.pack(fill=tk.X, pady=5)
-
-    obstacle_btn = tk.Button(left_frame, text="添加屋内障碍物信息", command=open_obstacle_window)
-    obstacle_btn.pack(fill=tk.X, pady=5)
-
-    outside_obstacle_btn = tk.Button(left_frame, text="添加屋外障碍物信息", command=open_obstacle_window)
-    outside_obstacle_btn.pack(fill=tk.X, pady=5)
-
-    panel_btn = tk.Button(left_frame, text="添加光伏板信息", command=open_panel_window)
-    panel_btn.pack(fill=tk.X, pady=5)
-
-    clear_btn = tk.Button(left_frame, text="清空输入信息", command=clear_info)
-    clear_btn.pack(fill=tk.X, pady=5)
-
-    # Frame for installation scheme selection
-    scheme_frame = tk.Frame(left_frame)
-    scheme_frame.pack(fill=tk.X)
-
-    # Installation scheme selection
-    scheme_label = tk.Label(scheme_frame, text="安装方案")
-    scheme_label.pack(side=tk.LEFT)
-
-    scheme_options = ["膨胀常规", "膨胀抬高", "基墩"]
-    scheme_var = tk.StringVar(scheme_frame)
-    scheme_var.set(scheme_options[0])
-    scheme_menu = tk.OptionMenu(scheme_frame, scheme_var, *scheme_options, )
-    scheme_menu.config(width=10)
-    scheme_menu.pack(side=tk.LEFT)
-
-    # Button to calculate PV panel layout
-    draw_btn = tk.Button(left_frame, text="展示屋面场景", command=draw_roofscene)
-    draw_btn.pack(fill=tk.X, pady=20)
-
-    calculate_btn = tk.Button(left_frame, text="计算光伏板排布", command=calculate_layout)
-    calculate_btn.pack(fill=tk.X, pady=20)
-
-    # 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
-    arrangement_frame = tk.Frame(root)
-    arrangement_frame.pack(side=tk.RIGHT, padx=20, pady=20)
-
-    # “原始拓扑”文字标签放置在右侧区域的顶部
-    arrangement_text = tk.Label(arrangement_frame, text="组件排布", font=("Arial", 12))
-    arrangement_text.pack()
-
-    # 图片显示区域放置在“原始拓扑”文字标签下方
-    arrangement_frame = tk.Frame(arrangement_frame, width=frame_width, height=frame_height, bg='grey')
-    arrangement_frame.pack()
-    arrangement_frame.pack_propagate(0)  # 防止内部元素影响尺寸
-
-    # 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
-    roofscene_frame = tk.Frame(root)
-    roofscene_frame.pack(side=tk.RIGHT, padx=20, pady=20)
-
-    # “原始拓扑”文字标签放置在右侧区域的顶部
-    roofscene_text = tk.Label(roofscene_frame, text="屋面场景", font=("Arial", 12))
-    roofscene_text.pack()
-
-    # 图片显示区域放置在“原始拓扑”文字标签下方
-    roofscene_frame = tk.Frame(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
-    roofscene_frame.pack()
-    roofscene_frame.pack_propagate(0)  # 防止内部元素影响尺寸
-
-    roofscene_canvas = tk.Canvas(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
-    roofscene_canvas.pack()
-
     root.mainloop()
 
 
