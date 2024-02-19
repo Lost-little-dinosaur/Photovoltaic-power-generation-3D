@@ -1,3 +1,7 @@
+import classes.roof
+from classes.arrangement import screenArrangements
+from classes.component import assignComponentParameters
+import json
 import tkinter as tk
 
 location_info = {}
@@ -9,6 +13,55 @@ frame_width = 420
 frame_height = 320
 draw_gap = 10
 root = None
+
+chn2eng = {
+    "省份": "province",
+    "城市": "city",
+    "行政区": "region",
+    "经度": "longitude",
+    "纬度": "latitude",
+    "电压等级": "voltageLevel",
+    "距离并网点的距离": "distanceToGridConnection",
+    "风压": "windPressure",
+    "雪压": "snowPressure",
+    "风雪压": "windAndSnowPressure",
+    "大雪": "heavySnow",
+
+    "长度": "length",
+    "宽度": "width",
+    "高度": "height",
+    "偏移角度": "roofDirection",
+    "倾斜角度": "roofAngle",
+    "可探出距离（东）": "extensibleDistanceEast",
+    "可探出距离（南）": "extensibleDistanceSouth",
+    "可探出距离（西）": "extensibleDistanceWest",
+    "可探出距离（北）": "extensibleDistanceNorth",
+    "女儿墙厚度": "parapetWallthick",
+    "女儿墙高度（东）": "parapetWalleastHeight",
+    "女儿墙高度（南）": "parapetWallsouthHeight",
+    "女儿墙高度（西）": "parapetWallwestHeight",
+    "女儿墙高度（北）": "parapetWallnorthHeight",
+    "屋顶类型": "category",
+    "复杂屋顶": "isComplex",
+    "预留运维通道": "maintenanceChannel",
+    "是否有挑檐": "haveOverhangingEave",
+
+    "ID": "id",
+    "直径": "diameter",
+    # "长度","宽度","高度",
+    "距离西侧屋顶距离": "relativePositionX",
+    "距离北侧屋顶距离": "relativePositionY",
+    "可调整高度": "adjustedHeight",
+    "类型": "type",
+    "是否圆形": "isRound",
+    "是否可移除": "removable",
+
+    "安装方案": "arrangeType",
+
+    "组件类型": "specification",
+    "功率": "power",
+    "厚度": "thickness"
+}
 
 
 def open_location_window():
@@ -100,7 +153,7 @@ def open_roof_window():
         scheme_menu.grid(row=len(str_entries) + i, column=1, padx=5, pady=5)
         option_entries[text] = scheme_var
 
-    bool_text = ["复杂屋顶", "预留运维通道"]
+    bool_text = ["复杂屋顶", "预留运维通道", "是否有挑檐"]
     bool_entries = {}
     for i, text in enumerate(bool_text):
         label = tk.Label(roof_window, text=text)
@@ -353,10 +406,23 @@ def draw_roofscene():
             y2 = roof_top + (centerY + length) * scale
             roofscene_canvas.create_rectangle(x1, y1, x2, y2, outline='red')
 
+    print(get_input_json())
+
 
 def calculate_layout():
-    # Perform calculation for PV panel layout based on selected installation scheme
-    print("Calculating PV panel layout...")
+    jsonData = get_input_json()
+    roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
+
+    assignComponentParameters(jsonData["component"])
+    screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
+                                              jsonData["arrangeType"], jsonData["scene"]["location"]["windPressure"])
+
+    roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
+
+    # 排布完光伏板后再添加障碍物并分析阴影
+    roof.addObstaclesConcern(jsonData["scene"]["roof"]["obstacles"], screenedArrangements)
+    roof.obstacleArraySelf = roof.calculateObstacleSelf()
+    roof.calculate_column(screenedArrangements)
 
 
 def clear_info():
@@ -368,7 +434,69 @@ def clear_info():
     roofscene_canvas.delete("all")
 
 
-if __name__ == "__main__":
+def get_input_json():
+    input_json = {}
+
+    # guest
+    input_json["guest"] = {}
+    input_json["guest"]["name"] = ""
+    input_json["guest"]["phone"] = ""
+
+    # scene
+    # location
+    input_json["scene"] = {}
+    input_json["scene"]["location"] = {}
+    for key, value in location_info.items():
+        input_json["scene"]["location"][chn2eng[key]] = value
+
+    # roof
+    input_json["scene"]["roof"] = {}
+    input_json["scene"]["roof"]["parapetWall"] = {}
+    extensibleDistance = [0, 0, 0, 0]
+    for key, value in roof_info.items():
+        new_key = chn2eng[key]
+        if 'parapetWall' in new_key:
+            input_json["scene"]["roof"]["parapetWall"][new_key[len("parapetWall"):]] = value
+        elif 'extensibleDistance' in new_key:
+            if 'East' in new_key:
+                extensibleDistance[0] = value
+            if 'West' in new_key:
+                extensibleDistance[1] = value
+            if 'South' in new_key:
+                extensibleDistance[2] = value
+            if 'North' in new_key:
+                extensibleDistance[3] = value
+        else:
+            input_json["scene"]["roof"][new_key] = value
+    input_json["scene"]["roof"]["extensibleDistance"] = extensibleDistance
+
+    # obstacle in roof
+    input_json["scene"]["roof"]["obstacles"] = []
+    for obstacle in obstacle_info:
+        new_item = {}
+        position = [0, 0]
+        for key, value in obstacle.items():
+            new_key = chn2eng[key]
+            if "relativePositionX" == new_key:
+                position[0] = value
+            elif "relativePositionY" == new_key:
+                position[1] = value
+            else:
+                new_item[new_key] = value
+        new_item["relativePosition"] = position
+        input_json["scene"]["roof"]["obstacles"].append(new_item)
+
+    # arrangeType
+    input_json["arrangeType"] = scheme_var.get()
+
+    # component
+    input_json["component"] = {}
+    input_json["component"]["specification"] = ""
+    for key, value in panel_info.items():
+        input_json["component"][chn2eng[key]] = value
+
+    return input_json
+def main():
     root = tk.Tk()
     root.title("光伏板排布计算")
 
@@ -403,7 +531,7 @@ if __name__ == "__main__":
     scheme_label = tk.Label(scheme_frame, text="安装方案")
     scheme_label.pack(side=tk.LEFT)
 
-    scheme_options = ["膨胀常规", "膨胀抬高", "基墩"]j
+    scheme_options = ["膨胀常规", "膨胀抬高", "基墩"]
     scheme_var = tk.StringVar(scheme_frame)
     scheme_var.set(scheme_options[0])
     scheme_menu = tk.OptionMenu(scheme_frame, scheme_var, *scheme_options, )
@@ -447,3 +575,7 @@ if __name__ == "__main__":
     roofscene_canvas.pack()
 
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
