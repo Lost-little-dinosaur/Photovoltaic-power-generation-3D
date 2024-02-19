@@ -1,3 +1,7 @@
+import classes.roof
+from classes.arrangement import screenArrangements
+from classes.component import assignComponentParameters
+import json
 import tkinter as tk
 
 location_info = {}
@@ -8,7 +12,55 @@ panel_info = {}
 frame_width = 420
 frame_height = 320
 draw_gap = 10
-root = None
+
+chn2eng = {
+    "省份": "province",
+    "城市": "city",
+    "行政区": "region",
+    "经度": "longitude",
+    "纬度": "latitude",
+    "电压等级": "voltageLevel",
+    "距离并网点的距离": "distanceToGridConnection",
+    "风压": "windPressure",
+    "雪压": "snowPressure",
+    "风雪压": "windAndSnowPressure",
+    "大雪": "heavySnow",
+
+    "长度": "length",
+    "宽度": "width",
+    "高度": "height",
+    "偏移角度": "roofDirection",
+    "倾斜角度": "roofAngle",
+    "可探出距离（东）": "extensibleDistanceEast",
+    "可探出距离（南）": "extensibleDistanceSouth",
+    "可探出距离（西）": "extensibleDistanceWest",
+    "可探出距离（北）": "extensibleDistanceNorth",
+    "女儿墙厚度": "parapetWallthick",
+    "女儿墙高度（东）": "parapetWalleastHeight",
+    "女儿墙高度（南）": "parapetWallsouthHeight",
+    "女儿墙高度（西）": "parapetWallwestHeight",
+    "女儿墙高度（北）": "parapetWallnorthHeight",
+    "屋顶类型": "category",
+    "复杂屋顶": "isComplex",
+    "预留运维通道": "maintenanceChannel",
+    "是否有挑檐": "haveOverhangingEave",
+
+    "ID": "id",
+    "直径": "diameter",
+    # "长度","宽度","高度",
+    "距离西侧屋顶距离": "relativePositionX",
+    "距离北侧屋顶距离": "relativePositionY",
+    "可调整高度": "adjustedHeight",
+    "类型": "type",
+    "是否圆形": "isRound",
+    "是否可移除": "removable",
+
+    "安装方案": "arrangeType",
+
+    "组件类型": "specification",
+    "功率": "power",
+    "厚度": "thickness"
+}
 
 
 def open_location_window():
@@ -100,7 +152,7 @@ def open_roof_window():
         scheme_menu.grid(row=len(str_entries) + i, column=1, padx=5, pady=5)
         option_entries[text] = scheme_var
 
-    bool_text = ["复杂屋顶", "预留运维通道"]
+    bool_text = ["复杂屋顶", "预留运维通道", "是否有挑檐"]
     bool_entries = {}
     for i, text in enumerate(bool_text):
         label = tk.Label(roof_window, text=text)
@@ -353,10 +405,23 @@ def draw_roofscene():
             y2 = roof_top + (centerY + length) * scale
             roofscene_canvas.create_rectangle(x1, y1, x2, y2, outline='red')
 
+    print(get_input_json())
+
 
 def calculate_layout():
-    # Perform calculation for PV panel layout based on selected installation scheme
-    print("Calculating PV panel layout...")
+    jsonData = get_input_json()
+    roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
+
+    assignComponentParameters(jsonData["component"])
+    screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
+                                              jsonData["arrangeType"], jsonData["scene"]["location"]["windPressure"])
+
+    roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
+
+    # 排布完光伏板后再添加障碍物并分析阴影
+    roof.addObstaclesConcern(jsonData["scene"]["roof"]["obstacles"], screenedArrangements)
+    roof.obstacleArraySelf = roof.calculateObstacleSelf()
+    roof.calculate_column(screenedArrangements)
 
 
 def clear_info():
@@ -368,82 +433,151 @@ def clear_info():
     roofscene_canvas.delete("all")
 
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.title("光伏板排布计算")
+def get_input_json():
+    input_json = {}
 
-    # 创建左侧的按钮
-    left_frame = tk.Frame(root)
-    left_frame.pack(side=tk.LEFT, padx=20, pady=20)
+    # guest
+    input_json["guest"] = {}
+    input_json["guest"]["name"] = ""
+    input_json["guest"]["phone"] = ""
 
-    # Buttons for adding information
-    location_btn = tk.Button(left_frame, text="添加位置信息", command=open_location_window)
-    location_btn.pack(fill=tk.X, pady=5)
+    # scene
+    # location
+    input_json["scene"] = {}
+    input_json["scene"]["location"] = {}
+    for key, value in location_info.items():
+        input_json["scene"]["location"][chn2eng[key]] = value
 
-    roof_btn = tk.Button(left_frame, text="添加屋顶信息", command=open_roof_window)
-    roof_btn.pack(fill=tk.X, pady=5)
+    # roof
+    input_json["scene"]["roof"] = {}
+    input_json["scene"]["roof"]["parapetWall"] = {}
+    extensibleDistance = [0, 0, 0, 0]
+    for key, value in roof_info.items():
+        new_key = chn2eng[key]
+        if 'parapetWall' in new_key:
+            input_json["scene"]["roof"]["parapetWall"][new_key[len("parapetWall"):]] = value
+        elif 'extensibleDistance' in new_key:
+            if 'East' in new_key:
+                extensibleDistance[0] = value
+            if 'West' in new_key:
+                extensibleDistance[1] = value
+            if 'South' in new_key:
+                extensibleDistance[2] = value
+            if 'North' in new_key:
+                extensibleDistance[3] = value
+        else:
+            input_json["scene"]["roof"][new_key] = value
+    input_json["scene"]["roof"]["extensibleDistance"] = extensibleDistance
 
-    obstacle_btn = tk.Button(left_frame, text="添加屋内障碍物信息", command=open_obstacle_window)
-    obstacle_btn.pack(fill=tk.X, pady=5)
+    # obstacle in roof
+    input_json["scene"]["roof"]["obstacles"] = []
+    for obstacle in obstacle_info:
+        new_item = {}
+        position = [0, 0]
+        for key, value in obstacle.items():
+            new_key = chn2eng[key]
+            if "relativePositionX" == new_key:
+                position[0] = value
+            elif "relativePositionY" == new_key:
+                position[1] = value
+            else:
+                new_item[new_key] = value
+        new_item["relativePosition"] = position
+        input_json["scene"]["roof"]["obstacles"].append(new_item)
 
-    outside_obstacle_btn = tk.Button(left_frame, text="添加屋外障碍物信息", command=open_obstacle_window)
-    outside_obstacle_btn.pack(fill=tk.X, pady=5)
+    # arrangeType
+    input_json["arrangeType"] = scheme_var.get()
 
-    panel_btn = tk.Button(left_frame, text="添加光伏板信息", command=open_panel_window)
-    panel_btn.pack(fill=tk.X, pady=5)
+    # component
+    input_json["component"] = {}
+    input_json["component"]["specification"] = ""
+    for key, value in panel_info.items():
+        input_json["component"][chn2eng[key]] = value
 
-    clear_btn = tk.Button(left_frame, text="清空输入信息", command=clear_info)
-    clear_btn.pack(fill=tk.X, pady=5)
+    return input_json
 
-    # Frame for installation scheme selection
-    scheme_frame = tk.Frame(left_frame)
-    scheme_frame.pack(fill=tk.X)
 
-    # Installation scheme selection
-    scheme_label = tk.Label(scheme_frame, text="安装方案")
-    scheme_label.pack(side=tk.LEFT)
+root = tk.Tk()
+root.title("光伏板排布计算")
 
-    scheme_options = ["膨胀常规", "膨胀抬高", "基墩"]j
-    scheme_var = tk.StringVar(scheme_frame)
-    scheme_var.set(scheme_options[0])
-    scheme_menu = tk.OptionMenu(scheme_frame, scheme_var, *scheme_options, )
-    scheme_menu.config(width=10)
-    scheme_menu.pack(side=tk.LEFT)
+# 创建左侧的按钮
+left_frame = tk.Frame(root)
+left_frame.pack(side=tk.LEFT, padx=20, pady=20)
 
-    # Button to calculate PV panel layout
-    draw_btn = tk.Button(left_frame, text="展示屋面场景", command=draw_roofscene)
-    draw_btn.pack(fill=tk.X, pady=20)
+# Buttons for adding information
+location_btn = tk.Button(left_frame, text="添加位置信息", command=open_location_window)
+location_btn.pack(fill=tk.X, pady=5)
 
-    calculate_btn = tk.Button(left_frame, text="计算光伏板排布", command=calculate_layout)
-    calculate_btn.pack(fill=tk.X, pady=20)
+roof_btn = tk.Button(left_frame, text="添加屋顶信息", command=open_roof_window)
+roof_btn.pack(fill=tk.X, pady=5)
 
-    # 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
-    arrangement_frame = tk.Frame(root)
-    arrangement_frame.pack(side=tk.RIGHT, padx=20, pady=20)
+obstacle_btn = tk.Button(left_frame, text="添加屋内障碍物信息", command=open_obstacle_window)
+obstacle_btn.pack(fill=tk.X, pady=5)
 
-    # “原始拓扑”文字标签放置在右侧区域的顶部
-    arrangement_text = tk.Label(arrangement_frame, text="组件排布", font=("Arial", 12))
-    arrangement_text.pack()
+outside_obstacle_btn = tk.Button(left_frame, text="添加屋外障碍物信息", command=open_obstacle_window)
+outside_obstacle_btn.pack(fill=tk.X, pady=5)
 
-    # 图片显示区域放置在“原始拓扑”文字标签下方
-    arrangement_frame = tk.Frame(arrangement_frame, width=frame_width, height=frame_height, bg='grey')
-    arrangement_frame.pack()
-    arrangement_frame.pack_propagate(0)  # 防止内部元素影响尺寸
+panel_btn = tk.Button(left_frame, text="添加光伏板信息", command=open_panel_window)
+panel_btn.pack(fill=tk.X, pady=5)
 
-    # 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
-    roofscene_frame = tk.Frame(root)
-    roofscene_frame.pack(side=tk.RIGHT, padx=20, pady=20)
+clear_btn = tk.Button(left_frame, text="清空输入信息", command=clear_info)
+clear_btn.pack(fill=tk.X, pady=5)
 
-    # “原始拓扑”文字标签放置在右侧区域的顶部
-    roofscene_text = tk.Label(roofscene_frame, text="屋面场景", font=("Arial", 12))
-    roofscene_text.pack()
+# Frame for installation scheme selection
+scheme_frame = tk.Frame(left_frame)
+scheme_frame.pack(fill=tk.X)
 
-    # 图片显示区域放置在“原始拓扑”文字标签下方
-    roofscene_frame = tk.Frame(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
-    roofscene_frame.pack()
-    roofscene_frame.pack_propagate(0)  # 防止内部元素影响尺寸
+# Installation scheme selection
+scheme_label = tk.Label(scheme_frame, text="安装方案")
+scheme_label.pack(side=tk.LEFT)
 
-    roofscene_canvas = tk.Canvas(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
-    roofscene_canvas.pack()
+scheme_options = ["膨胀常规", "膨胀抬高", "基墩"]
+scheme_var = tk.StringVar(scheme_frame)
+scheme_var.set(scheme_options[0])
+scheme_menu = tk.OptionMenu(scheme_frame, scheme_var, *scheme_options, )
+scheme_menu.config(width=10)
+scheme_menu.pack(side=tk.LEFT)
 
+# Button to calculate PV panel layout
+draw_btn = tk.Button(left_frame, text="展示屋面场景", command=draw_roofscene)
+draw_btn.pack(fill=tk.X, pady=20)
+
+calculate_btn = tk.Button(left_frame, text="计算光伏板排布", command=calculate_layout)
+calculate_btn.pack(fill=tk.X, pady=20)
+
+# 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
+arrangement_frame = tk.Frame(root)
+arrangement_frame.pack(side=tk.RIGHT, padx=20, pady=20)
+
+# “原始拓扑”文字标签放置在右侧区域的顶部
+arrangement_text = tk.Label(arrangement_frame, text="组件排布", font=("Arial", 12))
+arrangement_text.pack()
+
+# 图片显示区域放置在“原始拓扑”文字标签下方
+arrangement_frame = tk.Frame(arrangement_frame, width=frame_width, height=frame_height, bg='grey')
+arrangement_frame.pack()
+arrangement_frame.pack_propagate(0)  # 防止内部元素影响尺寸
+
+# 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
+roofscene_frame = tk.Frame(root)
+roofscene_frame.pack(side=tk.RIGHT, padx=20, pady=20)
+
+# “原始拓扑”文字标签放置在右侧区域的顶部
+roofscene_text = tk.Label(roofscene_frame, text="屋面场景", font=("Arial", 12))
+roofscene_text.pack()
+
+# 图片显示区域放置在“原始拓扑”文字标签下方
+roofscene_frame = tk.Frame(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
+roofscene_frame.pack()
+roofscene_frame.pack_propagate(0)  # 防止内部元素影响尺寸
+
+roofscene_canvas = tk.Canvas(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
+roofscene_canvas.pack()
+
+
+def main():
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
