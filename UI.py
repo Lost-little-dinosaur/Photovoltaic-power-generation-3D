@@ -28,9 +28,9 @@ chn2eng = {
     "风雪压":"windAndSnowPressure",
     "大雪":"heavySnow",
     
-    "长度":"length",
-    "宽度":"width",
-    "高度":"height",
+    "长度（mm）":"length",
+    "宽度（mm）":"width",
+    "高度（mm）":"height",
     "偏移角度":"roofDirection",
     "倾斜角度":"roofAngle",
     "可探出距离（东）":"extensibleDistanceEast",
@@ -38,10 +38,10 @@ chn2eng = {
     "可探出距离（西）":"extensibleDistanceWest",
     "可探出距离（北）":"extensibleDistanceNorth",
     "女儿墙厚度":"parapetWallthick",
-    "女儿墙高度（东）":"parapetWalleastHeight",
-    "女儿墙高度（南）":"parapetWallsouthHeight",
-    "女儿墙高度（西）":"parapetWallwestHeight",
-    "女儿墙高度（北）":"parapetWallnorthHeight",
+    "女儿墙高度（mm）（东）":"parapetWalleastHeight",
+    "女儿墙高度（mm）（南）":"parapetWallsouthHeight",
+    "女儿墙高度（mm）（西）":"parapetWallwestHeight",
+    "女儿墙高度（mm）（北）":"parapetWallnorthHeight",
     "屋顶类型":"category",
     "复杂屋顶":"isComplex",
     "预留运维通道":"maintenanceChannel",
@@ -49,10 +49,10 @@ chn2eng = {
 
     "ID":"id",
     "直径":"diameter",
-    # "长度","宽度","高度",
+    # "长度（mm）","宽度（mm）","高度（mm）",
     "距离西侧屋顶距离":"relativePositionX",
     "距离北侧屋顶距离":"relativePositionY",
-    "可调整高度":"adjustedHeight",
+    "可调整高度（mm）":"adjustedHeight",
     "类型":"type",
     "是否圆形":"isRound",
     "是否可移除":"removable",
@@ -126,9 +126,9 @@ def open_roof_window():
     roof_window = tk.Toplevel(root)
     roof_window.title("添加屋顶信息")
         
-    str_text = ["长度","宽度","高度","偏移角度","倾斜角度","可探出距离（东）"
+    str_text = ["长度（mm）","宽度（mm）","高度（mm）","偏移角度","倾斜角度","可探出距离（东）"
     ,"可探出距离（南）","可探出距离（西）","可探出距离（北）",
-    "女儿墙厚度","女儿墙高度（东）","女儿墙高度（南）","女儿墙高度（西）","女儿墙高度（北）"]
+    "女儿墙厚度","女儿墙高度（mm）（东）","女儿墙高度（mm）（南）","女儿墙高度（mm）（西）","女儿墙高度（mm）（北）"]
     str_entries = {}
     for i, text in enumerate(str_text):
         label = tk.Label(roof_window, text=text + ": ")
@@ -183,8 +183,8 @@ def open_obstacle_window():
     obstacle_window = tk.Toplevel(root)
     obstacle_window.title("添加墙内障碍物信息")
 
-    # 直径？长度？
-    str_text = ["ID","直径","长度","宽度","高度","距离西侧屋顶距离","距离北侧屋顶距离","可调整高度"]
+    # 直径？长度（mm）？
+    str_text = ["ID","直径","长度（mm）","宽度（mm）","高度（mm）","距离西侧屋顶距离","距离北侧屋顶距离","可调整高度（mm）"]
     str_entries = {}
     for i, text in enumerate(str_text):
         label = tk.Label(obstacle_window, text=text + ": ")
@@ -241,8 +241,8 @@ def open_outside_obstacle_window():
     outside_obstacle_window = tk.Toplevel(root)
     outside_obstacle_window.title("添加墙内障碍物信息")
 
-    # 直径？长度？
-    str_text = ["ID","直径","长度","宽度","高度","距离西侧屋顶距离","距离北侧屋顶距离","可调整高度"]
+    # 直径？长度（mm）？
+    str_text = ["ID","直径","长度（mm）","宽度（mm）","高度（mm）","距离西侧屋顶距离","距离北侧屋顶距离","可调整高度（mm）"]
     str_entries = {}
     for i, text in enumerate(str_text):
         label = tk.Label(outside_obstacle_window, text=text + ": ")
@@ -299,7 +299,7 @@ def open_panel_window():
     panel_window = tk.Toplevel(root)
     panel_window.title("添加光伏板信息")
     
-     # 直径？长度？
+     # 直径？长度（mm）？
     str_text = ["功率","厚度"]
     str_entries = {}
     for i, text in enumerate(str_text):
@@ -355,7 +355,7 @@ def open_algorithm_window():
     algorithm_window = tk.Toplevel(root)
     algorithm_window.title("选择算法类型")
     
-     # 直径？长度？
+     # 直径？长度（mm）？
     str_text = ["精度（mm）"]
     str_entries = {}
     for i, text in enumerate(str_text):
@@ -415,9 +415,9 @@ def draw_roofscene():
     draw_height = frame_height - draw_gap * 2
 
     # 绘制屋顶
-    scale = min(draw_width / float(roof_info['宽度']), draw_height / float(roof_info['长度']))
-    scaled_width = float(roof_info['宽度']) * scale
-    scaled_height =  float(roof_info['长度']) * scale
+    scale = min(draw_width / float(roof_info['宽度（mm）']), draw_height / float(roof_info['长度（mm）']))
+    scaled_width = float(roof_info['宽度（mm）']) * scale
+    scaled_height =  float(roof_info['长度（mm）']) * scale
     # 计算矩形位置使其居中
     roof_left = (frame_width - scaled_width) / 2
     roof_top = (frame_height - scaled_height) / 2
@@ -440,8 +440,8 @@ def draw_roofscene():
             y2 = roof_top + (centerY + length) * scale
             roofscene_canvas.create_oval(x1,y1,x2,y2,outline='red')
         else:
-            width = float(obstacle['宽度'])
-            length = float(obstacle['长度'])
+            width = float(obstacle['宽度（mm）'])
+            length = float(obstacle['长度（mm）'])
             x1 = roof_left + centerX * scale
             y1 = roof_top + centerY * scale
             x2 = roof_left + (centerX + width) * scale
@@ -466,11 +466,19 @@ def calculate_layout():
     roof.calculate_column(screenedArrangements)
 
 def clear_info():
+    global location_info
+    global roof_info
+    global outside_obstacle_info
+    global panel_info
+    global obstacle_info
+    global algorithm_info
+    
     location_info = {}
     roof_info = {}
     obstacle_info = []
     outside_obstacle_info = []
     panel_info = {}
+    algorithm_info = {}
     roofscene_canvas.delete("all")
 
 
