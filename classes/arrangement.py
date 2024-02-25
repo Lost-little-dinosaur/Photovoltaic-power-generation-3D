@@ -115,7 +115,7 @@ class Arrangement:
 
             result = []
             for x in column_positions:
-                for y in array_iny[:-1]:
+                for y in array_iny:
                     if obstacles[x][y] != 1 and x < width and y < length:
                         result.append([int(x), int(y)])
             return result
@@ -162,23 +162,23 @@ class Arrangement:
                     count3 = 1
                 array_y = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
                 array_limit = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
-        length = self.relativePositionArray[-1][1][1]
+        length = self.relativePositionArray[-1][1][1] + 1
         le = length - sum(array_y) - array_limit[0]
         if (le + array_limit[0]) / 2 < array_limit[0]:
             array_y.append(int(array_limit[0]) + array_y[-1])
             array_y.insert(0, int(le - array_limit[0]))
         else:
             if (le + array_limit[0]) / 2 > array_limit[1]:
-                array_y.append(int(array_limit[1] + array_y[-1]))
+                array_y.append(int(array_limit[1]))
                 array_y.insert(0, int(le - array_limit[1]))
             else:
-                array_y.append(int((le + array_limit[0]) / 2 + array_y[-1]))
+                array_y.append(int((le + array_limit[0]) / 2))
                 array_y.insert(0, int((le + array_limit[0]) / 2))
         result_y = []
         prefix_sum = 0
         for i in range(len(array_y) - 1, -1, -1):
             prefix_sum += array_y[i]
-            result_y.append(prefix_sum)
+            result_y.append(prefix_sum - 1)
 
             '''       
             array_x = [250]
@@ -187,7 +187,7 @@ class Arrangement:
             if (self.width - array_x[-1]) < 250:
                 array_x.pop()
             '''
-
+        result_y.pop()
         max_spacing = int(2200 / UNIT)
         width = 0
         for node in self.relativePositionArray:
@@ -199,6 +199,15 @@ class Arrangement:
             if len(result) == 0:
                 continue
             else:
+                self.calculateComponentPositionArray(startX, startY)
+                for node in result:
+                    flag = 0
+                    for component in self.componentPositionArray:
+                        if(component[0][0] <= node[0] and component[1][0] >= node[0]
+                        and component[0][1] <= node[1] and component[1][1] >= node[1]):
+                            flag = 1
+                    if flag == 0:
+                        result.remove(node)
                 return result
 
     def calculateComponentPositionArray(self, startX, startY):
@@ -211,7 +220,7 @@ class Arrangement:
             for i in range(self.crossNum):
                 self.componentPositionArray.append([[startX, startY], [startX + self.component.length - 1,
                                                     startY + self.component.width - 1]])
-                startX += self.component.width + PhotovoltaicPanelCrossMargin  # 横横间隙
+                startX += self.component.length + PhotovoltaicPanelCrossMargin  # 横横间隙
         elif self.crossPosition == INF:  # 只有竖排
             self.crossNum = 0
             self.crossCount = 0
@@ -235,9 +244,10 @@ class Arrangement:
                                                     startY + self.component.length - 1]])
                 startX += self.component.width + PhotovoltaicPanelCrossMargin
             startX = startX - PhotovoltaicPanelCrossMargin
+            startX = startX - 1
             startY = startY + self.component.length + PhotovoltaicPanelVerticalDiffMargin
             for i in range(self.crossNum):
-                self.componentPositionArray.append([[startX - self.component.length, startY], [startX,
+                self.componentPositionArray.append([[startX - self.component.length + 1, startY], [startX,
                                                     startY + self.component.width - 1]])
                 startX -= self.component.length + PhotovoltaicPanelCrossMargin
         else:  # 其他横竖情况
@@ -261,11 +271,12 @@ class Arrangement:
                 startX += (self.component.width + PhotovoltaicPanelCrossMargin)
 
             startX -= PhotovoltaicPanelCrossMargin
+            startX = startX - 1
             startY -= (self.component.width + PhotovoltaicPanelVerticalDiffMargin)
 
             for i in range(self.componentLayoutArray[-2]):
                 self.componentPositionArray.append(
-                    [[startX - self.component.length, startY], [startX, startY + self.component.width - 1]])
+                    [[startX - self.component.length + 1, startY], [startX, startY + self.component.width - 1]])
                 startX -= self.component.length + PhotovoltaicPanelCrossMargin
             for node_c in temp:
                 self.componentPositionArray.append(
