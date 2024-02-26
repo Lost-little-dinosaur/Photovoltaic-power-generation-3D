@@ -6,7 +6,6 @@ from const.const import *
 from math import radians, sin
 from tools.tools3D import calculateShadow
 
-
 ID = 0
 
 
@@ -18,7 +17,8 @@ class Arrangement:
                 break
         else:
             raise Exception("组件'{}'不存在".format(component))
-        self.componentLayoutArray = componentLayoutArray
+        self.componentLayoutArray = componentLayoutArray # 是未扣除光伏板的arrangement
+        # relativePositionArray是arrangement中尽可能多的组成矩形的光伏板的startXY
         tempStart, tempEnd, self.relativePositionArray, nowBottom = 0, 0, [], 0
         # 计算组件的相对位置，以[[[x1, y1], [x2, y2]], [[x1, y1], [x2, y2]]]的形式存储（只支持只有一排横排组件的情况）
         if crossPosition == INF:  # 没有横排
@@ -78,7 +78,9 @@ class Arrangement:
         self.crossCount = 0
         self.verticalCount = 0
         self.verticalNum = 0
-        self.componentHeightArray = np.array(self.calculateComponentHeightArray())
+        self.componentHeightArray = np.array(self.calculateComponentHeightArray())  # 每个光伏板具体高度（大小是这个arrangement的最小包络矩形）
+        self.deletedIndices = []
+        self.cleanedComponentPositionArray = []
 
     def calculateStandColumn(self, startX, startY, roof_Length, roof_Width, obstacles):
         def generate_columns(n_columns, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
@@ -210,8 +212,8 @@ class Arrangement:
             self.verticalNum = 0
             for i in range(self.crossNum):
                 self.componentPositionArray.append([[startX, startY], [startX + self.component.length - 1,
-                                                    startY + self.component.width - 1]])
-                startX += self.component.width + PhotovoltaicPanelCrossMargin  # 横横间隙
+                                                                       startY + self.component.width - 1]])
+                startX += self.component.length + PhotovoltaicPanelCrossMargin  # 横横间隙
         elif self.crossPosition == INF:  # 只有竖排
             self.crossNum = 0
             self.crossCount = 0
@@ -220,7 +222,7 @@ class Arrangement:
             for i in range(self.verticalCount):
                 for j in range(self.verticalNum):
                     self.componentPositionArray.append([[startX, startY], [startX + self.component.width - 1,
-                                                        startY + self.component.length - 1]])
+                                                                           startY + self.component.length - 1]])
                     startX += self.component.width + PhotovoltaicPanelCrossMargin
                 startX -= (self.component.width + PhotovoltaicPanelCrossMargin) * self.verticalNum
                 startY += self.component.length + PhotovoltaicPanelVerticalMargin
@@ -232,13 +234,14 @@ class Arrangement:
             self.verticalNum = self.componentLayoutArray[0]
             for i in range(self.verticalNum):
                 self.componentPositionArray.append([[startX, startY], [startX + self.component.width - 1,
-                                                    startY + self.component.length - 1]])
+                                                                       startY + self.component.length - 1]])
                 startX += self.component.width + PhotovoltaicPanelCrossMargin
             startX = startX - PhotovoltaicPanelCrossMargin
+            startX = startX - 1
             startY = startY + self.component.length + PhotovoltaicPanelVerticalDiffMargin
             for i in range(self.crossNum):
-                self.componentPositionArray.append([[startX - self.component.length, startY], [startX,
-                                                    startY + self.component.width - 1]])
+                self.componentPositionArray.append([[startX - self.component.length + 1, startY], [startX,
+                                                                                                   startY + self.component.width - 1]])
                 startX -= self.component.length + PhotovoltaicPanelCrossMargin
         else:  # 其他横竖情况
             self.crossCount = 1
@@ -255,17 +258,18 @@ class Arrangement:
             startY += (self.component.width + PhotovoltaicPanelVerticalDiffMargin * 2 - PhotovoltaicPanelVerticalMargin)
             temp = []
             for i in range(self.componentLayoutArray[-1]):  # 最后一排
-                #self.componentPositionArray.append(
+                # self.componentPositionArray.append(
                 #    [[startX, startY], [startX + self.component.width - 1, startY + self.component.length - 1]])
                 temp.append([startX, startY])
                 startX += (self.component.width + PhotovoltaicPanelCrossMargin)
 
             startX -= PhotovoltaicPanelCrossMargin
+            startX = startX - 1
             startY -= (self.component.width + PhotovoltaicPanelVerticalDiffMargin)
 
             for i in range(self.componentLayoutArray[-2]):
                 self.componentPositionArray.append(
-                    [[startX - self.component.length, startY], [startX, startY + self.component.width - 1]])
+                    [[startX - self.component.length + 1, startY], [startX, startY + self.component.width - 1]])
                 startX -= self.component.length + PhotovoltaicPanelCrossMargin
             for node_c in temp:
                 self.componentPositionArray.append(
@@ -542,7 +546,6 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
     return result
 
 
-
 # 组件排布的规格
 # component1 = Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35)  # 以米、瓦为单位
 # component2 = Component("182-78", 1.134, 2.465, 580, 600, 0.30, 0.35)  # 以米、瓦为单位
@@ -606,7 +609,7 @@ def calculate_ar_Shadow(self, startX, startY, latitude, obstacleArray=[]):
             [self.relativePositionArray[0][0][0] + startX, self.relativePositionArray[0][1][1] + startY, h_min],
             [self.relativePositionArray[0][1][0] + startX, self.relativePositionArray[0][1][1] + startY, h_min]
         ]
-        calculateShadow(nodearray, False,  latitude, obstacleArray)
+        calculateShadow(nodearray, False, latitude, obstacleArray)
     else:
         if self.crossPosition == INF:  # 只有竖排
             first_element = self.componentLayoutArray[0]
@@ -620,12 +623,12 @@ def calculate_ar_Shadow(self, startX, startY, latitude, obstacleArray=[]):
                 h_min = arrangement_height[(str, len(self.componentLayoutArray), 0, 0, 0, count)]
 
         elif len(self.componentLayoutArray) == 2 and (
-            self.componentLayoutArray[0] != self.componentLayoutArray[1]):  # 竖一横一
+                self.componentLayoutArray[0] != self.componentLayoutArray[1]):  # 竖一横一
             h_min = arrangement_height[(str, 1, 1, 0, 0, 0)]
         else:
             normal_vertical = max(self.componentLayoutArray[0], self.componentLayoutArray[-1])  # 正常的一排列数
             normal_cross = round((normal_vertical * self.component.width + (normal_vertical - 1) *
-                                 PhotovoltaicPanelCrossMargin) / self.component.length)
+                                  PhotovoltaicPanelCrossMargin) / self.component.length)
             count1 = 0
             count2 = 0
             count3 = 0
@@ -648,8 +651,7 @@ def calculate_ar_Shadow(self, startX, startY, latitude, obstacleArray=[]):
             calculateShadow(nodearray, False, latitude, obstacleArray)
 
 
-
 if __name__ == '__main__':
-    a = [[[0, 0], [1, 1]],[[2, 2], [3, 3]]]
+    a = [[[0, 0], [1, 1]], [[2, 2], [3, 3]]]
     for node in a:
         print(node[0])

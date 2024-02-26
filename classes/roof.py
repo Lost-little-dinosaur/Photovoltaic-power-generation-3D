@@ -43,43 +43,44 @@ class Roof:
         time1 = time.time()
         print("开始分析阴影并选出最佳方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         nowMaxValue = -INF
-        # IDArray = list(screenedArrangements.keys())
+        # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样)],
         for placement in self.allPlacements:
             if placement[1] < nowMaxValue:
                 continue
             for obstacle in obstacles:
                 self.obstacles.append(Obstacle(obstacle, placement[2], self.roofArray, self.latitude))
             tempObstacleSumArray = np.cumsum(np.cumsum(placement[2], axis=0), axis=1)
+            allDeletedIndices = []
             for arrange in placement[0]:
-                screenedArrangements[arrange['ID']].calculateComponentPositionArray(arrange['start'][0],
-                                                                                    arrange['start'][1])
+                arrangeStartX, arrangeStartY = arrange['start']
+                screenedArrangements[arrange['ID']].calculateComponentPositionArray(arrangeStartX, arrangeStartY)
                 tempArray = screenedArrangements[arrange['ID']].componentPositionArray
                 deletedIndices = []
-                for i in tempArray:  # 判断每个光伏板是否有被遮挡（i是[[startX,startY],[endX,endY]]）
+                for i in range(len(tempArray)):  # 判断每个光伏板是否有被遮挡（i是[[startX,startY],[endX,endY]]，是绝对于整个roof的位置）
                     # 用前缀和数组简单判断是否有遮挡，再用高度判断是否有遮挡
-                    try:
-                        totalComponent = tempObstacleSumArray[i[1][1], i[1][0]]
-                    except:
-                        print()
-                    if i[0][0] > 0:
-                        totalComponent -= tempObstacleSumArray[i[1][1], i[0][0] - 1]
-                    if i[0][1] > 0:
-                        totalComponent -= tempObstacleSumArray[i[0][1] - 1, i[1][0]]
-                    if i[0][0] > 0 and i[0][1] > 0:
-                        totalComponent += tempObstacleSumArray[i[0][1] - 1, i[0][0] - 1]
-                    if totalComponent == 0 and (placement[2][i[1]:i[3] + 1, i[0]:i[2] + 1] <
-                                                screenedArrangements[arrange['ID']].componentHeightArray[
-                                                i[1] - arrange['start'][1]:i[3] - arrange['start'][1] + 1,
-                                                i[0] - arrange['start'][0]:i[2] - arrange['start'][0] + 1]).all():
+                    totalComponent = tempObstacleSumArray[tempArray[i][1][1], tempArray[i][0][0]]
+                    if tempArray[i][0][0] > 0:
+                        totalComponent -= tempObstacleSumArray[tempArray[i][1][1], tempArray[i][0][0] - 1]
+                    if tempArray[i][0][1] > 0:
+                        totalComponent -= tempObstacleSumArray[tempArray[i][0][1] - 1, tempArray[i][1][0]]
+                    if tempArray[i][0][0] > 0 and tempArray[i][0][1] > 0:
+                        totalComponent += tempObstacleSumArray[tempArray[i][0][1] - 1, tempArray[i][0][0] - 1]
+                    if totalComponent == 0 or (placement[2][tempArray[i][0][1]:tempArray[i][1][1] + 1, tempArray[i][0][
+                        0]:tempArray[i][1][0] + 1] < screenedArrangements[arrange['ID']].componentHeightArray[
+                                                     tempArray[i][0][1] - arrangeStartY:tempArray[i][1][
+                                                                                            1] - arrangeStartY + 1,
+                                                     tempArray[i][0][0] - arrangeStartX:tempArray[i][1][
+                                                                                            0] - arrangeStartX + 1]).all():
                         continue
                     else:  # 有遮挡
                         deletedIndices.append(i)
                 screenedArrangements[arrange['ID']].componentPositionArray = []  # 清空componentPositionArray
                 placement[1] -= len(deletedIndices) * screenedArrangements[arrange['ID']].component.power
-                placement.append(deletedIndices)
-                if placement[1] > nowMaxValue:
-                    nowMaxValue = placement[1]
-                    print(f"当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                allDeletedIndices.append(deletedIndices)
+            placement.append(allDeletedIndices)
+            if placement[1] > nowMaxValue:
+                nowMaxValue = placement[1]
+                print(f"当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
         i = 0
         while i < len(self.allPlacements):
             if self.allPlacements[i][1] < nowMaxValue:
@@ -222,7 +223,9 @@ class Roof:
         for node in self.allPlacements:
             startX, startY = node[0][0]['start']
             self.standColumnArray.append(screenedArrangements[node[0][0]['ID']].calculateStandColumn(startX, startY,
-                                                                  self.length, self.width, self.obstacleArraySelf))
+                                                                                                     self.length,
+                                                                                                     self.width,
+                                                                                                     self.obstacleArraySelf))
         return 0
 
 
@@ -265,4 +268,3 @@ def drawPlacement(data, width, length, borderN=1, borderM=1):
     plt.imshow(matrix)
     plt.axis('off')
     plt.show()
-
