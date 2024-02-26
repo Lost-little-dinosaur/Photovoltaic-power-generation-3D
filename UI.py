@@ -12,7 +12,7 @@ panel_info = {}
 algorithm_info = {}
 frame_width = 420
 frame_height = 320
-draw_gap = 10
+draw_gap = 25 # gap for drawing text
 root = None
 
 chn2eng = {
@@ -407,7 +407,6 @@ def get_algorithm_data(window,str_entries,option_entries,bool_entries):
         panel_info[text] = entry.get()
     window.destroy()
 
-
 def draw_roofscene():
     roofscene_canvas.delete("all")
 
@@ -426,6 +425,9 @@ def draw_roofscene():
     # 在 Canvas 上绘制缩放后的矩形
     # roofscene_canvas.delete("roof")  # 清除之前的矩形
     roofscene_canvas.create_rectangle(roof_left, roof_top, roof_right, roof_bottom, outline="blue", tags="roof")
+    # 显示屋顶尺寸
+    roofscene_canvas.create_text(int((roof_left + roof_right) / 2),roof_top,text=f"{roof_info['宽度（mm）']}",font=("Arial",12))
+    roofscene_canvas.create_text(roof_left,int((roof_top + roof_bottom) / 2),text=f"{roof_info['长度（mm）']}",font=("Arial",12))
 
     # 绘制屋内障碍物
     for obstacle in obstacle_info:
@@ -448,6 +450,7 @@ def draw_roofscene():
             y2 = roof_top + (centerY + length) * scale
             roofscene_canvas.create_rectangle(x1,y1,x2,y2,outline='red')
     
+
     print(get_input_json())
 
 def calculate_layout():
@@ -612,14 +615,38 @@ if __name__ == "__main__":
     arrangement_frame = tk.Frame(root)
     arrangement_frame.pack(side=tk.RIGHT, padx=20, pady=20)
 
+
     # “原始拓扑”文字标签放置在右侧区域的顶部
     arrangement_text = tk.Label(arrangement_frame, text="组件排布", font=("Arial", 12))
     arrangement_text.pack()
-
+    
     # 图片显示区域放置在“原始拓扑”文字标签下方
-    arrangement_frame = tk.Frame(arrangement_frame, width=frame_width, height=frame_height, bg='grey')
-    arrangement_frame.pack()
-    arrangement_frame.pack_propagate(0)  # 防止内部元素影响尺寸
+    arrangement_display_frame = tk.Frame(arrangement_frame, width=frame_width, height=frame_height, bg='grey')
+    arrangement_display_frame.pack_propagate(0)  # 防止内部元素影响尺寸
+    arrangement_display_frame.pack()
+
+
+    # “原始拓扑”文字标签放置在右侧区域的顶部
+    arrangement_btn_text = tk.Label(arrangement_frame, text="点击按钮查看对应排序的结果：", font=("Arial", 12))
+    arrangement_btn_text.pack(side=tk.LEFT, anchor=tk.SW,padx=(0,5),pady=(5,0))
+    
+    # 界面切换按钮
+    arrangement_1_btn = tk.Button(arrangement_frame, text="1", command=calculate_layout)
+    arrangement_1_btn.pack(side=tk.LEFT, anchor=tk.SW,padx=(0,5),pady=(5,0))
+    arrangement_1_btn.config(state="disabled")
+    arrangement_2_btn = tk.Button(arrangement_frame, text="2", command=calculate_layout)
+    arrangement_2_btn.pack(side=tk.LEFT, anchor=tk.SW,padx=(0,5),pady=(5,0))
+    arrangement_2_btn.config(state="disabled")
+    arrangement_3_btn = tk.Button(arrangement_frame, text="3", command=calculate_layout)
+    arrangement_3_btn.pack(side=tk.LEFT, anchor=tk.SW,padx=(0,5),pady=(5,0))
+    arrangement_3_btn.config(state="disabled")
+    arrangement_4_btn = tk.Button(arrangement_frame, text="4", command=calculate_layout)
+    arrangement_4_btn.pack(side=tk.LEFT, anchor=tk.SW,padx=(0,5),pady=(5,0))
+    arrangement_4_btn.config(state="disabled")
+    arrangement_5_btn = tk.Button(arrangement_frame, text="5", command=calculate_layout)
+    arrangement_5_btn.pack(side=tk.LEFT, anchor=tk.SW,padx=(0,5),pady=(5,0))
+    arrangement_5_btn.config(state="disabled")
+    # arrangement_5_btn.config(state="active")
 
 
 
@@ -631,13 +658,15 @@ if __name__ == "__main__":
     roofscene_text = tk.Label(roofscene_frame, text="屋面场景", font=("Arial", 12))
     roofscene_text.pack()
 
-    # 图片显示区域放置在“原始拓扑”文字标签下方
-    roofscene_frame = tk.Frame(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
-    roofscene_frame.pack()
-    roofscene_frame.pack_propagate(0)  # 防止内部元素影响尺寸
+    # # 图片显示区域放置在“原始拓扑”文字标签下方
+    # roofscene_canvas_frame = tk.Frame(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
+    # roofscene_canvas_frame.pack()
+    # roofscene_canvas_frame.pack_propagate(0)  # 防止内部元素影响尺寸
 
     roofscene_canvas = tk.Canvas(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
     roofscene_canvas.pack()
 
+    empty_text = tk.Label(roofscene_frame, text="", font=("Arial", 12))
+    empty_text.pack(side=tk.LEFT, anchor=tk.SW,padx=(0,5),pady=(5,0))
 
     root.mainloop()
