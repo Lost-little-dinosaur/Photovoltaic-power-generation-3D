@@ -83,17 +83,20 @@ class Arrangement:
     def calculateStandColumn(self, startX, startY, roof_Length, roof_Width, obstacles):
         def generate_columns(n_columns, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
             column_positions = []
-
-            ideal_spacing = (width - n_columns * max_spacing) // (n_columns - 1)  # 计算理想间距
-
-            for i in range(n_columns):
-                x = int(i * (ideal_spacing + max_spacing))
+            temp = int((width - round(500 / UNIT)) / (n_columns - 1))  # 计算理想间距
+            ideal_spacing = min(temp, max_spacing)
+            column_positions.append(int((width - ideal_spacing * (n_columns - 1)) / 2))
+            if column_positions[0] > int(700 / UNIT):
+                return []
+            for i in range(1, n_columns):
+                x = int(i * ideal_spacing + column_positions[0])
                 column_positions.append(x)
-
-            for i in range(len(column_positions) - 1):
-                actual_spacing = column_positions[i + 1] - column_positions[i]
-                if actual_spacing % (50 / UNIT) != 0:
-                    column_positions[i] += int((50 / UNIT) - actual_spacing % (50 / UNIT))
+            column_positions.append(int((width - ideal_spacing * (n_columns - 1)) / 2))
+            precision = int(50 / UNIT)
+            if(precision >= 1):
+                for i in range(len(column_positions)):
+                    if ((column_positions[i] % precision) != 0):
+                        column_positions[i] = int(column_positions[i] / precision) * precision
 
             # 调整最后一个立柱的位置，确保不超过矩形区域的右边界
             if column_positions[-1] > width:
@@ -105,6 +108,11 @@ class Arrangement:
                 column_positions[0] = min_edge_distance
             if column_positions[-1] + startX > roof_width - min_edge_distance:
                 column_positions[-1] = roof_width - min_edge_distance - startX
+                # 添加第一排立柱和最后一排立柱与边缘的间距限制
+            if column_positions[0] >= round(700 / UNIT):
+                column_positions[0] = round(700 / UNIT)
+            if column_positions[-1] <= round(width - 700 / UNIT):
+                column_positions[-1] = round(width - (700 / UNIT))
 
             # 检查相邻立柱的间距是否超过最大间距
             for i in range(len(column_positions) - 1):
@@ -112,7 +120,6 @@ class Arrangement:
                 if actual_spacing > max_spacing:
                     result = []
                     return result
-
             result = []
             for x in column_positions:
                 for y in array_iny:
@@ -193,8 +200,9 @@ class Arrangement:
         for node in self.relativePositionArray:
             if node[1][0] > width:
                 width = node[1][0]
-        column_max = int(width / max_spacing) + 1
-        for column_n in range(2, column_max + 1):
+        column_min = int(width / max_spacing)
+        column_max = 1000
+        for column_n in range(column_min, column_max):
             result = generate_columns(column_n, startX, roof_Width, width, length, max_spacing, result_y, obstacles)
             if len(result) == 0:
                 continue
