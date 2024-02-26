@@ -29,6 +29,7 @@ class Roof:
         self.sceneObstacles = []
         # self.maxRects = []
         self.allPlacements = []
+        #self.type = 0
 
     def calculateObstacleSelf(self):
         return_list = [[0] * (self.length + 1) for _ in range(self.width + 1)]
@@ -38,6 +39,7 @@ class Roof:
                     for y in range(obstacle.upLeftPosition[1], obstacle.upLeftPosition[1] + obstacle.length):
                         return_list[x][y] = 1
         return return_list
+
 
     def addObstaclesConcern(self, obstacles, screenedArrangements):
         time1 = time.time()
