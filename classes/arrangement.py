@@ -82,7 +82,7 @@ class Arrangement:
         self.deletedIndices = []
 
     def calculateStandColumn(self, startX, startY, roof_Width, obstacles):
-        def generate_columns(n_columns, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
+        def generate_columns(n_columns, startY, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
             column_positions = []
             temp = int((width - round(500 / UNIT)) / (n_columns - 1))  # 计算理想间距
             ideal_spacing = min(temp, max_spacing)
@@ -125,7 +125,7 @@ class Arrangement:
             for x in column_positions:
                 for y in array_iny:
                     if obstacles[x][y] != 1 and x < width and y < length:
-                        result.append([int(x), int(y)])
+                        result.append([startX + int(x), startY + int(y)])
             return result
 
         str_ar = self.component.specification + self.arrangeType
@@ -204,7 +204,7 @@ class Arrangement:
         column_min = int(width / max_spacing)
         column_max = 1000
         for column_n in range(column_min, column_max):
-            result = generate_columns(column_n, startX, roof_Width, width, length, max_spacing, result_y, obstacles)
+            result = generate_columns(column_n, startY, startX, roof_Width, width, length, max_spacing, result_y, obstacles)
             if len(result) == 0:
                 continue
             else:

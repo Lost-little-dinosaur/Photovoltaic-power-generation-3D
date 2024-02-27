@@ -221,12 +221,13 @@ class Roof:
     def calculate_column(self, screenedArrangements):
         nowMaxValue = -INF
         for node in self.allPlacements:
-            startX, startY = node[0][0]['start']
-            tempArray = screenedArrangements[node[0][0]['ID']].calculateStandColumn(startX, startY, self.width,
+            for x in node:
+                startX, startY = x[0]['start']
+                tempArray = screenedArrangements[x[0]['ID']].calculateStandColumn(startX, startY, self.width,
                                                                                     self.obstacleArraySelf)
-            if len(tempArray) > nowMaxValue:
-                nowMaxValue = len(tempArray)
-            node.append(tempArray)
+                if len(tempArray) > nowMaxValue:
+                    nowMaxValue = len(tempArray)
+                node.append(tempArray)
         i = 0
         while i < len(self.allPlacements):
             if self.allPlacements[i][1] < nowMaxValue:
