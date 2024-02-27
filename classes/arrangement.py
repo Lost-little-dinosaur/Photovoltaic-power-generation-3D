@@ -84,11 +84,12 @@ class Arrangement:
     def calculateStandColumn(self, startX, startY, roof_Width, obstacles):
         def generate_columns(n_columns, startY, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
             column_positions = []
-            temp = int((width - round(500 / UNIT)) / (n_columns - 1))  # 计算理想间距
-            ideal_spacing = min(temp, max_spacing)
-            column_positions.append(int((width - ideal_spacing * (n_columns - 1)) / 2))
-            if column_positions[0] > int(700 / UNIT):
+            ideal_spacing_min = int((width - round(1400 / UNIT)) / (n_columns - 1))  # 计算最小理想间距
+            if ideal_spacing_min > max_spacing:
                 return []
+            ideal_spacing_max = int((width - round(500 / UNIT)) / (n_columns - 1))  # 计算最大理想间距
+            ideal_spacing = min(max_spacing, ideal_spacing_max)
+            column_positions.append(int((width - ideal_spacing * (n_columns - 1)) / 2))
             for i in range(1, n_columns):
                 x = int(i * ideal_spacing + column_positions[0])
                 column_positions.append(x)
@@ -98,29 +99,17 @@ class Arrangement:
                 for i in range(len(column_positions)):
                     if ((column_positions[i] % precision) != 0):
                         column_positions[i] = int(column_positions[i] / precision) * precision
-
-            # 调整最后一个立柱的位置，确保不超过矩形区域的右边界
-            if column_positions[-1] > width:
-                column_positions[-1] = width
-
-            # 调整立柱距离边缘的距离
-            min_edge_distance = round(250 / UNIT)
-            if column_positions[0] + startX < min_edge_distance:
-                column_positions[0] = min_edge_distance
-            if column_positions[-1] + startX > roof_width - min_edge_distance:
-                column_positions[-1] = roof_width - min_edge_distance - startX
-                # 添加第一排立柱和最后一排立柱与边缘的间距限制
-            if column_positions[0] >= round(700 / UNIT):
-                column_positions[0] = round(700 / UNIT)
-            if column_positions[-1] <= round(width - 700 / UNIT):
-                column_positions[-1] = round(width - (700 / UNIT))
-
-            # 检查相邻立柱的间距是否超过最大间距
-            for i in range(len(column_positions) - 1):
-                actual_spacing = column_positions[i + 1] - column_positions[i]
-                if actual_spacing > max_spacing:
-                    result = []
-                    return result
+           # 调整立柱距离边缘的距离
+           # min_edge_distance = round(250 / UNIT)
+           # if column_positions[0] + startX < min_edge_distance:
+           #     column_positions[0] = min_edge_distance
+           # if column_positions[-1] + startX > roof_width - min_edge_distance:
+           #     column_positions[-1] = roof_width - min_edge_distance - startX
+           #     # 添加第一排立柱和最后一排立柱与边缘的间距限制
+           # if column_positions[0] >= round(700 / UNIT):
+           #     column_positions[0] = round(700 / UNIT)
+           # if column_positions[-1] <= round(width - 700 / UNIT):
+           #     column_positions[-1] = round(width - (700 / UNIT))
             result = []
             for x in column_positions:
                 for y in array_iny:
@@ -129,9 +118,8 @@ class Arrangement:
             return result
 
         str_ar = self.component.specification + self.arrangeType
-        temp = []
         if len(self.relativePositionArray) == 1:  # 规则且只包含竖排
-            temp = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)]
+            array_y = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)].copy()
             array_limit = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)]
             # h_min = arrangement_height[("182-78膨胀常规", 2, 1, 0)]
 
@@ -143,15 +131,15 @@ class Arrangement:
                     if num == first_element:
                         count += 1
                 if self.componentLayoutArray[0] < self.componentLayoutArray[-1]:  # 从上面扣除
-                    temp = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0)]
+                    array_y = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0)].copy()
                     array_limit = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0)]
                 else:
-                    temp = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count)]  # 从下面扣除
+                    array_y = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count)].copy()  # 从下面扣除
                     array_limit = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count)]
 
             elif len(self.componentLayoutArray) == 2 and (
                     self.componentLayoutArray[0] != self.componentLayoutArray[1]):  # 竖一横一
-                temp = column[(str_ar, 1, 1, 0, 0, 0)]
+                array_y = column[(str_ar, 1, 1, 0, 0, 0)].copy()
                 array_limit = limit_column[(str_ar, 1, 1, 0, 0, 0)]
             else:
                 # 有竖有横且不规则
@@ -168,9 +156,8 @@ class Arrangement:
                     count2 = 1
                 if self.componentLayoutArray[-1] < normal_vertical:
                     count3 = 1
-                temp = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
+                array_y = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)].copy()
                 array_limit = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
-        array_y = temp
         length = self.relativePositionArray[-1][1][1] + 1
         le = length - sum(array_y) - array_limit[0]
         if (le + array_limit[0]) / 2 < array_limit[0]:
