@@ -1,8 +1,4 @@
-import UI
-import classes.roof
-from classes.arrangement import screenArrangements
-from classes.component import assignComponentParameters
-import json
+from ui import UI
 
 # 输入和输出的单位是都是毫米
 if __name__ == '__main__':

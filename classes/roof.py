@@ -17,8 +17,6 @@ class Roof:
             self.roofArray = np.full((self.length, self.width), 0)
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
-            self.standColumnArray = []
-            self.showArray = np.full((self.length, self.width, 4), EmptyColor)
             self.obstacleArraySelf = []
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
@@ -29,7 +27,7 @@ class Roof:
         self.sceneObstacles = []
         # self.maxRects = []
         self.allPlacements = []
-        #self.type = 0
+        # self.type = 0
 
     def calculateObstacleSelf(self):
         return_list = [[0] * (self.length + 1) for _ in range(self.width + 1)]
@@ -40,12 +38,11 @@ class Roof:
                         return_list[x][y] = 1
         return return_list
 
-
     def addObstaclesConcern(self, obstacles, screenedArrangements):
         time1 = time.time()
         print("开始分析阴影并选出最佳方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         nowMaxValue = -INF
-        # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样)],
+        # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
         for placement in self.allPlacements:
             if placement[1] < nowMaxValue:
                 continue
@@ -97,29 +94,29 @@ class Roof:
             self.sceneObstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
         self.obstacleSumArray = np.cumsum(np.cumsum(self.obstacleArray, axis=0), axis=1)
 
-    def paintBoolArray(self, lib):
-        time1 = time.time()
-        # 额外加上roofBoardLength的屋顶边缘（不要删，留着备用！！！）
-        # tempArr = np.pad(self.showArray, ((roofBoardLength, roofBoardLength), (roofBoardLength, roofBoardLength),
-        #                                   (0, 0)), 'constant', constant_values=RoofMargin)
-        # rgb_array = np.array([[ColorDict[value] for value in row] for row in tempArr])
-        height, width, channels = self.showArray.shape
-        tempArr = np.zeros((height + 2 * roofBoardLength, width + 2 * roofBoardLength, channels))
-        # 设置边界值
-        for i in range(channels):
-            tempArr[:, :, i] = RoofMarginColor[i]
-        # 填充中间区域
-        tempArr[roofBoardLength:-roofBoardLength, roofBoardLength:-roofBoardLength, :] = self.showArray
-        if lib == "plt":
-            plt.imshow(tempArr)
-            plt.axis('off')
-            plt.show()
-        elif lib == "img":
-            img = Image.fromarray((tempArr * 255).astype(np.uint8))
-            img.show()
-        else:
-            raise Exception("lib参数错误: ", lib)
-        print("屋顶排布示意图绘制完成，耗时", time.time() - time1, "秒\n")
+    # def paintBoolArray(self, lib):
+    #     time1 = time.time()
+    #     # 额外加上roofBoardLength的屋顶边缘（不要删，留着备用！！！）
+    #     # tempArr = np.pad(self.showArray, ((roofBoardLength, roofBoardLength), (roofBoardLength, roofBoardLength),
+    #     #                                   (0, 0)), 'constant', constant_values=RoofMargin)
+    #     # rgb_array = np.array([[ColorDict[value] for value in row] for row in tempArr])
+    #     height, width, channels = self.showArray.shape
+    #     tempArr = np.zeros((height + 2 * roofBoardLength, width + 2 * roofBoardLength, channels))
+    #     # 设置边界值
+    #     for i in range(channels):
+    #         tempArr[:, :, i] = RoofMarginColor[i]
+    #     # 填充中间区域
+    #     tempArr[roofBoardLength:-roofBoardLength, roofBoardLength:-roofBoardLength, :] = self.showArray
+    #     if lib == "plt":
+    #         plt.imshow(tempArr)
+    #         plt.axis('off')
+    #         plt.show()
+    #     elif lib == "img":
+    #         img = Image.fromarray((tempArr * 255).astype(np.uint8))
+    #         img.show()
+    #     else:
+    #         raise Exception("lib参数错误: ", lib)
+    #     print("屋顶排布示意图绘制完成，耗时", time.time() - time1, "秒\n")
 
     def getValidOptions(self, screenedArrangements):
         time1 = time.time()
@@ -222,51 +219,71 @@ class Roof:
         return self.allPlacements
 
     def calculate_column(self, screenedArrangements):
+        nowMaxValue = -INF
         for node in self.allPlacements:
             startX, startY = node[0][0]['start']
-            self.standColumnArray.append(screenedArrangements[node[0][0]['ID']].calculateStandColumn(startX, startY,
-                                                                                                     self.length,
-                                                                                                     self.width,
-                                                                                                     self.obstacleArraySelf))
+            tempArray = screenedArrangements[node[0][0]['ID']].calculateStandColumn(startX, startY, self.width,
+                                                                                    self.obstacleArraySelf)
+            if len(tempArray) > nowMaxValue:
+                nowMaxValue = len(tempArray)
+            node.append(tempArray)
+        i = 0
+        while i < len(self.allPlacements):
+            if self.allPlacements[i][1] < nowMaxValue:
+                del self.allPlacements[i]
+            else:
+                i += 1
+        print(
+            f"立柱排布计算完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，共有{len(self.allPlacements)}个较优排布方案\n")
         return 0
 
+    def drawPlacement(self, screenedArrangements):  # todo: numpy优化
+        # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
+        allMatrix = []
+        # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
+        for placement in self.allPlacements:
+            matrix = np.ones((self.length, self.width, 3))
 
-def drawPlacement(data, width, length, borderN=1, borderM=1):
-    # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
+            # 首先填充上下边界
+            matrix[:roofBoardLength, :, :] = RoofMarginColor  # 上边界
+            matrix[-roofBoardLength:, :, :] = RoofMarginColor  # 下边界
+            # 然后填充左右边界
+            matrix[:, :roofBoardLength, :] = RoofMarginColor  # 左边界
+            matrix[:, -roofBoardLength:, :] = RoofMarginColor  # 右边界
+            for j in range(len(placement[0])):  # j表示第几个arrangement
+                arrange = placement[0][j]
+                start_x, start_y = arrange['start']
+                screenedArrangements[arrange['ID']].calculateComponentPositionArray(start_x, start_y)
+                for i in range(len(screenedArrangements[arrange['ID']].componentPositionArray)):
+                    if i in placement[3][j]:  # 如果这个光伏板被删了，就不画了
+                        continue
+                    top_left, bottom_right = screenedArrangements[arrange['ID']].componentPositionArray[i]
+                    # 绘制边界
+                    for x in range(max(roofBoardLength, top_left[0] - PhotovoltaicPanelBoardLength),
+                                   min(self.width - roofBoardLength,
+                                       bottom_right[0] + PhotovoltaicPanelBoardLength + 1)):
+                        for y in range(max(roofBoardLength, top_left[1] - PhotovoltaicPanelBoardLength),
+                                       min(self.length - roofBoardLength,
+                                           bottom_right[1] + PhotovoltaicPanelBoardLength + 1)):
+                            if x < top_left[0] or x > bottom_right[0] or y < top_left[1] or y > bottom_right[1]:
+                                matrix[y, x] = PhotovoltaicPanelBorderColor
+                    # 填充矩形内部
+                    for x in range(max(roofBoardLength, top_left[0]),
+                                   min(self.width - roofBoardLength, bottom_right[0] + 1)):
+                        for y in range(max(roofBoardLength, top_left[1]),
+                                       min(self.length - roofBoardLength, bottom_right[1] + 1)):
+                            matrix[y, x] = PhotovoltaicPanelColor
 
-    matrix = np.ones((length, width, 3))
+            # 接下去画立柱
+            for column in placement[4]:  # column形式：[centerX,centerY]
+                matrix[max(roofBoardLength, column[1] - standColumnPadding):min(self.length - roofBoardLength,
+                                                                                column[1] + standColumnPadding + 1),
+                max(roofBoardLength, column[0] - standColumnPadding):min(self.width - roofBoardLength, column[
+                    0] + standColumnPadding + 1)] = StandColumnColor
 
-    # 添加大矩阵的红色边界
-    # 首先填充上下边界
-    matrix[:borderM, :, :] = [1, 0, 0]  # 上边界
-    matrix[-borderM:, :, :] = [1, 0, 0]  # 下边界
-    # 然后填充左右边界
-    matrix[:, :borderM, :] = [1, 0, 0]  # 左边界
-    matrix[:, -borderM:, :] = [1, 0, 0]  # 右边界
-
-    for group in data:
-        start_x, start_y = group['start']
-        for rect in group['relativePositionArray']:  # todo: 到时候再改
-            top_left = rect[0]
-            bottom_right = rect[1]
-
-            # 绘制黄色边界
-            for x in range(max(borderM, start_x + top_left[0] - borderN),
-                           min(width - borderM, start_x + bottom_right[0] + borderN + 1)):
-                for y in range(max(borderM, start_y + top_left[1] - borderN),
-                               min(length - borderM, start_y + bottom_right[1] + borderN + 1)):
-                    if (x < start_x + top_left[0] or x > start_x + bottom_right[0] or
-                            y < start_y + top_left[1] or y > start_y + bottom_right[1]):
-                        matrix[y, x] = [1, 1, 0]  # 黄色
-
-            # 填充矩形内部为黑色
-            for x in range(max(borderM, start_x + top_left[0]),
-                           min(width - borderM, start_x + bottom_right[0] + 1)):
-                for y in range(max(borderM, start_y + top_left[1]),
-                               min(length - borderM, start_y + bottom_right[1] + 1)):
-                    matrix[y, x] = [0, 0, 0]  # 黑色
-
-    # 绘制图像
-    plt.imshow(matrix)
-    plt.axis('off')
-    plt.show()
+            # 绘制图像
+            plt.imshow(matrix)
+            plt.axis('off')
+            plt.show()
+            allMatrix.append(matrix)
+        return allMatrix
