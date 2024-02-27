@@ -17,7 +17,7 @@ class Arrangement:
                 break
         else:
             raise Exception("组件'{}'不存在".format(component))
-        self.componentLayoutArray = componentLayoutArray # 是未扣除光伏板的arrangement
+        self.componentLayoutArray = componentLayoutArray  # 是未扣除光伏板的arrangement
         # relativePositionArray是arrangement中尽可能多的组成矩形的光伏板的startXY
         tempStart, tempEnd, self.relativePositionArray, nowBottom = 0, 0, [], 0
         # 计算组件的相对位置，以[[[x1, y1], [x2, y2]], [[x1, y1], [x2, y2]]]的形式存储（只支持只有一排横排组件的情况）
@@ -80,9 +80,8 @@ class Arrangement:
         self.verticalNum = 0
         self.componentHeightArray = np.array(self.calculateComponentHeightArray())  # 每个光伏板具体高度（大小是这个arrangement的最小包络矩形）
         self.deletedIndices = []
-        self.cleanedComponentPositionArray = []
 
-    def calculateStandColumn(self, startX, startY, roof_Length, roof_Width, obstacles):
+    def calculateStandColumn(self, startX, startY, roof_Width, obstacles):
         def generate_columns(n_columns, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
             column_positions = []
             temp = int((width - round(500 / UNIT)) / (n_columns - 1))  # 计算理想间距
@@ -95,7 +94,7 @@ class Arrangement:
                 column_positions.append(x)
             column_positions.append(int((width - ideal_spacing * (n_columns - 1)) / 2))
             precision = int(50 / UNIT)
-            if(precision >= 1):
+            if (precision >= 1):
                 for i in range(len(column_positions)):
                     if ((column_positions[i] % precision) != 0):
                         column_positions[i] = int(column_positions[i] / precision) * precision
@@ -213,8 +212,8 @@ class Arrangement:
                 for node in result:
                     flag = 0
                     for component in self.componentPositionArray:
-                        if(component[0][0] <= node[0] and component[1][0] >= node[0]
-                        and component[0][1] <= node[1] and component[1][1] >= node[1]):
+                        if (component[0][0] <= node[0] and component[1][0] >= node[0]
+                                and component[0][1] <= node[1] and component[1][1] >= node[1]):
                             flag = 1
                     if flag == 0:
                         result.remove(node)
@@ -258,7 +257,7 @@ class Arrangement:
             startY = startY + self.component.length + PhotovoltaicPanelVerticalDiffMargin
             for i in range(self.crossNum):
                 self.componentPositionArray.append([[startX - self.component.length + 1, startY], [startX,
-                                                    startY + self.component.width - 1]])
+                                                                                                   startY + self.component.width - 1]])
                 startX -= self.component.length + PhotovoltaicPanelCrossMargin
         else:  # 其他横竖情况
             self.crossCount = 1

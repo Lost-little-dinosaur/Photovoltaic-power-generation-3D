@@ -1,8 +1,9 @@
 # 规定一些常量
 UNIT = 500  # 以毫米为单位
 INF = 1000000000000  # 无穷大
-roofBoardLength = int(5 * UNIT / 10)  # 打印屋顶示意图时，额外屋顶边缘的宽度（单位是单元格）
-PhotovoltaicPanelBoardLength = int(3 * UNIT / 10)  # 打印屋顶示意图时，额外光伏板边缘的宽度（单位是单元格）
+roofBoardLength = int(2 * UNIT / 1000)  # 打印屋顶示意图时，额外屋顶边缘的宽度（单位是单元格）
+PhotovoltaicPanelBoardLength = int(2 * UNIT / 1000)  # 打印屋顶示意图时，额外光伏板边缘的宽度（单位是单元格）
+standColumnPadding = int(0 * UNIT / 1000)  # 立柱的间隔（单位是单元格）
 
 # 地图中的元素（别删，之后可能会用到！！！）
 # Empty = 0  # 空地
@@ -18,14 +19,16 @@ PhotovoltaicPanelBoardLength = int(3 * UNIT / 10)  # 打印屋顶示意图时，
 #              Shadow: (0.5019607843137255, 0.5019607843137255, 0.5019607843137255, 1.0),
 #              PhotovoltaicPanel: (1.0, 1.0, 0.0, 1.0), Margin: (1.0, 0.0, 0.0, 1.0), RoofMargin: (0.0, 0.0, 0.0, 1.0),
 #              PhotovoltaicPanelMargin: (0.43, 0.43, 0.43, 1.0), PhotovoltaicPanelBorder: (0.0, 0.0, 0.0, 1.0)}
-EmptyColor = (1.0, 1.0, 1.0, 1.0)  # 空地
-ObstacleColor = (0.0, 0.0, 0.0, 1.0)  # 障碍物
-ShadowColor = (0.5019607843137255, 0.5019607843137255, 0.5019607843137255, 1.0)  # 阴影
-PhotovoltaicPanelColor = (1.0, 1.0, 0.0, 1.0)  # 光伏板
-MarginColor = (1.0, 0.0, 0.0, 1.0)  # 边缘
-RoofMarginColor = (0.0, 0.0, 0.0, 1.0)  # 屋顶边缘
-PhotovoltaicPanelMarginColor = (0.43, 0.43, 0.43, 1.0)  # 光伏板边缘
-PhotovoltaicPanelBorderColor = (0.0, 0.0, 0.0, 1.0)  # 光伏板边框
+EmptyColor = (1.0, 1.0, 1.0)  # 空地
+ObstacleColor = (0.0, 0.0, 0.0)  # 障碍物
+ShadowColor = (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)  # 阴影
+PhotovoltaicPanelColor = (1.0, 1.0, 0.0)  # 光伏板
+MarginColor = (1.0, 0.0, 0.0)  # 边缘
+RoofMarginColor = (0.0, 0.0, 0.0)  # 屋顶边缘
+PhotovoltaicPanelMarginColor = (0.43, 0.43, 0.43)  # 光伏板边缘
+PhotovoltaicPanelBorderColor = (0.0, 0.0, 0.0)  # 光伏板边框
+# StandColumnColor = (253, 88, 104)  # 立柱
+StandColumnColor = (253 / (255 + 88 + 104), 88 / (255 + 88 + 104), 104 / (255 + 88 + 104))  # 立柱
 
 # 光伏板横竖排之间的间距
 PhotovoltaicPanelCrossMargin = round(6 / UNIT)  # 光伏板的横向缝隙
@@ -36,6 +39,7 @@ PhotovoltaicPanelVerticalDiffMargin = round(
 distanceBeamExceed = round(43 / UNIT)  # 横梁要超出组件的距离
 distanceBeamDiagonalBeam = round(50 / UNIT)  # 横梁要超出斜梁的距离
 columNlimit = 100000
+
 # 立柱排布 a[0][1]=竖1横0
 # 182-78组件
 column_78_normal = [
@@ -142,11 +146,13 @@ column = {  # 0表示完整 1表示扣除 1上竖排 2横排 3下竖排
     ("182-78膨胀常规", 2, 0, 0, 0, 0): [int(round(1900 / UNIT)), int(round(1750 / UNIT))],
     ("182-78膨胀常规", 3, 0, 0, 0, 0): [int(round(1900 / UNIT)), int(round(3200 / UNIT))],
     ("182-78膨胀常规", 4, 0, 0, 0, 0): [int(round(1700 / UNIT)), int(round(2600 / UNIT)), int(round(3200 / UNIT))],
-    ("182-78膨胀常规", 5, 0, 0, 0, 0): [int(round(1700 / UNIT)), int(round(2600 / UNIT)), int(round(2600 / UNIT)), int(round(3750 / UNIT))],
+    ("182-78膨胀常规", 5, 0, 0, 0, 0): [int(round(1700 / UNIT)), int(round(2600 / UNIT)), int(round(2600 / UNIT)),
+                                        int(round(3750 / UNIT))],
     ("182-78膨胀常规", 1, 1, 0, 0, 0): [int(round(2600 / UNIT))],
     ("182-78膨胀常规", 2, 1, 0, 0, 0): [int(round(1350 / UNIT)), int(round(2950 / UNIT))],
     ("182-78膨胀常规", 3, 1, 0, 0, 0): [int(round(1700 / UNIT)), int(round(2600 / UNIT)), int(round(2450 / UNIT))],
-    ("182-78膨胀常规", 4, 1, 0, 0, 0): [int(round(1700 / UNIT)), int(round(2600 / UNIT)), int(round(2600 / UNIT)), int(round(2500 / UNIT))],
+    ("182-78膨胀常规", 4, 1, 0, 0, 0): [int(round(1700 / UNIT)), int(round(2600 / UNIT)), int(round(2600 / UNIT)),
+                                        int(round(2500 / UNIT))],
 
 }  # 182-78常规
 limit_column = {
