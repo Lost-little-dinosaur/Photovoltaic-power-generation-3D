@@ -19,6 +19,7 @@ frame_width = 420
 frame_height = 320
 draw_gap = 25  # gap for drawing text
 layout_imgs = []
+display_img = None
 
 chn2eng = {
     "省份": "province",
@@ -481,14 +482,15 @@ def cal_and_display_layout():
         arrangement_btns[i].config(state="active")
     
 def display_layout(index=0):
+    global display_img
     try:
         image_matrix = layout_imgs[index]
         image = Image.fromarray(image_matrix)
         scaled_image = image.resize((frame_width,frame_height))
         image.save(f"image_{index}.png")
         scaled_image.save(f"scaled_image_{index}.png")
-        photo = ImageTk.PhotoImage(scaled_image)
-        arrangement_canvas.create_image(0, 0, anchor=tk.NW, image=photo)
+        display_img = ImageTk.PhotoImage(scaled_image)
+        arrangement_canvas.create_image(0, 0, anchor=tk.NW, image=display_img)
     except Exception as e:
         print("Exception", e)
 
