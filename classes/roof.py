@@ -222,13 +222,15 @@ class Roof:
         nowMaxValue = -INF
         for placement in self.allPlacements:
             allArrangement = placement[0]
+            allTempArray = []
             for arrange in allArrangement:
                 startX, startY = arrange['start']
                 tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.width,
                                                                                     self.obstacleArraySelf)
                 if len(tempArray) > nowMaxValue:
                     nowMaxValue = len(tempArray)
-                placement.append(tempArray)
+                allTempArray.append(tempArray)
+            placement.append(allTempArray)
         i = 0
         while i < len(self.allPlacements):
             if self.allPlacements[i][1] < nowMaxValue:
@@ -238,7 +240,6 @@ class Roof:
         print(
             f"立柱排布计算完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，共有{len(self.allPlacements)}个较优排布方案\n")
         return 0
-
 
     def drawPlacement(self, screenedArrangements):  # todo: numpy优化
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
@@ -277,19 +278,19 @@ class Roof:
                                        min(self.length - roofBoardLength, bottom_right[1] + 1)):
                             matrix[y, x] = PhotovoltaicPanelColor
 
-            # 接下去画立柱
-            for column in placement[4]:  # column形式：[centerX,centerY]
-                matrix[max(roofBoardLength, column[1] - standColumnPadding):min(self.length - roofBoardLength,
-                                                                                column[1] + standColumnPadding + 1),
-                max(roofBoardLength, column[0] - standColumnPadding):min(self.width - roofBoardLength, column[
-                    0] + standColumnPadding + 1)] = StandColumnColor
+                # 接下去画立柱
+                for column in placement[4][j]:  # column形式：[centerX,centerY]
+                    matrix[max(roofBoardLength, column[1] - standColumnPadding):min(self.length - roofBoardLength,
+                                                                                    column[1] + standColumnPadding + 1),
+                    max(roofBoardLength, column[0] - standColumnPadding):min(self.width - roofBoardLength, column[
+                        0] + standColumnPadding + 1)] = StandColumnColor
 
             # 绘制图像
             plt.imshow(matrix)
             plt.axis('off')
             plt.tight_layout()
             # plt.show()
-            
+
             # plt.imshow(matrix,extent=[0,100,100,0])
             # plt.axis('tight')
 
