@@ -212,9 +212,14 @@ class Arrangement:
                 for node in result:
                     flag = 0
                     for component in self.componentPositionArray:
-                        if (component[0][0] <= node[0] and component[1][0] >= node[0]
-                                and component[0][1] <= node[1] and component[1][1] >= node[1]):
+                        if (component[0][0] <= node[0] <= component[1][0]
+                                and component[0][1] <= node[1] <= component[1][1]):
                             flag = 1
+                    for i in self.deletedIndices:
+                        component = self.componentPositionArray[i]
+                        if (component[0][0] <= node[0] <= component[1][0]
+                                and component[0][1] <= node[1] <= component[1][1]):
+                            flag = 0
                     if flag == 0:
                         result.remove(node)
                 return result
