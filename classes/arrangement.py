@@ -201,7 +201,8 @@ class Arrangement:
         for node in self.relativePositionArray:
             if node[1][0] > width:
                 width = node[1][0]
-        column_min = int(width / max_spacing)
+        column_min = int(width / max_spacing) + 1
+        column_min = max(2, column_min)
         column_max = 1000
         for column_n in range(column_min, column_max):
             result = generate_columns(column_n, startY, startX, roof_Width, width, length, max_spacing, result_y, obstacles)

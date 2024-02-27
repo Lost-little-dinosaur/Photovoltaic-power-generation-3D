@@ -220,14 +220,15 @@ class Roof:
 
     def calculate_column(self, screenedArrangements):
         nowMaxValue = -INF
-        for node in self.allPlacements:
-            for x in node:
-                startX, startY = x[0]['start']
-                tempArray = screenedArrangements[x[0]['ID']].calculateStandColumn(startX, startY, self.width,
+        for placement in self.allPlacements:
+            allArrangement = placement[0]
+            for arrange in allArrangement:
+                startX, startY = arrange['start']
+                tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.width,
                                                                                     self.obstacleArraySelf)
                 if len(tempArray) > nowMaxValue:
                     nowMaxValue = len(tempArray)
-                node.append(tempArray)
+                placement.append(tempArray)
         i = 0
         while i < len(self.allPlacements):
             if self.allPlacements[i][1] < nowMaxValue:
@@ -237,6 +238,7 @@ class Roof:
         print(
             f"立柱排布计算完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，共有{len(self.allPlacements)}个较优排布方案\n")
         return 0
+
 
     def drawPlacement(self, screenedArrangements):  # todo: numpy优化
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
