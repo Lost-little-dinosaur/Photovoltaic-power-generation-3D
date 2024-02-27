@@ -7,6 +7,7 @@ from classes.component import assignComponentParameters
 import json
 import tkinter as tk
 from PIL import Image, ImageTk
+from functools import partial
 
 location_info = {}
 roof_info = {}
@@ -37,10 +38,13 @@ chn2eng = {
     "高度（mm）": "height",
     "偏移角度": "roofDirection",
     "倾斜角度": "roofAngle",
+    # "可探出距离": "extensibleDistance",
     "可探出距离（东）": "extensibleDistanceEast",
     "可探出距离（南）": "extensibleDistanceSouth",
     "可探出距离（西）": "extensibleDistanceWest",
     "可探出距离（北）": "extensibleDistanceNorth",
+    # "是否有女儿墙": "haveParapetWall",
+    # "女儿墙":"parapetWall",
     "女儿墙厚度": "parapetWallthick",
     "女儿墙高度（mm）（东）": "parapetWalleastHeight",
     "女儿墙高度（mm）（南）": "parapetWallsouthHeight",
@@ -67,7 +71,7 @@ chn2eng = {
     "贪心（单阵列）": "greedy",
     "DFS（多阵列）": "dfs",
 }
-
+eng2chn = {v: k for k, v in chn2eng.items()}
 
 def open_location_window():
     location_window = tk.Toplevel(root)
@@ -432,26 +436,27 @@ def draw_roofscene():
 
     # 绘制屋内障碍物
     for obstacle in obstacle_info:
-        centerX = float(obstacle['距离西侧屋顶距离'])
-        centerY = float(obstacle['距离北侧屋顶距离'])
-        if obstacle['是否圆形']:
-            length = float(obstacle['直径']) / 2
-            x1 = roof_left + (centerX - length) * scale
-            y1 = roof_top + (centerY - length) * scale
-            x2 = roof_left + (centerX + length) * scale
-            y2 = roof_top + (centerY + length) * scale
-            roofscene_canvas.create_oval(x1, y1, x2, y2, outline='red')
-        else:
-            width = float(obstacle['宽度（mm）'])
-            length = float(obstacle['长度（mm）'])
-            x1 = roof_left + centerX * scale
-            y1 = roof_top + centerY * scale
-            x2 = roof_left + (centerX + width) * scale
-            y2 = roof_top + (centerY + length) * scale
-            roofscene_canvas.create_rectangle(x1, y1, x2, y2, outline='red')
-
+        try:
+            centerX = float(obstacle['距离西侧屋顶距离'])
+            centerY = float(obstacle['距离北侧屋顶距离'])
+            if obstacle['是否圆形']:
+                length = float(obstacle['直径']) / 2
+                x1 = roof_left + (centerX - length) * scale
+                y1 = roof_top + (centerY - length) * scale
+                x2 = roof_left + (centerX + length) * scale
+                y2 = roof_top + (centerY + length) * scale
+                roofscene_canvas.create_oval(x1, y1, x2, y2, outline='red')
+            else:
+                width = float(obstacle['宽度（mm）'])
+                length = float(obstacle['长度（mm）'])
+                x1 = roof_left + centerX * scale
+                y1 = roof_top + centerY * scale
+                x2 = roof_left + (centerX + width) * scale
+                y2 = roof_top + (centerY + length) * scale
+                roofscene_canvas.create_rectangle(x1, y1, x2, y2, outline='red')
+        except:
+            continue
     print(get_input_json())
-
 
 def calculate_layout():
     jsonData = get_input_json()
@@ -466,8 +471,8 @@ def calculate_layout():
     roof.calculate_column(screenedArrangements)
     return roof.drawPlacement(screenedArrangements)
 
-
 def cal_and_display_layout():
+    global layout_imgs
     for i in range(5):
         arrangement_btns[i].config(state="disabled")
     layout_imgs = calculate_layout()[:5]
@@ -479,7 +484,10 @@ def display_layout(index=0):
     try:
         image_matrix = layout_imgs[index]
         image = Image.fromarray(image_matrix)
-        photo = ImageTk.PhotoImage(image)
+        scaled_image = image.resize((frame_width,frame_height))
+        image.save(f"image_{index}.png")
+        scaled_image.save(f"scaled_image_{index}.png")
+        photo = ImageTk.PhotoImage(scaled_image)
         arrangement_canvas.create_image(0, 0, anchor=tk.NW, image=photo)
     except Exception as e:
         print("Exception", e)
@@ -501,73 +509,144 @@ def clear_info():
     roofscene_canvas.delete("all")
 
 
-def get_input_json():
-    # input_json = {}
-    # # guest
-    # input_json["guest"] = {}
-    # input_json["guest"]["name"] = ""
-    # input_json["guest"]["phone"] = ""
-    # # scene
-    # # location
-    # input_json["scene"] = {}
-    # input_json["scene"]["location"] = {}
-    # for key, value in location_info.items():
-    #     input_json["scene"]["location"][chn2eng[key]] = value
-    # # roof
-    # input_json["scene"]["roof"] = {}
-    # input_json["scene"]["roof"]["parapetWall"] = {}
-    # extensibleDistance = [0, 0, 0, 0]
-    # for key, value in roof_info.items():
-    #     new_key = chn2eng[key]
-    #     if 'parapetWall' in new_key:
-    #         input_json["scene"]["roof"]["parapetWall"][new_key[len("parapetWall"):]] = value
-    #     elif 'extensibleDistance' in new_key:
-    #         if 'East' in new_key:
-    #             extensibleDistance[0] = value
-    #         if 'West' in new_key:
-    #             extensibleDistance[1] = value
-    #         if 'South' in new_key:
-    #             extensibleDistance[2] = value
-    #         if 'North' in new_key:
-    #             extensibleDistance[3] = value
-    #     else:
-    #         input_json["scene"]["roof"][new_key] = value
-    # input_json["scene"]["roof"]["extensibleDistance"] = extensibleDistance
-    # # obstacle in roof
-    # input_json["scene"]["roof"]["obstacles"] = []
-    # for obstacle in obstacle_info:
-    #     new_item = {}
-    #     position = [0, 0]
-    #     for key, value in obstacle.items():
-    #         new_key = chn2eng[key]
-    #         if "relativePositionX" == new_key:
-    #             position[0] = value
-    #         elif "relativePositionY" == new_key:
-    #             position[1] = value
-    #         else:
-    #             new_item[new_key] = value
-    #     new_item["relativePosition"] = position
-    #     input_json["scene"]["roof"]["obstacles"].append(new_item)
-    # # arrangeType
-    # input_json["arrangeType"] = scheme_var.get()
-    # # component
-    # input_json["component"] = {}
-    # input_json["component"]["specification"] = ""
-    # for key, value in panel_info.items():
-    #     input_json["component"][chn2eng[key]] = value
-    #
-    # # algorithm
-    # input_json["algorithm"] = {}
-    # for key, value in panel_info.items():
-    #     input_json["algorithm"][chn2eng[key]] = value
+def get_demo_input(index=0):
     with open('input.json', 'r', encoding='utf-8') as f:
         input_json = json.load(f)
+    
+    if "scene" in input_json:
+        if "location" in input_json["scene"]:
+            for key, value in input_json["scene"]["location"].items():
+                location_info[eng2chn[key]] = value
 
+        if "roof" in input_json["scene"]:
+            for key, value in input_json["scene"]["roof"].items():
+                try:
+                    roof_info[eng2chn[key]] = value
+                except:
+                    roof_info[key] = value
+            if 'extensibleDistance' in roof_info:
+                roof_info["可探出距离（东）"] = roof_info["extensibleDistance"][0]
+                roof_info["可探出距离（西）"] = roof_info["extensibleDistance"][1]
+                roof_info["可探出距离（南）"] = roof_info["extensibleDistance"][2]
+                roof_info["可探出距离（北）"] = roof_info["extensibleDistance"][3]
+            if 'parapetWall' in roof_info:
+                for key, value in roof_info['parapetWall'].items():
+                    roof_info['parapetWall'+key] = value
+
+            if "obstacles" in input_json["scene"]["roof"]:
+                for obstacle in input_json["scene"]["roof"]["obstacles"]:
+                    new_item = {}
+                    for key,value in obstacle.items():
+                        try:
+                            new_item[eng2chn[key]] = value
+                        except:
+                            new_item[key] = value
+                    if obstacle['isRound']:
+                        new_item[eng2chn['relativePositionX']] = new_item['centerPosition'][0]
+                        new_item[eng2chn['relativePositionY']] = new_item['centerPosition'][1]
+                    else:
+                        new_item[eng2chn['relativePositionX']] = new_item['upLeftPosition'][0]
+                        new_item[eng2chn['relativePositionY']] = new_item['upLeftPosition'][1]
+                    obstacle_info.append(new_item)
+
+    # if "obstacles" in input_json:
+        # for key, value in input_json["obstacles"].items():
+        #     outside_obstacle_info[eng2chn[key]] = value
+    
+    if "component" in input_json:
+        for key, value in input_json["component"].items():
+            panel_info[eng2chn[key]] = value
+
+    if "algorithm" in input_json:
+        for key, value in input_json["algorithm"].items():
+            algorithm_info[eng2chn[key]] = value
+
+    draw_roofscene()
     return input_json
 
 
 
+def get_input_json():
+    input_json = {}
+    # guest
+    input_json["guest"] = {}
+    input_json["guest"]["name"] = ""
+    input_json["guest"]["phone"] = ""
+    # scene
+    # location
+    input_json["scene"] = {}
+    input_json["scene"]["location"] = {}
+    for key, value in location_info.items():
+        input_json["scene"]["location"][chn2eng[key]] = value
+    # roof
+    input_json["scene"]["roof"] = {}
+    input_json["scene"]["roof"]["parapetWall"] = {}
+    extensibleDistance = [0, 0, 0, 0]
+    for key, value in roof_info.items():
+        try:
+            new_key = chn2eng[key]
+        except:
+            continue
+        if 'parapetWall' in new_key:
+            input_json["scene"]["roof"]["parapetWall"][new_key[len("parapetWall"):]] = value
+        elif 'extensibleDistance' in new_key:
+            if 'East' in new_key:
+                extensibleDistance[0] = value
+            if 'West' in new_key:
+                extensibleDistance[1] = value
+            if 'South' in new_key:
+                extensibleDistance[2] = value
+            if 'North' in new_key:
+                extensibleDistance[3] = value
+        else:
+            input_json["scene"]["roof"][new_key] = value
+    input_json["scene"]["roof"]["extensibleDistance"] = extensibleDistance
+    # obstacle in roof
+    input_json["scene"]["roof"]["obstacles"] = []
+    for obstacle in obstacle_info:
+        new_item = {}
+        position = [0, 0]
+        for key, value in obstacle.items():
+            try:
+                new_key = chn2eng[key]
+            except:
+                continue
+            if "relativePositionX" == new_key:
+                position[0] = value
+            elif "relativePositionY" == new_key:
+                position[1] = value
+            else:
+                new_item[new_key] = value
+        if new_item["isRound"]:
+            new_item["centerPosition"] = position
+        else:
+            new_item["upLeftPosition"] = position
+
+        input_json["scene"]["roof"]["obstacles"].append(new_item)
+    # arrangeType
+    input_json["arrangeType"] = scheme_var.get()
+    # component
+    input_json["component"] = {}
+    input_json["component"]["specification"] = ""
+    for key, value in panel_info.items():
+        input_json["component"][chn2eng[key]] = value
+    
+    # algorithm
+    input_json["algorithm"] = {}
+    for key, value in panel_info.items():
+        input_json["algorithm"][chn2eng[key]] = value
+
+    return input_json
+
+
 root = tk.Tk()
+
+def on_closing():
+    root.quit()
+    root.destroy()
+    
+# 绑定窗口关闭事件
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.title("光伏板排布计算")
 # 创建左侧的按钮
 left_frame = tk.Frame(root)
@@ -628,7 +707,7 @@ arrangement_btn_text.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
 # 界面切换按钮
 arrangement_btns = []
 for i in range(5):
-    arrangement_btn = tk.Button(arrangement_frame, text=f"{i+1}", command=lambda: display_layout(i))
+    arrangement_btn = tk.Button(arrangement_frame, text=f"{i+1}", command=partial(display_layout,i))
     arrangement_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
     arrangement_btn.config(state="disabled")
     arrangement_btns.append(arrangement_btn)
@@ -648,8 +727,20 @@ roofscene_text.pack()
 roofscene_canvas = tk.Canvas(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
 roofscene_canvas.pack()
 
-empty_text = tk.Label(roofscene_frame, text="", font=("Arial", 12))
-empty_text.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
+# “原始拓扑”文字标签放置在右侧区域的顶部
+roofscene_btn_text = tk.Label(roofscene_frame, text="选择输入示例：", font=("Arial", 12))
+roofscene_btn_text.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
+
+# 界面切换按钮
+roofscene_btns = []
+for i in range(5):
+    roofscene_btn = tk.Button(roofscene_frame, text=f"{i+1}", command=partial(get_demo_input,i))
+    roofscene_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
+    roofscene_btn.config(state="active")
+    roofscene_btns.append(roofscene_btn)
+
+# empty_text = tk.Label(roofscene_frame, text="", font=("Arial", 12))
+# empty_text.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
 def main():
     root.mainloop()
 

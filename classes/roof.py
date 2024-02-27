@@ -287,6 +287,21 @@ class Roof:
             # 绘制图像
             plt.imshow(matrix)
             plt.axis('off')
-            plt.show()
-            allMatrix.append(matrix)
+            plt.tight_layout()
+            # plt.show()
+            
+            # plt.imshow(matrix,extent=[0,100,100,0])
+            # plt.axis('tight')
+
+            # 获取当前的Figure对象
+            fig = plt.gcf()
+
+            # 获取绘图数据
+            fig.canvas.draw()
+            # 将绘图数据保存为PIL Image对象
+            image = Image.frombytes('RGB', fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
+            # 将PIL Image对象转换为长x宽x3的矩阵变量
+            image_array = np.array(image)
+            # allMatrix.append(matrix)
+            allMatrix.append(image_array)
         return allMatrix
