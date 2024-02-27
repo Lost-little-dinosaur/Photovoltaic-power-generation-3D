@@ -1,8 +1,12 @@
+import sys,os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import classes.roof
 from classes.arrangement import screenArrangements
 from classes.component import assignComponentParameters
 import json
 import tkinter as tk
+from PIL import Image, ImageTk
 
 location_info = {}
 roof_info = {}
@@ -13,6 +17,7 @@ algorithm_info = {}
 frame_width = 420
 frame_height = 320
 draw_gap = 25  # gap for drawing text
+layout_imgs = []
 
 chn2eng = {
     "省份": "province",
@@ -462,6 +467,23 @@ def calculate_layout():
     return roof.drawPlacement(screenedArrangements)
 
 
+def cal_and_display_layout():
+    for i in range(5):
+        arrangement_btns[i].config(state="disabled")
+    layout_imgs = calculate_layout()[:5]
+    display_layout()
+    for i in range(len(layout_imgs)):
+        arrangement_btns[i].config(state="active")
+    
+def display_layout(index=0):
+    try:
+        image_matrix = layout_imgs[index]
+        image = Image.fromarray(image_matrix)
+        photo = ImageTk.PhotoImage(image)
+        arrangement_canvas.create_image(0, 0, anchor=tk.NW, image=photo)
+    except Exception as e:
+        print("Exception", e)
+
 def clear_info():
     global location_info
     global roof_info
@@ -544,6 +566,7 @@ def get_input_json():
     return input_json
 
 
+
 root = tk.Tk()
 root.title("光伏板排布计算")
 # 创建左侧的按钮
@@ -579,7 +602,7 @@ draw_btn = tk.Button(left_frame, text="展示屋面场景", command=draw_roofsce
 draw_btn.pack(fill=tk.X, pady=(0, 20))
 algorithm_btn = tk.Button(left_frame, text="选择算法类型", command=open_algorithm_window)
 algorithm_btn.pack(fill=tk.X, pady=0)
-calculate_btn = tk.Button(left_frame, text="计算光伏板排布", command=calculate_layout)
+calculate_btn = tk.Button(left_frame, text="计算光伏板排布", command=cal_and_display_layout)
 calculate_btn.pack(fill=tk.X, pady=(0, 20))
 
 # 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
@@ -591,31 +614,24 @@ arrangement_text = tk.Label(arrangement_frame, text="组件排布", font=("Arial
 arrangement_text.pack()
 
 # 图片显示区域放置在“原始拓扑”文字标签下方
-arrangement_display_frame = tk.Frame(arrangement_frame, width=frame_width, height=frame_height, bg='grey')
-arrangement_display_frame.pack_propagate(0)  # 防止内部元素影响尺寸
-arrangement_display_frame.pack()
+# arrangement_display_frame = tk.Frame(arrangement_frame, width=frame_width, height=frame_height, bg='grey')
+# arrangement_display_frame.pack_propagate(0)  # 防止内部元素影响尺寸
+# arrangement_display_frame.pack()
+
+arrangement_canvas = tk.Canvas(arrangement_frame, width=frame_width, height=frame_height, bg='grey')
+arrangement_canvas.pack()
 
 # “原始拓扑”文字标签放置在右侧区域的顶部
 arrangement_btn_text = tk.Label(arrangement_frame, text="点击按钮查看对应排序的结果：", font=("Arial", 12))
 arrangement_btn_text.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
 
 # 界面切换按钮
-arrangement_1_btn = tk.Button(arrangement_frame, text="1", command=calculate_layout)
-arrangement_1_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
-arrangement_1_btn.config(state="disabled")
-arrangement_2_btn = tk.Button(arrangement_frame, text="2", command=calculate_layout)
-arrangement_2_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
-arrangement_2_btn.config(state="disabled")
-arrangement_3_btn = tk.Button(arrangement_frame, text="3", command=calculate_layout)
-arrangement_3_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
-arrangement_3_btn.config(state="disabled")
-arrangement_4_btn = tk.Button(arrangement_frame, text="4", command=calculate_layout)
-arrangement_4_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
-arrangement_4_btn.config(state="disabled")
-arrangement_5_btn = tk.Button(arrangement_frame, text="5", command=calculate_layout)
-arrangement_5_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
-arrangement_5_btn.config(state="disabled")
-# arrangement_5_btn.config(state="active")
+arrangement_btns = []
+for i in range(5):
+    arrangement_btn = tk.Button(arrangement_frame, text=f"{i+1}", command=lambda: display_layout(i))
+    arrangement_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
+    arrangement_btn.config(state="disabled")
+    arrangement_btns.append(arrangement_btn)
 
 # 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
 roofscene_frame = tk.Frame(root)
@@ -634,8 +650,6 @@ roofscene_canvas.pack()
 
 empty_text = tk.Label(roofscene_frame, text="", font=("Arial", 12))
 empty_text.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
-
-
 def main():
     root.mainloop()
 

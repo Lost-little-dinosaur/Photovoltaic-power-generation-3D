@@ -129,9 +129,9 @@ class Arrangement:
             return result
 
         str_ar = self.component.specification + self.arrangeType
-
+        temp = []
         if len(self.relativePositionArray) == 1:  # 规则且只包含竖排
-            array_y = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)]
+            temp = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)]
             array_limit = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)]
             # h_min = arrangement_height[("182-78膨胀常规", 2, 1, 0)]
 
@@ -143,15 +143,15 @@ class Arrangement:
                     if num == first_element:
                         count += 1
                 if self.componentLayoutArray[0] < self.componentLayoutArray[-1]:  # 从上面扣除
-                    array_y = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0)]
+                    temp = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0)]
                     array_limit = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0)]
                 else:
-                    array_y = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count)]  # 从下面扣除
+                    temp = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count)]  # 从下面扣除
                     array_limit = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count)]
 
             elif len(self.componentLayoutArray) == 2 and (
                     self.componentLayoutArray[0] != self.componentLayoutArray[1]):  # 竖一横一
-                array_y = column[(str_ar, 1, 1, 0, 0, 0)]
+                temp = column[(str_ar, 1, 1, 0, 0, 0)]
                 array_limit = limit_column[(str_ar, 1, 1, 0, 0, 0)]
             else:
                 # 有竖有横且不规则
@@ -168,8 +168,9 @@ class Arrangement:
                     count2 = 1
                 if self.componentLayoutArray[-1] < normal_vertical:
                     count3 = 1
-                array_y = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
+                temp = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
                 array_limit = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
+        array_y = temp
         length = self.relativePositionArray[-1][1][1] + 1
         le = length - sum(array_y) - array_limit[0]
         if (le + array_limit[0]) / 2 < array_limit[0]:
@@ -201,7 +202,7 @@ class Arrangement:
         for node in self.relativePositionArray:
             if node[1][0] > width:
                 width = node[1][0]
-        column_min = int(width / max_spacing)
+        column_min = int(width / max_spacing) + 1
         column_max = 1000
         for column_n in range(column_min, column_max):
             result = generate_columns(column_n, startY, startX, roof_Width, width, length, max_spacing, result_y, obstacles)
@@ -212,9 +213,14 @@ class Arrangement:
                 for node in result:
                     flag = 0
                     for component in self.componentPositionArray:
-                        if (component[0][0] <= node[0] and component[1][0] >= node[0]
-                                and component[0][1] <= node[1] and component[1][1] >= node[1]):
+                        if (component[0][0] <= node[0] <= component[1][0]
+                                and component[0][1] <= node[1] <= component[1][1]):
                             flag = 1
+                    for i in self.deletedIndices:
+                        component = self.componentPositionArray[i]
+                        if (component[0][0] <= node[0] <= component[1][0]
+                                and component[0][1] <= node[1] <= component[1][1]):
+                            flag = 0
                     if flag == 0:
                         result.remove(node)
                 return result
