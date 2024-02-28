@@ -759,8 +759,8 @@ def calculate_layout():
     roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
     # 排布完光伏板后再添加障碍物并分析阴影
     roof.addObstaclesConcern(jsonData["scene"]["roof"]["obstacles"], screenedArrangements)
-    # roof.obstacleArraySelf = roof.calculateObstacleSelf()
-    # roof.calculate_column(screenedArrangements)
+    roof.obstacleArraySelf = roof.calculateObstacleSelf()
+    roof.calculate_column(screenedArrangements)
     return roof.drawPlacement(screenedArrangements)
 
 
