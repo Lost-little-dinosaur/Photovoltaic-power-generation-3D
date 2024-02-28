@@ -118,11 +118,13 @@ class Arrangement:
             return result
 
         str_ar = self.component.specification + self.arrangeType
-        if len(self.relativePositionArray) == 1:  # 规则且只包含竖排
+        if len(self.relativePositionArray) == 1 and self.crossPosition == INF:  # 规则且只包含竖排
             array_y = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)].copy()
             array_limit = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)]
             # h_min = arrangement_height[("182-78膨胀常规", 2, 1, 0)]
-
+        elif len(self.relativePositionArray) == 1 and self.crossPosition == 0:
+            array_y = column[(str_ar, 0, 1, 0, 0, 0)].copy()
+            array_limit = limit_column[(str_ar, 0, 1, 0, 0, 0)]
         else:
             if self.crossPosition == INF:  # 只有竖排
                 first_element = self.componentLayoutArray[0]
@@ -213,6 +215,7 @@ class Arrangement:
                     if flag == 0:
                         result.remove(node)
                 return result
+        return []
 
     def calculateComponentPositionArray(self, startX, startY):
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
