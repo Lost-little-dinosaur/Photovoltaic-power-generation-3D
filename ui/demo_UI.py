@@ -422,8 +422,11 @@ def get_algorithm_data(window, str_entries, option_entries, bool_entries):
     window.destroy()
 
 
-def draw_roofscene():
+def clear_canvas():
     roofscene_canvas.delete("all")
+
+def draw_roofscene():
+    clear_canvas()
 
     draw_width = frame_width - draw_gap * 2
     draw_height = frame_height - draw_gap * 2
@@ -508,12 +511,13 @@ def clear_info():
     outside_obstacle_info = []
     panel_info = {}
     algorithm_info = {}
-    roofscene_canvas.delete("all")
-
+    clear_canvas()
 
 def get_demo_input(index=0):
     with open(os.path.join(file_dir, f'input{index}.json'), 'r', encoding='utf-8') as f:
         input_json = json.load(f)
+
+    clear_info()
 
     if "scene" in input_json:
         if "location" in input_json["scene"]:
