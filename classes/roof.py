@@ -44,8 +44,8 @@ class Roof:
         nowMaxValue = -INF
         # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
         for placement in self.allPlacements:
-            # if placement[0][0]['ID'] == 423 and placement[0][1]['ID'] == 421:
-            #     print("debug")
+            if placement[0][0]['ID'] == 396 and placement[0][1]['ID'] == 321:
+                print("debug")
             if placement[1] < nowMaxValue:
                 continue
             for obstacle in obstacles:
@@ -75,7 +75,7 @@ class Roof:
                         continue
                     else:  # 有遮挡
                         deletedIndices.append(i)
-                screenedArrangements[arrange['ID']].componentPositionArray = []  # 清空componentPositionArray
+                # screenedArrangements[arrange['ID']].componentPositionArray = []  # 清空componentPositionArray
                 placement[1] -= len(deletedIndices) * screenedArrangements[arrange['ID']].component.power
                 allDeletedIndices.append(deletedIndices)
             placement.append(allDeletedIndices)
@@ -227,13 +227,14 @@ class Roof:
             allTempArray = []
             for arrange in allArrangement:
                 startX, startY = arrange['start']
+                screenedArrangements[arrange['ID']].calculateComponentPositionArray(startX, startY)
                 tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.width,
                                                                                      self.obstacleArraySelf)
-                # try:
-                if len(tempArray) > nowMaxValue:
-                    nowMaxValue = len(tempArray)
-                # except:
-                #     print()
+                try:
+                    if len(tempArray) > nowMaxValue:
+                        nowMaxValue = len(tempArray)
+                except:
+                    print()
                 allTempArray.append(tempArray)
             placement.append(allTempArray)
         i = 0
