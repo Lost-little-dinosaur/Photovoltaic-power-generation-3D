@@ -44,6 +44,8 @@ class Roof:
         nowMaxValue = -INF
         # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
         for placement in self.allPlacements:
+            # if placement[0][0]['ID'] == 423 and placement[0][1]['ID'] == 421:
+            #     print("debug")
             if placement[1] < nowMaxValue:
                 continue
             for obstacle in obstacles:
@@ -65,7 +67,7 @@ class Roof:
                     if tempArray[i][0][0] > 0 and tempArray[i][0][1] > 0:
                         totalComponent += tempObstacleSumArray[tempArray[i][0][1] - 1, tempArray[i][0][0] - 1]
                     if totalComponent == 0 or (placement[2][tempArray[i][0][1]:tempArray[i][1][1] + 1, tempArray[i][0][
-                        0]:tempArray[i][1][0] + 1] < screenedArrangements[arrange['ID']].componentHeightArray[
+                        0]:tempArray[i][1][0] + 1] <= screenedArrangements[arrange['ID']].componentHeightArray[
                                                      tempArray[i][0][1] - arrangeStartY:tempArray[i][1][
                                                                                             1] - arrangeStartY + 1,
                                                      tempArray[i][0][0] - arrangeStartX:tempArray[i][1][
@@ -226,7 +228,7 @@ class Roof:
             for arrange in allArrangement:
                 startX, startY = arrange['start']
                 tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.width,
-                                                                                    self.obstacleArraySelf)
+                                                                                     self.obstacleArraySelf)
                 if len(tempArray) > nowMaxValue:
                     nowMaxValue = len(tempArray)
                 allTempArray.append(tempArray)
@@ -246,7 +248,7 @@ class Roof:
         allMatrix = []
         # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
         for placement in self.allPlacements:
-            matrix = np.ones((self.length, self.width, 3))
+            matrix = np.zeros((self.length, self.width, 3))
 
             # 首先填充上下边界
             matrix[:roofBoardLength, :, :] = RoofMarginColor  # 上边界
@@ -258,25 +260,26 @@ class Roof:
                 arrange = placement[0][j]
                 start_x, start_y = arrange['start']
                 screenedArrangements[arrange['ID']].calculateComponentPositionArray(start_x, start_y)
-                for i in range(len(screenedArrangements[arrange['ID']].componentPositionArray)):
+                for i in range(len(screenedArrangements[arrange['ID']].componentPositionArray)):  # todo: 为什么要扣除？
                     if i in placement[3][j]:  # 如果这个光伏板被删了，就不画了
                         continue
                     top_left, bottom_right = screenedArrangements[arrange['ID']].componentPositionArray[i]
-                    # 绘制边界
-                    for x in range(max(roofBoardLength, top_left[0] - PhotovoltaicPanelBoardLength),
-                                   min(self.width - roofBoardLength,
-                                       bottom_right[0] + PhotovoltaicPanelBoardLength + 1)):
-                        for y in range(max(roofBoardLength, top_left[1] - PhotovoltaicPanelBoardLength),
-                                       min(self.length - roofBoardLength,
-                                           bottom_right[1] + PhotovoltaicPanelBoardLength + 1)):
-                            if x < top_left[0] or x > bottom_right[0] or y < top_left[1] or y > bottom_right[1]:
-                                matrix[y, x] = PhotovoltaicPanelBorderColor
-                    # 填充矩形内部
-                    for x in range(max(roofBoardLength, top_left[0]),
-                                   min(self.width - roofBoardLength, bottom_right[0] + 1)):
-                        for y in range(max(roofBoardLength, top_left[1]),
-                                       min(self.length - roofBoardLength, bottom_right[1] + 1)):
-                            matrix[y, x] = PhotovoltaicPanelColor
+                    # 绘制边界（保证边界在光伏板内部）
+                    matrix[top_left[1]:top_left[1] + PhotovoltaicPanelBoardLength,
+                    top_left[0]:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
+                    matrix[bottom_right[1] - PhotovoltaicPanelBoardLength + 1:bottom_right[1] + 1,
+                    top_left[0]:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
+                    matrix[
+                    top_left[1] + PhotovoltaicPanelBoardLength:bottom_right[1] - PhotovoltaicPanelBoardLength + 1,
+                    top_left[0]:top_left[0] + PhotovoltaicPanelBoardLength] = PhotovoltaicPanelBordColor
+                    matrix[
+                    top_left[1] + PhotovoltaicPanelBoardLength:bottom_right[1] - PhotovoltaicPanelBoardLength + 1,
+                    bottom_right[0] - PhotovoltaicPanelBoardLength + 1:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
+
+                    # 填充光伏板内部
+                    # matrix[
+                    # top_left[1] + PhotovoltaicPanelBoardLength:bottom_right[1] - PhotovoltaicPanelBoardLength + 1,
+                    # top_left[0] + PhotovoltaicPanelBoardLength:bottom_right[0]] = PhotovoltaicPanelColor
 
                 # 接下去画立柱
                 for column in placement[4][j]:  # column形式：[centerX,centerY]
