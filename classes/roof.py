@@ -124,8 +124,8 @@ class Roof:
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         # 输入限制条件
-        maxLayer = 3  # 最大层数
-        minComponent = 5  # 最小组件数
+        maxArrangeCount = 1  # 最大组件个数
+        minComponent = 1  # 最小组件数
 
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
             betterFlag = False
@@ -140,7 +140,7 @@ class Roof:
                             currentValue += arrangeDict[IDArray[i]].value
                             tempObstacleArray = np.array(obstacleArray)
                             arrangeDict[IDArray[i]].calculateArrangementShadow(x, y, self.latitude, tempObstacleArray)
-                            if layer < maxLayer:
+                            if layer < maxArrangeCount:
                                 temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
                                            i, currentValue + arrangeDict[IDArray[i]].value, placements, layer + 1,
                                            np.array(tempObstacleArray))
@@ -214,7 +214,7 @@ class Roof:
         tempArray = sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True)
         screenedArrangements = dict(tempArray)
         # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
-        dfs(screenedArrangements, 0, 0, 0, 0, [], 1, np.array(self.obstacleArray))
+        dfs(screenedArrangements, 0, 0, 0, 0, [], 0, np.array(self.obstacleArray))
         print(
             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
         # exit(0)
@@ -229,8 +229,11 @@ class Roof:
                 startX, startY = arrange['start']
                 tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.width,
                                                                                      self.obstacleArraySelf)
+                # try:
                 if len(tempArray) > nowMaxValue:
                     nowMaxValue = len(tempArray)
+                # except:
+                #     print()
                 allTempArray.append(tempArray)
             placement.append(allTempArray)
         i = 0
@@ -246,7 +249,7 @@ class Roof:
     def drawPlacement(self, screenedArrangements):  # todo: numpy优化
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
         allMatrix = []
-        magnification = 10  # 放大倍数
+        magnification = 5  # 放大倍数
         # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
         for placement in self.allPlacements:
             matrix = np.zeros((self.length * magnification, self.width * magnification, 3))
@@ -285,11 +288,11 @@ class Roof:
                     # top_left[0] + PhotovoltaicPanelBoardLength:bottom_right[0]] = PhotovoltaicPanelColor
 
                 # 接下去画立柱
-                for column in placement[4][j]:  # column形式：[centerX,centerY]
-                    matrix[
-                    column[1] * magnification - standColumnPadding:column[1] * magnification + standColumnPadding + 1,
-                    column[0] * magnification - standColumnPadding:
-                    column[0] * magnification + standColumnPadding + 1] = StandColumnColor
+                # for column in placement[4][j]:  # column形式：[centerX,centerY]
+                #     matrix[
+                #     column[1] * magnification - standColumnPadding:column[1] * magnification + standColumnPadding + 1,
+                #     column[0] * magnification - standColumnPadding:
+                #     column[0] * magnification + standColumnPadding + 1] = StandColumnColor
 
             # 绘制图像
             plt.imshow(matrix.astype("uint8"))
