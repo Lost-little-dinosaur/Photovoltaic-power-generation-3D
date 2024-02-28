@@ -1,4 +1,4 @@
-from ui import UI
+from ui import demo_UI as UI
 
 # 输入和输出的单位是都是毫米
 if __name__ == '__main__':

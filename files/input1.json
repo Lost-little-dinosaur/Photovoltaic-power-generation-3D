@@ -20,7 +20,7 @@
     "roof": {
       "isComplex": false,
       "category": "平屋顶",
-      "length": 3000,
+      "length": 4000,
       "width": 3000,
       "height": 3000,
       "roofDirection": 0,
@@ -60,7 +60,7 @@
           "isRound": false,
           "length": 500,
           "width": 500,
-          "height": 300,
+          "height": 1000,
           "upLeftPosition": [
             100,
             200
