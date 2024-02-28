@@ -1,9 +1,9 @@
 # 规定一些常量
-UNIT = 500  # 以毫米为单位
+UNIT = 400  # 以毫米为单位
 INF = 1000000000000  # 无穷大
-roofBoardLength = int(2 * UNIT / 1000)  # 打印屋顶示意图时，额外屋顶边缘的宽度（单位是单元格）
-PhotovoltaicPanelBoardLength = int(2 * UNIT / 1000)  # 打印屋顶示意图时，额外光伏板边缘的宽度（单位是单元格）
-standColumnPadding = int(0 * UNIT / 1000)  # 立柱的间隔（单位是单元格）
+roofBoardLength = 1  # 打印屋顶示意图时，额外屋顶边缘的宽度（单位是单元格）
+PhotovoltaicPanelBoardLength = 1  # 打印屋顶示意图时，额外光伏板边缘的宽度（单位是单元格）
+standColumnPadding = 2  # 立柱的内部增加宽度（单位是单元格）
 
 # 地图中的元素（别删，之后可能会用到！！！）
 # Empty = 0  # 空地
@@ -19,16 +19,16 @@ standColumnPadding = int(0 * UNIT / 1000)  # 立柱的间隔（单位是单元�
 #              Shadow: (0.5019607843137255, 0.5019607843137255, 0.5019607843137255, 1.0),
 #              PhotovoltaicPanel: (1.0, 1.0, 0.0, 1.0), Margin: (1.0, 0.0, 0.0, 1.0), RoofMargin: (0.0, 0.0, 0.0, 1.0),
 #              PhotovoltaicPanelMargin: (0.43, 0.43, 0.43, 1.0), PhotovoltaicPanelBorder: (0.0, 0.0, 0.0, 1.0)}
-EmptyColor = (1.0, 1.0, 1.0)  # 空地
+EmptyColor = (0.0, 0.0, 0.0)  # 空地
 ObstacleColor = (0.0, 0.0, 0.0)  # 障碍物
 ShadowColor = (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)  # 阴影
 PhotovoltaicPanelColor = (1.0, 1.0, 0.0)  # 光伏板
 MarginColor = (1.0, 0.0, 0.0)  # 边缘
-RoofMarginColor = (0.0, 0.0, 0.0)  # 屋顶边缘
+RoofMarginColor = (254, 254, 0)  # 屋顶边缘
 PhotovoltaicPanelMarginColor = (0.43, 0.43, 0.43)  # 光伏板边缘
-PhotovoltaicPanelBorderColor = (0.0, 0.0, 0.0)  # 光伏板边框
+PhotovoltaicPanelBordColor = (0, 255, 255)  # 光伏板边框
 # StandColumnColor = (253, 88, 104)  # 立柱
-StandColumnColor = (253 / (255 + 88 + 104), 88 / (255 + 88 + 104), 104 / (255 + 88 + 104))  # 立柱
+StandColumnColor = (255, 0, 255)  # 立柱
 
 # 光伏板横竖排之间的间距
 PhotovoltaicPanelCrossMargin = round(6 / UNIT)  # 光伏板的横向缝隙

@@ -68,10 +68,10 @@ class Roof:
                         totalComponent += tempObstacleSumArray[tempArray[i][0][1] - 1, tempArray[i][0][0] - 1]
                     if totalComponent == 0 or (placement[2][tempArray[i][0][1]:tempArray[i][1][1] + 1, tempArray[i][0][
                         0]:tempArray[i][1][0] + 1] <= screenedArrangements[arrange['ID']].componentHeightArray[
-                                                     tempArray[i][0][1] - arrangeStartY:tempArray[i][1][
-                                                                                            1] - arrangeStartY + 1,
-                                                     tempArray[i][0][0] - arrangeStartX:tempArray[i][1][
-                                                                                            0] - arrangeStartX + 1]).all():
+                                                      tempArray[i][0][1] - arrangeStartY:tempArray[i][1][
+                                                                                             1] - arrangeStartY + 1,
+                                                      tempArray[i][0][0] - arrangeStartX:tempArray[i][1][
+                                                                                             0] - arrangeStartX + 1]).all():
                         continue
                     else:  # 有遮挡
                         deletedIndices.append(i)
@@ -246,9 +246,10 @@ class Roof:
     def drawPlacement(self, screenedArrangements):  # todo: numpy优化
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
         allMatrix = []
+        magnification = 10  # 放大倍数
         # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
         for placement in self.allPlacements:
-            matrix = np.zeros((self.length, self.width, 3))
+            matrix = np.zeros((self.length * magnification, self.width * magnification, 3))
 
             # 首先填充上下边界
             matrix[:roofBoardLength, :, :] = RoofMarginColor  # 上边界
@@ -264,6 +265,8 @@ class Roof:
                     if i in placement[3][j]:  # 如果这个光伏板被删了，就不画了
                         continue
                     top_left, bottom_right = screenedArrangements[arrange['ID']].componentPositionArray[i]
+                    top_left[0], top_left[1] = top_left[0] * magnification, top_left[1] * magnification
+                    bottom_right[0], bottom_right[1] = bottom_right[0] * magnification, bottom_right[1] * magnification
                     # 绘制边界（保证边界在光伏板内部）
                     matrix[top_left[1]:top_left[1] + PhotovoltaicPanelBoardLength,
                     top_left[0]:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
@@ -283,19 +286,16 @@ class Roof:
 
                 # 接下去画立柱
                 for column in placement[4][j]:  # column形式：[centerX,centerY]
-                    matrix[max(roofBoardLength, column[1] - standColumnPadding):min(self.length - roofBoardLength,
-                                                                                    column[1] + standColumnPadding + 1),
-                    max(roofBoardLength, column[0] - standColumnPadding):min(self.width - roofBoardLength, column[
-                        0] + standColumnPadding + 1)] = StandColumnColor
+                    matrix[
+                    column[1] * magnification - standColumnPadding:column[1] * magnification + standColumnPadding + 1,
+                    column[0] * magnification - standColumnPadding:
+                    column[0] * magnification + standColumnPadding + 1] = StandColumnColor
 
             # 绘制图像
-            plt.imshow(matrix)
+            plt.imshow(matrix.astype("uint8"))
             plt.axis('off')
             plt.tight_layout()
             # plt.show()
-
-            # plt.imshow(matrix,extent=[0,100,100,0])
-            # plt.axis('tight')
 
             # 获取当前的Figure对象
             fig = plt.gcf()
