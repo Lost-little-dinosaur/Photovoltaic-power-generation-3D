@@ -20,6 +20,7 @@ frame_height = 320
 draw_gap = 25  # gap for drawing text
 layout_imgs = []
 display_img = None
+file_dir = "files"
 
 chn2eng = {
     "省份": "province",
@@ -487,8 +488,8 @@ def display_layout(index=0):
         image_matrix = layout_imgs[index]
         image = Image.fromarray(image_matrix)
         scaled_image = image.resize((frame_width,frame_height))
-        image.save(f"image_{index}.png")
-        scaled_image.save(f"scaled_image_{index}.png")
+        # image.save(os.path.join(file_dir,f"image_{index}.png"))
+        # scaled_image.save(os.path.join(file_dir,f"scaled_image_{index}.png"))
         display_img = ImageTk.PhotoImage(scaled_image)
         arrangement_canvas.create_image(0, 0, anchor=tk.NW, image=display_img)
     except Exception as e:
@@ -512,7 +513,7 @@ def clear_info():
 
 
 def get_demo_input(index=0):
-    with open('input.json', 'r', encoding='utf-8') as f:
+    with open(os.path.join(file_dir, f'input{index}.json'), 'r', encoding='utf-8') as f:
         input_json = json.load(f)
     
     if "scene" in input_json:
@@ -738,7 +739,10 @@ roofscene_btns = []
 for i in range(5):
     roofscene_btn = tk.Button(roofscene_frame, text=f"{i+1}", command=partial(get_demo_input,i))
     roofscene_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
-    roofscene_btn.config(state="active")
+    if os.path.exists(os.path.join(file_dir,f"input{i}.json")):
+        roofscene_btn.config(state="active")
+    else:
+        roofscene_btn.config(state="disabled")
     roofscene_btns.append(roofscene_btn)
 
 # empty_text = tk.Label(roofscene_frame, text="", font=("Arial", 12))
