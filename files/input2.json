@@ -49,8 +49,8 @@
           "diameter": 20,
           "height": 20,
           "centerPosition": [
-            5000,
-            5000
+            100,
+            200
           ],
           "adjustedHeight": 0
         },
@@ -62,8 +62,8 @@
           "width": 500,
           "height": 300,
           "upLeftPosition": [
-            100,
-            200
+            5000,
+            5000
           ],
           "adjustedHeight": 0,
           "removable": 1
