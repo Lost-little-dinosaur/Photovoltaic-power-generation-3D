@@ -113,7 +113,7 @@ class Arrangement:
             result = []
             for x in column_positions:
                 for y in array_iny:
-                    if obstacles[x][y] != 1 and x < width and y < length:
+                    if obstacles[x + startX][y + startY] != 1 and x < width and y < length:
                         result.append([startX + int(x), startY + int(y)])
             return result
 
