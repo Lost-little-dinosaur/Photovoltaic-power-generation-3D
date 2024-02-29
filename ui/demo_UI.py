@@ -425,6 +425,7 @@ def get_algorithm_data(window, str_entries, option_entries, bool_entries):
 def clear_canvas():
     roofscene_canvas.delete("all")
 
+
 def draw_roofscene():
     clear_canvas()
 
@@ -512,6 +513,7 @@ def clear_info():
     panel_info = {}
     algorithm_info = {}
     clear_canvas()
+
 
 def get_demo_input(index=0):
     with open(os.path.join(file_dir, f'input{index}.json'), 'r', encoding='utf-8') as f:

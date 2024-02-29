@@ -84,7 +84,7 @@ class Arrangement:
     def calculateStandColumn(self, startX, startY, roof_Width, obstacles):
         def generate_columns(n_columns, startY, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
             column_positions = []
-            ideal_spacing_min = int((width - round(1400 / UNIT)) / (n_columns - 1))  # 计算最小理想间距
+            ideal_spacing_min = int((width - round(1400 / UNIT)) / (n_columns - 1)) + 1  # 计算最小理想间距
             if ideal_spacing_min > max_spacing:
                 return []
             ideal_spacing_max = int((width - round(500 / UNIT)) / (n_columns - 1))  # 计算最大理想间距
@@ -93,7 +93,6 @@ class Arrangement:
             for i in range(1, n_columns):
                 x = int(i * ideal_spacing + column_positions[0])
                 column_positions.append(x)
-            column_positions.append(int((width - ideal_spacing * (n_columns - 1)) / 2) + column_positions[-1])
             precision = int(50 / UNIT)
             if (precision >= 1):
                 for i in range(len(column_positions)):

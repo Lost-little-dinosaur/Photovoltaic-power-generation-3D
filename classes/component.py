@@ -38,6 +38,7 @@ def assignComponentParameters(parameterDict):
             break
 
 
+pvPanelInclination = 20  # todo：之后再加倾角
 # 光伏板的规格
 component1 = Component("182-72", 1134, 2279, 1400, 439, 1108, 13)  # 以米、瓦为单位
 component2 = Component("182-78", 1134, 2465, 1500, 4825, 1108, 13)  # 以米、瓦为单位
