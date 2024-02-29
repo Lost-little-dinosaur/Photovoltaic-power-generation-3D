@@ -79,9 +79,8 @@ class Arrangement:
         self.verticalCount = 0
         self.verticalNum = 0
         self.componentHeightArray = np.array(self.calculateComponentHeightArray())  # 每个光伏板具体高度（大小是这个arrangement的最小包络矩形）
-        self.deletedIndices = []
 
-    def calculateStandColumn(self, startX, startY, roof_Width, obstacles):
+    def calculateStandColumn(self, startX, startY, roof_Width, obstacles, deletedIndices):
         def generate_columns(n_columns, startY, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
             column_positions = []
             ideal_spacing_min = int((width - round(1400 / UNIT)) / (n_columns - 1)) + 1  # 计算最小理想间距
@@ -206,7 +205,7 @@ class Arrangement:
                         if (component[0][0] <= node[0] <= component[1][0]
                                 and component[0][1] <= node[1] <= component[1][1]):
                             flag = 1
-                    for i in self.deletedIndices:
+                    for i in deletedIndices:
                         component = self.componentPositionArray[i]
                         if (component[0][0] + startX <= node[0] <= component[1][0] + startX
                                 and component[0][1] <= node[1] <= component[1][1]):

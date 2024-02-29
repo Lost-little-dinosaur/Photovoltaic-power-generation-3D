@@ -104,7 +104,7 @@ class Roof:
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         # 输入限制条件
-        maxArrangeCount = 2  # 最大组件个数
+        maxArrangeCount = 1  # 最大组件个数
         minComponent = 1  # 最小组件数
 
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
@@ -207,14 +207,17 @@ class Roof:
         for placement in self.allPlacements:
             allArrangement = placement[0]
             allTempArray = []
+            arrangeI = 0
             for arrange in allArrangement:
                 startX, startY = arrange['start']
                 screenedArrangements[arrange['ID']].calculateComponentPositionArray(startX, startY)
                 tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.width,
-                                                                                     self.obstacleArraySelf)
+                                                                                     self.obstacleArraySelf,
+                                                                                     placement[3][arrangeI])
                 if len(tempArray) > nowMaxValue:
                     nowMaxValue = len(tempArray)
                 allTempArray.append(tempArray)
+                arrangeI += 1
             placement.append(allTempArray)
         i = 0
         while i < len(self.allPlacements):
@@ -292,4 +295,3 @@ class Roof:
             # allMatrix.append(matrix)
             allMatrix.append(image_array)
         return allMatrix
-
