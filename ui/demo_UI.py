@@ -1,5 +1,6 @@
 from ui_functions import *
 
+
 if __name__ == "__main__":
     ui = UI(
         location_ui_info=[["经度", "纬度"],[],[],[]], 
