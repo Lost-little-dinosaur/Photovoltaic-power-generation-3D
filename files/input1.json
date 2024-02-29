@@ -217,6 +217,10 @@
     "specification": "182-78",
     "power": 595,
     "thickness": 350
+  },
+  "algorithm": {
+    "precision": 200,
+    "maxArrangeCount": 1
   }
 }
 

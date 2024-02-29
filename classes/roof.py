@@ -104,7 +104,6 @@ class Roof:
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         # 输入限制条件
-        maxArrangeCount = 1  # 最大组件个数
         minComponent = 1  # 最小组件数
 
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
