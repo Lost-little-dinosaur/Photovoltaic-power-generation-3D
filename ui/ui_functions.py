@@ -1,4 +1,6 @@
-import sys,os
+import sys, os
+import const.const
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import classes.roof
@@ -61,7 +63,7 @@ chn2eng = {
     "功率": "power",
     "厚度": "thickness",
     "精度（mm）": "precision",
-    "最大方案数量":"maxArrangeCount",
+    "最大方案数量": "maxArrangeCount",
     "贪心（单阵列）": "greedy",
     "DFS（多阵列）": "dfs",
 }
@@ -69,15 +71,15 @@ eng2chn = {v: k for k, v in chn2eng.items()}
 
 
 class UI:
-    def __init__(self, 
-                location_ui_info,
-                roof_ui_info,
-                obstacle_ui_info,
-                outside_obstacle_ui_info,
-                panel_ui_info,
-                scheme_options,
-                algorithm_ui_info,
-                ):
+    def __init__(self,
+                 location_ui_info,
+                 roof_ui_info,
+                 obstacle_ui_info,
+                 outside_obstacle_ui_info,
+                 panel_ui_info,
+                 scheme_options,
+                 algorithm_ui_info,
+                 ):
 
         self.location_info = {}
         self.roof_info = {}
@@ -97,20 +99,20 @@ class UI:
         left_frame.pack(side=tk.LEFT, padx=20, pady=20)
 
         # Buttons for adding information
-        location_btn = tk.Button(left_frame, text="添加位置信息", 
-                command=partial(self.open_location_window,*location_ui_info))
+        location_btn = tk.Button(left_frame, text="添加位置信息",
+                                 command=partial(self.open_location_window, *location_ui_info))
 
         location_btn.pack(fill=tk.X, pady=5)
-        roof_btn = tk.Button(left_frame, text="添加屋顶信息", 
-                command=partial(self.open_roof_window,*roof_ui_info))
+        roof_btn = tk.Button(left_frame, text="添加屋顶信息",
+                             command=partial(self.open_roof_window, *roof_ui_info))
 
         roof_btn.pack(fill=tk.X, pady=5)
         obstacle_btn = tk.Button(left_frame, text="添加屋内障碍物信息",
-                command=partial(self.open_obstacle_window,*obstacle_ui_info))
+                                 command=partial(self.open_obstacle_window, *obstacle_ui_info))
         obstacle_btn.pack(fill=tk.X, pady=5)
 
-        panel_btn = tk.Button(left_frame, text="添加光伏板信息", 
-                command=partial(self.open_panel_window,*panel_ui_info))
+        panel_btn = tk.Button(left_frame, text="添加光伏板信息",
+                              command=partial(self.open_panel_window, *panel_ui_info))
         panel_btn.pack(fill=tk.X, pady=5)
 
         clear_btn = tk.Button(left_frame, text="清空输入信息", command=self.clear_info)
@@ -132,8 +134,8 @@ class UI:
         draw_btn = tk.Button(left_frame, text="展示屋面场景", command=self.draw_roofscene)
         draw_btn.pack(fill=tk.X, pady=(0, 20))
 
-        algorithm_btn = tk.Button(left_frame, text="选择算法类型", 
-            command=partial(self.open_algorithm_window,*algorithm_ui_info))
+        algorithm_btn = tk.Button(left_frame, text="选择算法类型",
+                                  command=partial(self.open_algorithm_window, *algorithm_ui_info))
         algorithm_btn.pack(fill=tk.X, pady=0)
 
         calculate_btn = tk.Button(left_frame, text="计算光伏板排布", command=self.cal_and_display_layout)
@@ -186,11 +188,11 @@ class UI:
             else:
                 roofscene_btn.config(state="disabled")
             self.roofscene_btns.append(roofscene_btn)
-        
+
     def run(self):
         self.root.mainloop()
 
-    def open_location_window(self,str_text,option_text,options,bool_text):
+    def open_location_window(self, str_text, option_text, options, bool_text):
         location_window = tk.Toplevel(self.root)
         location_window.title("添加位置信息")
 
@@ -229,12 +231,13 @@ class UI:
             bool_entries[text] = bool_var
         # 创建按钮，用于获取所有输入的数据
         submit_btn = tk.Button(location_window, text="提交",
-                            command=lambda: self.get_location_data(location_window, str_entries, option_entries,
-                                                                bool_entries))
-        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2, padx=5,
+                               command=lambda: self.get_location_data(location_window, str_entries, option_entries,
+                                                                      bool_entries))
+        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2,
+                        padx=5,
                         pady=5)
 
-    def get_location_data(self,window, str_entries, option_entries, bool_entries):
+    def get_location_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             print(text + ": ", entry.get())
             self.location_info[text] = entry.get()
@@ -246,7 +249,7 @@ class UI:
             self.location_info[text] = entry.get()
         window.destroy()
 
-    def open_roof_window(self,str_text,option_text,options,bool_text):
+    def open_roof_window(self, str_text, option_text, options, bool_text):
         roof_window = tk.Toplevel(self.root)
         roof_window.title("添加屋顶信息")
 
@@ -287,11 +290,13 @@ class UI:
             bool_entries[text] = bool_var
         # 创建按钮，用于获取所有输入的数据
         submit_btn = tk.Button(roof_window, text="提交",
-                            command=lambda: self.get_roof_data(roof_window, str_entries, option_entries, bool_entries))
-        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2, padx=5,
+                               command=lambda: self.get_roof_data(roof_window, str_entries, option_entries,
+                                                                  bool_entries))
+        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2,
+                        padx=5,
                         pady=5)
 
-    def get_roof_data(self,window, str_entries, option_entries, bool_entries):
+    def get_roof_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             print(text + ": ", entry.get())
             self.roof_info[text] = entry.get()
@@ -303,7 +308,7 @@ class UI:
             self.roof_info[text] = entry.get()
         window.destroy()
 
-    def open_obstacle_window(self,str_text,option_text,options,bool_text):
+    def open_obstacle_window(self, str_text, option_text, options, bool_text):
         obstacle_window = tk.Toplevel(self.root)
         obstacle_window.title("添加墙内障碍物信息")
         # 直径？长度（mm）？
@@ -341,12 +346,13 @@ class UI:
             bool_entries[text] = bool_var
         # 创建按钮，用于获取所有输入的数据
         submit_btn = tk.Button(obstacle_window, text="提交",
-                            command=lambda: self.get_obstacle_data(obstacle_window, str_entries, option_entries,
-                                                                bool_entries))
-        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2, padx=5,
+                               command=lambda: self.get_obstacle_data(obstacle_window, str_entries, option_entries,
+                                                                      bool_entries))
+        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2,
+                        padx=5,
                         pady=5)
 
-    def get_obstacle_data(self,window, str_entries, option_entries, bool_entries):
+    def get_obstacle_data(self, window, str_entries, option_entries, bool_entries):
         new_obstacle = {}
         for text, entry in str_entries.items():
             print(text + ": ", entry.get())
@@ -360,7 +366,7 @@ class UI:
         self.obstacle_info.append(new_obstacle)
         window.destroy()
 
-    def open_outside_obstacle_window(self,str_text,option_text,options,bool_text):
+    def open_outside_obstacle_window(self, str_text, option_text, options, bool_text):
         outside_obstacle_window = tk.Toplevel(self.root)
         outside_obstacle_window.title("添加屋外障碍物信息")
         # 直径？长度（mm）？
@@ -397,12 +403,14 @@ class UI:
             bool_entries[text] = bool_var
         # 创建按钮，用于获取所有输入的数据
         submit_btn = tk.Button(outside_obstacle_window, text="提交",
-                            command=lambda: self.get_outside_obstacle_window_data(outside_obstacle_window, str_entries,
-                                                                                option_entries, bool_entries))
-        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2, padx=5,
+                               command=lambda: self.get_outside_obstacle_window_data(outside_obstacle_window,
+                                                                                     str_entries,
+                                                                                     option_entries, bool_entries))
+        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2,
+                        padx=5,
                         pady=5)
 
-    def get_outside_obstacle_window_data(self,window, str_entries, option_entries, bool_entries):
+    def get_outside_obstacle_window_data(self, window, str_entries, option_entries, bool_entries):
         new_obstacle = {}
         for text, entry in str_entries.items():
             print(text + ": ", entry.get())
@@ -416,7 +424,7 @@ class UI:
         self.outside_obstacle_info.append(new_obstacle)
         window.destroy()
 
-    def open_panel_window(self,str_text,option_text,options,bool_text):
+    def open_panel_window(self, str_text, option_text, options, bool_text):
         panel_window = tk.Toplevel(self.root)
         panel_window.title("添加光伏板信息")
 
@@ -453,11 +461,13 @@ class UI:
             bool_entries[text] = bool_var
         # 创建按钮，用于获取所有输入的数据
         submit_btn = tk.Button(panel_window, text="提交",
-                            command=lambda: self.get_panel_data(panel_window, str_entries, option_entries, bool_entries))
-        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2, padx=5,
+                               command=lambda: self.get_panel_data(panel_window, str_entries, option_entries,
+                                                                   bool_entries))
+        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2,
+                        padx=5,
                         pady=5)
 
-    def get_panel_data(self,window, str_entries, option_entries, bool_entries):
+    def get_panel_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             print(text + ": ", entry.get())
             self.panel_info[text] = entry.get()
@@ -469,7 +479,7 @@ class UI:
             self.panel_info[text] = entry.get()
         window.destroy()
 
-    def open_algorithm_window(self,str_text,option_text,options,bool_text):
+    def open_algorithm_window(self, str_text, option_text, options, bool_text):
         algorithm_window = tk.Toplevel(self.root)
         algorithm_window.title("选择算法类型")
 
@@ -506,12 +516,13 @@ class UI:
             bool_entries[text] = bool_var
         # 创建按钮，用于获取所有输入的数据
         submit_btn = tk.Button(algorithm_window, text="提交",
-                            command=lambda: self.get_algorithm_data(algorithm_window, str_entries, option_entries,
-                                                                bool_entries))
-        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2, padx=5,
+                               command=lambda: self.get_algorithm_data(algorithm_window, str_entries, option_entries,
+                                                                       bool_entries))
+        submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2,
+                        padx=5,
                         pady=5)
 
-    def get_algorithm_data(self,window, str_entries, option_entries, bool_entries):
+    def get_algorithm_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             print(text + ": ", entry.get())
             self.panel_info[text] = entry.get()
@@ -523,10 +534,10 @@ class UI:
             self.panel_info[text] = entry.get()
         window.destroy()
 
-    def clear_canvas(self,):
+    def clear_canvas(self, ):
         self.roofscene_canvas.delete("all")
 
-    def draw_roofscene(self,):
+    def draw_roofscene(self, ):
         self.clear_canvas()
 
         draw_width = frame_width - draw_gap * 2
@@ -542,12 +553,15 @@ class UI:
         roof_bottom = roof_top + scaled_height
         # 在 Canvas 上绘制缩放后的矩形
         # self.roofscene_canvas.delete("roof")  # 清除之前的矩形
-        self.roofscene_canvas.create_rectangle(roof_left, roof_top, roof_right, roof_bottom, outline="blue", tags="roof")
+        self.roofscene_canvas.create_rectangle(roof_left, roof_top, roof_right, roof_bottom, outline="blue",
+                                               tags="roof")
         # 显示屋顶尺寸
-        self.roofscene_canvas.create_text(int((roof_left + roof_right) / 2), roof_top, text=f"{self.roof_info['宽度（mm）']}",
-                                    font=("Arial", 12))
-        self.roofscene_canvas.create_text(roof_left, int((roof_top + roof_bottom) / 2), text=f"{self.roof_info['长度（mm）']}",
-                                    font=("Arial", 12))
+        self.roofscene_canvas.create_text(int((roof_left + roof_right) / 2), roof_top,
+                                          text=f"{self.roof_info['宽度（mm）']}",
+                                          font=("Arial", 12))
+        self.roofscene_canvas.create_text(roof_left, int((roof_top + roof_bottom) / 2),
+                                          text=f"{self.roof_info['长度（mm）']}",
+                                          font=("Arial", 12))
 
         # 绘制屋内障碍物
         for obstacle in self.obstacle_info:
@@ -573,12 +587,14 @@ class UI:
                 continue
         print(self.get_input_json())
 
-    def calculate_layout(self,):
+    def calculate_layout(self, ):
         jsonData = self.get_input_json()
+        # const.const.changeConst(jsonData['algorithm']['precision'], jsonData['algorithm']['maxArrangeCount'])
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
         assignComponentParameters(jsonData["component"])
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
-                                                jsonData["arrangeType"], jsonData["scene"]["location"]["windPressure"])
+                                                  jsonData["arrangeType"],
+                                                  jsonData["scene"]["location"]["windPressure"])
         roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
         # 排布完光伏板后再添加障碍物并分析阴影
         roof.addObstaclesConcern(jsonData["scene"]["roof"]["obstacles"], screenedArrangements)
@@ -586,7 +602,7 @@ class UI:
         roof.calculate_column(screenedArrangements)
         return roof.drawPlacement(screenedArrangements)
 
-    def cal_and_display_layout(self,):
+    def cal_and_display_layout(self, ):
         for i in range(5):
             self.arrangement_btns[i].config(state="disabled")
         self.layout_imgs = self.calculate_layout()[:5]
@@ -594,7 +610,7 @@ class UI:
         for i in range(len(self.layout_imgs)):
             self.arrangement_btns[i].config(state="active")
 
-    def display_layout(self,index=0):
+    def display_layout(self, index=0):
         try:
             image_matrix = self.layout_imgs[index]
             image = Image.fromarray(image_matrix)
@@ -606,7 +622,7 @@ class UI:
         except Exception as e:
             print("Exception", e)
 
-    def clear_info(self,):
+    def clear_info(self, ):
 
         self.location_info = {}
         self.roof_info = {}
@@ -616,7 +632,7 @@ class UI:
         self.algorithm_info = {}
         self.clear_canvas()
 
-    def get_demo_input(self,index=0):
+    def get_demo_input(self, index=0):
         with open(os.path.join(file_dir, f'input{index}.json'), 'r', encoding='utf-8') as f:
             input_json = json.load(f)
 
@@ -669,14 +685,14 @@ class UI:
         if "algorithm" in input_json:
             for key, value in input_json["algorithm"].items():
                 self.algorithm_info[eng2chn[key]] = value
-        
+
         if "arrangeType" in input_json:
             self.arrangeType_var.set(input_json["arrangeType"])
-        
+
         self.draw_roofscene()
         return input_json
 
-    def get_input_json(self,):
+    def get_input_json(self, ):
         input_json = {}
         # guest
         input_json["guest"] = {}
@@ -743,7 +759,7 @@ class UI:
 
         # algorithm
         input_json["algorithm"] = {}
-        for key, value in self.panel_info.items():
+        for key, value in self.algorithm_info.items():
             input_json["algorithm"][chn2eng[key]] = value
 
         return input_json
@@ -751,4 +767,3 @@ class UI:
     def on_closing(self):
         self.root.quit()
         self.root.destroy()
-        
