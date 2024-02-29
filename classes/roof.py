@@ -33,8 +33,16 @@ class Roof:
         return_list = [[0] * (self.length + 1) for _ in range(self.width + 1)]
         for obstacle in self.obstacles:  # 有问题
             if obstacle.type == '有烟烟囱':
-                for x in range(obstacle.upLeftPosition[0], obstacle.upLeftPosition[0] + obstacle.width):
-                    for y in range(obstacle.upLeftPosition[1], obstacle.upLeftPosition[1] + obstacle.length):
+                x_min = 0
+                x_max = 0
+                y_min = 0
+                y_max = 0
+                x_min = max(0, obstacle.upLeftPosition[0] - int(round(100 / UNIT)))
+                x_max = min(self.width, obstacle.upLeftPosition[0] + obstacle.width + int(round(100 / UNIT)))
+                y_min = max(0, obstacle.upLeftPosition[1] - int(round(100 / UNIT)))
+                y_max = min(self.length, obstacle.upLeftPosition[1] + obstacle.length + int(round(100 / UNIT)))
+                for x in range(x_min, x_max):
+                    for y in range(y_min, y_max):
                         return_list[x][y] = 1
         return return_list
 
@@ -124,7 +132,7 @@ class Roof:
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         # 输入限制条件
-        maxArrangeCount = 1  # 最大组件个数
+        maxArrangeCount = 2  # 最大组件个数
         minComponent = 1  # 最小组件数
 
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
