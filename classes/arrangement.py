@@ -199,6 +199,7 @@ class Arrangement:
                 continue
             else:
                 self.calculateComponentPositionArray(startX, startY)
+                final_list = []
                 for node in result:
                     flag = 0
                     for component in self.componentPositionArray:
@@ -207,12 +208,12 @@ class Arrangement:
                             flag = 1
                     for i in deletedIndices:
                         component = self.componentPositionArray[i]
-                        if (component[0][0] + startX <= node[0] <= component[1][0] + startX
+                        if (component[0][0] <= node[0] <= component[1][0]
                                 and component[0][1] <= node[1] <= component[1][1]):
                             flag = 0
-                    if flag == 0:
-                        result.remove(node)
-                return result
+                    if flag == 1:
+                        final_list.append(node)
+                return final_list
         return []
 
     def calculateComponentPositionArray(self, startX, startY):
