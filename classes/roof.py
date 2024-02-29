@@ -34,8 +34,16 @@ class Roof:
         return_list = [[0] * (self.length + 1) for _ in range(self.width + 1)]
         for obstacle in self.obstacles:  # 有问题
             if obstacle.type == '有烟烟囱':
-                for x in range(obstacle.upLeftPosition[0], obstacle.upLeftPosition[0] + obstacle.width):
-                    for y in range(obstacle.upLeftPosition[1], obstacle.upLeftPosition[1] + obstacle.length):
+                x_min = 0
+                x_max = 0
+                y_min = 0
+                y_max = 0
+                x_min = max(0, obstacle.upLeftPosition[0] - int(round(100 / UNIT)))
+                x_max = min(self.width, obstacle.upLeftPosition[0] + obstacle.width + int(round(100 / UNIT)))
+                y_min = max(0, obstacle.upLeftPosition[1] - int(round(100 / UNIT)))
+                y_max = min(self.length, obstacle.upLeftPosition[1] + obstacle.length + int(round(100 / UNIT)))
+                for x in range(x_min, x_max):
+                    for y in range(y_min, y_max):
                         return_list[x][y] = 1
         return return_list
 
