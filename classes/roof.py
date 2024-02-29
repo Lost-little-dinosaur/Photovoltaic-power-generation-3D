@@ -100,65 +100,88 @@ class Roof:
         print(
             f"分析阴影并选出最佳方案完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒，共有{len(self.allPlacements)}个较优排布方案\n")
 
-    def search(self, ID, arrange, startX, startY, currentValue, placements, obstacleArray, screenedArrangements):
-        for y in range(startY, self.length):
-            for x in range(startX, self.width):
-                if not self.overlaps(x, y, arrange, placements, screenedArrangements) and \
-                        self.canPlaceArrangement(x, y, arrange, obstacleArray):
-                    newPlacement = {'ID': ID, 'start': (x, y)}
-                    placements.append(newPlacement)
-                    currentValue += arrange.value
-                    tempObstacleArray = np.array(obstacleArray)
-                    arrange.calculateArrangementShadow(x, y, self.latitude, tempObstacleArray)
-                    return [placements.copy(), currentValue, np.array(tempObstacleArray), x, y]
-            startX = 0
-
-    def canPlaceArrangement(self, x, y, arrange, obstacleArray):
-        tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
-        for eachRect in arrange.relativePositionArray:
-            startX, startY = eachRect[0]
-            endX, endY = eachRect[1]
-            absoluteEndX, absoluteEndY = x + endX, y + endY
-            if self.width > absoluteEndX and self.length > absoluteEndY:
-                totalRoof = self.roofSumArray[absoluteEndY][absoluteEndX]
-                totalObstacles = tempObstacleSumArray[absoluteEndY][absoluteEndX]
-                if startX > 0:
-                    totalRoof -= self.roofSumArray[absoluteEndY][x + startX - 1]
-                    totalObstacles -= tempObstacleSumArray[absoluteEndY][x + startX - 1]
-                if startY > 0:
-                    totalRoof -= self.roofSumArray[y + startY - 1][absoluteEndX]
-                    totalObstacles -= tempObstacleSumArray[y + startY - 1][absoluteEndX]
-                if startX > 0 and startY > 0:
-                    totalRoof += self.roofSumArray[y + startY - 1][x + startX - 1]
-                    totalObstacles += tempObstacleSumArray[y + startY - 1][x + startX - 1]
-                if totalRoof >= INF:
-                    return False
-            else:
-                return False
-            # 接下去检查是否被光伏板的阴影遮挡
-            if totalObstacles > 0 and not (obstacleArray[y:y + endY - startY + 1, x:x + endX - startX + 1] <
-                                           arrange.componentHeightArray[startY:endY + 1, startX:endX + 1]).all():
-                return False
-        return True
-
-    def overlaps(self, x, y, arrange, placements, screenedArrangements):
-        for eachRect in arrange.relativePositionArray:
-            for placement in placements:
-                startX, startY = placement['start']
-                for eachPlacementRect in screenedArrangements[placement['ID']].relativePositionArray:
-                    if not (x + eachRect[0][0] > startX + eachPlacementRect[1][0] or
-                            x + eachRect[1][0] < startX + eachPlacementRect[0][0] or
-                            y + eachRect[0][1] > startY + eachPlacementRect[1][1] or
-                            y + eachRect[1][1] < startY + eachPlacementRect[0][1]):
-                        return True
-        return False
-
     def getValidOptions(self, screenedArrangements):
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         # 输入限制条件
-        maxArrangeCount = 2  # 最大阵列个数
-        minComponent = 1  # 阵列中的最小组件数
+        maxArrangeCount = 2  # 最大组件个数
+        minComponent = 1  # 最小组件数
+
+        def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
+            betterFlag = False
+            IDArray = list(arrangeDict.keys())
+            for y in range(startY, self.length):
+                for x in range(startX, self.width):
+                    for i in range(startI, len(list(arrangeDict))):
+                        if canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray) and \
+                                not overlaps(x, y, arrangeDict[IDArray[i]], placements):
+                            newPlacement = {'ID': IDArray[i], 'start': (x, y)}
+                            placements.append(newPlacement)
+                            currentValue += arrangeDict[IDArray[i]].value
+                            tempObstacleArray = np.array(obstacleArray)
+                            arrangeDict[IDArray[i]].calculateArrangementShadow(x, y, self.latitude, tempObstacleArray)
+                            if layer < maxArrangeCount:
+                                temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
+                                           i, currentValue + arrangeDict[IDArray[i]].value, placements, layer + 1,
+                                           np.array(tempObstacleArray))
+                                if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的
+                                    betterFlag = True
+                                else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
+                                    self.allPlacements.append(
+                                        [placements.copy(), currentValue, np.array(tempObstacleArray)])
+                                    if len(self.allPlacements) % 1000 == 0:
+                                        print(
+                                            f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                                placements.pop()
+                                currentValue -= arrangeDict[IDArray[i]].value
+                            else:
+                                self.allPlacements.append(
+                                    [placements.copy(), currentValue, np.array(tempObstacleArray)])
+                                if len(self.allPlacements) % 1000 == 0:
+                                    print(
+                                        f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                startX = 0
+            return betterFlag
+
+        def canPlaceArrangement(x, y, arrange, obstacleArray):
+            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
+            for eachRect in arrange.relativePositionArray:
+                startX, startY = eachRect[0]
+                endX, endY = eachRect[1]
+                absoluteEndX, absoluteEndY = x + endX, y + endY
+                if self.width > absoluteEndX and self.length > absoluteEndY:
+                    totalRoof = self.roofSumArray[absoluteEndY][absoluteEndX]
+                    totalObstacles = tempObstacleSumArray[absoluteEndY][absoluteEndX]
+                    if startX > 0:
+                        totalRoof -= self.roofSumArray[absoluteEndY][x + startX - 1]
+                        totalObstacles -= tempObstacleSumArray[absoluteEndY][x + startX - 1]
+                    if startY > 0:
+                        totalRoof -= self.roofSumArray[y + startY - 1][absoluteEndX]
+                        totalObstacles -= tempObstacleSumArray[y + startY - 1][absoluteEndX]
+                    if startX > 0 and startY > 0:
+                        totalRoof += self.roofSumArray[y + startY - 1][x + startX - 1]
+                        totalObstacles += tempObstacleSumArray[y + startY - 1][x + startX - 1]
+                    if totalRoof >= INF:
+                        return False
+                else:
+                    return False
+                # 接下去检查是否被光伏板的阴影遮挡
+                if totalObstacles > 0 and not (obstacleArray[y:y + endY - startY + 1, x:x + endX - startX + 1] <
+                                               arrange.componentHeightArray[startY:endY + 1, startX:endX + 1]).all():
+                    return False
+            return True
+
+        def overlaps(x, y, arrange, placements):
+            for eachRect in arrange.relativePositionArray:
+                for placement in placements:
+                    startX, startY = placement['start']
+                    for eachPlacementRect in screenedArrangements[placement['ID']].relativePositionArray:
+                        if not (x + eachRect[0][0] > startX + eachPlacementRect[1][0] or
+                                x + eachRect[1][0] < startX + eachPlacementRect[0][0] or
+                                y + eachRect[0][1] > startY + eachPlacementRect[1][1] or
+                                y + eachRect[1][1] < startY + eachPlacementRect[0][1]):
+                            return True
+            return False
 
         j = 0
         while j < len(list(screenedArrangements.keys())):
@@ -167,142 +190,12 @@ class Roof:
                 del screenedArrangements[list(screenedArrangements.keys())[j]]
             else:
                 j += 1
-        screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
-
-        # 分割数据为多个子集，以便多进程处理
-        def chunk_it(seq, num):
-            avg, out, last = len(seq) / float(num), [], 0.0
-            while last < len(seq):
-                out.append(seq[int(last):int(last + avg)])
-                last += avg
-            return out
-
-        arrangeArray = list(screenedArrangements.items())
-        eachLayerPlacements = []
-        diffLayerPlacements = []
-        cpuCount = multiprocessing.cpu_count()
-        chunks = chunk_it(range(len(arrangeArray)), cpuCount)
-        with multiprocessing.Pool(processes=cpuCount) as pool:
-            result = pool.map(computeMission, [(self, chunk, arrangeArray, screenedArrangements) for chunk in chunks])
-            for r in result:
-                for rr in r:
-                    eachLayerPlacements.append(rr)
-        diffLayerPlacements.append(eachLayerPlacements)
-
-        for k in range(maxArrangeCount - 1):
-            eachLayerPlacements = []
-            for ii in diffLayerPlacements[k]:
-                chunks = chunk_it(range(ii[1], len(arrangeArray)), cpuCount)
-                with multiprocessing.Pool(processes=cpuCount) as pool:
-                    result = pool.map(computeMission,
-                                      [(self, chunk, arrangeArray, screenedArrangements) for chunk in chunks])
-                    for r in result:
-                        for rr in r:
-                            eachLayerPlacements.append(rr)
-            diffLayerPlacements.append(eachLayerPlacements)
-
-        for eachLayerPlacements in diffLayerPlacements:
-            for eachPlacement in eachLayerPlacements:
-                self.allPlacements.append([eachPlacement[0][0], eachPlacement[0][1], eachPlacement[0][2]])
+        tempArray = sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True)
+        screenedArrangements = dict(tempArray)
+        # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
+        dfs(screenedArrangements, 0, 0, 0, 0, [], 1, np.array(self.obstacleArray))
         print(
             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
-
-    # def getValidOptions(self, screenedArrangements):
-    #     time1 = time.time()
-    #     print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
-    #     # 输入限制条件
-    #     maxArrangeCount = 2  # 最大组件个数
-    #     minComponent = 1  # 最小组件数
-    #
-    #     def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
-    #         betterFlag = False
-    #         IDArray = list(arrangeDict.keys())
-    #         for y in range(startY, self.length):
-    #             for x in range(startX, self.width):
-    #                 for i in range(startI, len(list(arrangeDict))):
-    #                     if canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray) and \
-    #                             not overlaps(x, y, arrangeDict[IDArray[i]], placements):
-    #                         newPlacement = {'ID': IDArray[i], 'start': (x, y)}
-    #                         placements.append(newPlacement)
-    #                         currentValue += arrangeDict[IDArray[i]].value
-    #                         tempObstacleArray = np.array(obstacleArray)
-    #                         arrangeDict[IDArray[i]].calculateArrangementShadow(x, y, self.latitude, tempObstacleArray)
-    #                         if layer < maxArrangeCount:
-    #                             temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
-    #                                        i, currentValue + arrangeDict[IDArray[i]].value, placements, layer + 1,
-    #                                        np.array(tempObstacleArray))
-    #                             if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的
-    #                                 betterFlag = True
-    #                             else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
-    #                                 self.allPlacements.append(
-    #                                     [placements.copy(), currentValue, np.array(tempObstacleArray)])
-    #                                 if len(self.allPlacements) % 1000 == 0:
-    #                                     print(
-    #                                         f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-    #                             placements.pop()
-    #                             currentValue -= arrangeDict[IDArray[i]].value
-    #                         else:
-    #                             self.allPlacements.append(
-    #                                 [placements.copy(), currentValue, np.array(tempObstacleArray)])
-    #                             if len(self.allPlacements) % 1000 == 0:
-    #                                 print(
-    #                                     f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-    #             startX = 0
-    #         return betterFlag
-    #
-    #     def canPlaceArrangement(x, y, arrange, obstacleArray):
-    #         tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
-    #         for eachRect in arrange.relativePositionArray:
-    #             startX, startY = eachRect[0]
-    #             endX, endY = eachRect[1]
-    #             absoluteEndX, absoluteEndY = x + endX, y + endY
-    #             if self.width > absoluteEndX and self.length > absoluteEndY:
-    #                 totalRoof = self.roofSumArray[absoluteEndY][absoluteEndX]
-    #                 totalObstacles = tempObstacleSumArray[absoluteEndY][absoluteEndX]
-    #                 if startX > 0:
-    #                     totalRoof -= self.roofSumArray[absoluteEndY][x + startX - 1]
-    #                     totalObstacles -= tempObstacleSumArray[absoluteEndY][x + startX - 1]
-    #                 if startY > 0:
-    #                     totalRoof -= self.roofSumArray[y + startY - 1][absoluteEndX]
-    #                     totalObstacles -= tempObstacleSumArray[y + startY - 1][absoluteEndX]
-    #                 if startX > 0 and startY > 0:
-    #                     totalRoof += self.roofSumArray[y + startY - 1][x + startX - 1]
-    #                     totalObstacles += tempObstacleSumArray[y + startY - 1][x + startX - 1]
-    #                 if totalRoof >= INF:
-    #                     return False
-    #             else:
-    #                 return False
-    #             # 接下去检查是否被光伏板的阴影遮挡
-    #             if totalObstacles > 0 and not (obstacleArray[y:y + endY - startY + 1, x:x + endX - startX + 1] <
-    #                                            arrange.componentHeightArray[startY:endY + 1, startX:endX + 1]).all():
-    #                 return False
-    #         return True
-    #
-    #     def overlaps(x, y, arrange, placements):
-    #         for eachRect in arrange.relativePositionArray:
-    #             for placement in placements:
-    #                 startX, startY = placement['start']
-    #                 for eachPlacementRect in screenedArrangements[placement['ID']].relativePositionArray:
-    #                     if not (x + eachRect[0][0] > startX + eachPlacementRect[1][0] or
-    #                             x + eachRect[1][0] < startX + eachPlacementRect[0][0] or
-    #                             y + eachRect[0][1] > startY + eachPlacementRect[1][1] or
-    #                             y + eachRect[1][1] < startY + eachPlacementRect[0][1]):
-    #                         return True
-    #         return False
-    #
-    #     j = 0
-    #     while j < len(list(screenedArrangements.keys())):
-    #         if list(screenedArrangements.values())[j].value / list(screenedArrangements.values())[
-    #             j].component.power < minComponent:
-    #             del screenedArrangements[list(screenedArrangements.keys())[j]]
-    #         else:
-    #             j += 1
-    #     tempArray = sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True)
-    #     screenedArrangements = dict(tempArray)
-    #     # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
-    #     dfs(screenedArrangements, 0, 0, 0, 0, [], 1, np.array(self.obstacleArray))
-    #     print(
-    #         f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
 
     def addSceneObstacles(self, obstacles):  # todo: 有可能没用
         for obstacle in obstacles:
@@ -400,229 +293,3 @@ class Roof:
             allMatrix.append(image_array)
         return allMatrix
 
-
-def computeMission(params):
-    self, ss, arrangeArray, screenedArrangements = params
-    eachLayerPlacements = []
-    for s in ss:
-        tempArray = self.search(arrangeArray[s][0], arrangeArray[s][1], 0, 0, 0, [], self.obstacleArray,
-                                screenedArrangements)
-        if tempArray is not None:
-            eachLayerPlacements.append([tempArray, s])
-    return eachLayerPlacements
-
-# 尝试多进程并行：
-#     def getValidOptions(self, screenedArrangements):
-#         time1 = time.time()
-#         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
-#         # 输入限制条件
-#         maxArrangeCount = 2  # 最大阵列个数
-#         minComponent = 1  # 阵列中的最小组件数
-#
-#         def dfs(arrangeArray, startX, startY, currentValue, placements, layer, obstacleArray):
-#             betterFlag = False
-#             for y in range(startY, self.length):
-#                 for x in range(startX, self.width):
-#                     arrange = arrangeArray[layer - 1][1]
-#                     if not overlaps(x, y, arrange, placements) and canPlaceArrangement(x, y, arrange, obstacleArray) :
-#                         newPlacement = {'ID': arrangeArray[layer - 1][0], 'start': (x, y)}
-#                         placements.append(newPlacement)
-#                         currentValue += arrange.value
-#                         tempObstacleArray = np.array(obstacleArray)
-#                         arrange.calculateArrangementShadow(x, y, self.latitude, tempObstacleArray)
-#                         if layer < maxArrangeCount:
-#                             temp = dfs(arrangeArray, x + arrange.relativePositionArray[0][1][0], y,
-#                                        currentValue + arrange.value, placements, layer + 1,
-#                                        np.array(tempObstacleArray))
-#                             if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的
-#                                 betterFlag = True
-#                             else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
-#                                 self.allPlacements.append(
-#                                     [placements.copy(), currentValue, np.array(tempObstacleArray)])
-#
-#                                 # if len(self.allPlacements) % 1000 == 0:
-#                                 #     print(
-#                                 #         f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-#                             placements.pop()
-#                             currentValue -= arrange.value
-#                         else:
-#                             self.allPlacements.append(
-#                                 [placements.copy(), currentValue, np.array(tempObstacleArray)])
-#                             # if len(self.allPlacements) % 1000 == 0:
-#                             #     print(
-#                             #         f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-#                 startX = 0
-#             return betterFlag
-#
-#         def canPlaceArrangement(x, y, arrange, obstacleArray):
-#             tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
-#             for eachRect in arrange.relativePositionArray:
-#                 startX, startY = eachRect[0]
-#                 endX, endY = eachRect[1]
-#                 absoluteEndX, absoluteEndY = x + endX, y + endY
-#                 if self.width > absoluteEndX and self.length > absoluteEndY:
-#                     totalRoof = self.roofSumArray[absoluteEndY][absoluteEndX]
-#                     totalObstacles = tempObstacleSumArray[absoluteEndY][absoluteEndX]
-#                     if startX > 0:
-#                         totalRoof -= self.roofSumArray[absoluteEndY][x + startX - 1]
-#                         totalObstacles -= tempObstacleSumArray[absoluteEndY][x + startX - 1]
-#                     if startY > 0:
-#                         totalRoof -= self.roofSumArray[y + startY - 1][absoluteEndX]
-#                         totalObstacles -= tempObstacleSumArray[y + startY - 1][absoluteEndX]
-#                     if startX > 0 and startY > 0:
-#                         totalRoof += self.roofSumArray[y + startY - 1][x + startX - 1]
-#                         totalObstacles += tempObstacleSumArray[y + startY - 1][x + startX - 1]
-#                     if totalRoof >= INF:
-#                         return False
-#                 else:
-#                     return False
-#                 # 接下去检查是否被光伏板的阴影遮挡
-#                 if totalObstacles > 0 and not (obstacleArray[y:y + endY - startY + 1, x:x + endX - startX + 1] <
-#                                                arrange.componentHeightArray[startY:endY + 1, startX:endX + 1]).all():
-#                     return False
-#             return True
-#
-#         def overlaps(x, y, arrange, placements):
-#             for eachRect in arrange.relativePositionArray:
-#                 for placement in placements:
-#                     startX, startY = placement['start']
-#                     for eachPlacementRect in screenedArrangements[placement['ID']].relativePositionArray:
-#                         if not (x + eachRect[0][0] > startX + eachPlacementRect[1][0] or
-#                                 x + eachRect[1][0] < startX + eachPlacementRect[0][0] or
-#                                 y + eachRect[0][1] > startY + eachPlacementRect[1][1] or
-#                                 y + eachRect[1][1] < startY + eachPlacementRect[0][1]):
-#                             return True
-#             return False
-#
-#         j = 0
-#         while j < len(list(screenedArrangements.keys())):
-#             if list(screenedArrangements.values())[j].value / list(screenedArrangements.values())[
-#                 j].component.power < minComponent:
-#                 del screenedArrangements[list(screenedArrangements.keys())[j]]
-#             else:
-#                 j += 1
-#         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
-#         multipleMissionArray = []
-#         tempArray = list(screenedArrangements.keys())
-#
-#         def generatePermutation(startI, arr, targetArr):
-#             for i in range(startI, len(arr)):
-#                 targetArr.append(arr[i])
-#                 if len(targetArr) < maxArrangeCount:
-#                     generatePermutation(i, arr, targetArr)
-#                     targetArr.pop()
-#                 else:
-#                     multipleMissionArray.append(targetArr.copy())  # todo: 可能可以用np.array()优化？
-#                     targetArr.pop()
-#
-#         generatePermutation(0, tempArray, [])
-#         print(len(multipleMissionArray))
-#
-#         for mission in multipleMissionArray:
-#             dfs([[key, screenedArrangements[key]] for key in mission], 0, 0, 0, [], 1, self.obstacleArray)
-#             if multipleMissionArray.index(mission) == 37:
-#                 print("debug")
-#             print(
-#                 f"已经完成{multipleMissionArray.index(mission) + 1}/{len(multipleMissionArray)}个排布方案的计算，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-#         print(
-#             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
-
-
-# 第一版可用dfs：
-#     def getValidOptions(self, screenedArrangements):
-#         time1 = time.time()
-#         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
-#         # 输入限制条件
-#         maxArrangeCount = 1  # 最大组件个数
-#         minComponent = 1  # 最小组件数
-#
-#         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
-#             betterFlag = False
-#             IDArray = list(arrangeDict.keys())
-#             for y in range(startY, self.length):
-#                 for x in range(startX, self.width):
-#                     for i in range(startI, len(list(arrangeDict))):
-#                         if canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray) and \
-#                                 not overlaps(x, y, arrangeDict[IDArray[i]], placements):
-#                             newPlacement = {'ID': IDArray[i], 'start': (x, y)}
-#                             placements.append(newPlacement)
-#                             currentValue += arrangeDict[IDArray[i]].value
-#                             tempObstacleArray = np.array(obstacleArray)
-#                             arrangeDict[IDArray[i]].calculateArrangementShadow(x, y, self.latitude, tempObstacleArray)
-#                             if layer < maxArrangeCount:
-#                                 temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
-#                                            i, currentValue + arrangeDict[IDArray[i]].value, placements, layer + 1,
-#                                            np.array(tempObstacleArray))
-#                                 if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的
-#                                     betterFlag = True
-#                                 else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
-#                                     self.allPlacements.append(
-#                                         [placements.copy(), currentValue, np.array(tempObstacleArray)])
-#
-#                                     if len(self.allPlacements) % 1000 == 0:
-#                                         print(
-#                                             f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-#                                 placements.pop()
-#                                 currentValue -= arrangeDict[IDArray[i]].value
-#                             else:
-#                                 self.allPlacements.append(
-#                                     [placements.copy(), currentValue, np.array(tempObstacleArray)])
-#                                 if len(self.allPlacements) % 1000 == 0:
-#                                     print(
-#                                         f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-#                 startX = 0
-#             return betterFlag
-#
-#         def canPlaceArrangement(x, y, arrange, obstacleArray):
-#             tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
-#             for eachRect in arrange.relativePositionArray:
-#                 startX, startY = eachRect[0]
-#                 endX, endY = eachRect[1]
-#                 absoluteEndX, absoluteEndY = x + endX, y + endY
-#                 if self.width > absoluteEndX and self.length > absoluteEndY:
-#                     totalRoof = self.roofSumArray[absoluteEndY][absoluteEndX]
-#                     totalObstacles = tempObstacleSumArray[absoluteEndY][absoluteEndX]
-#                     if startX > 0:
-#                         totalRoof -= self.roofSumArray[absoluteEndY][x + startX - 1]
-#                         totalObstacles -= tempObstacleSumArray[absoluteEndY][x + startX - 1]
-#                     if startY > 0:
-#                         totalRoof -= self.roofSumArray[y + startY - 1][absoluteEndX]
-#                         totalObstacles -= tempObstacleSumArray[y + startY - 1][absoluteEndX]
-#                     if startX > 0 and startY > 0:
-#                         totalRoof += self.roofSumArray[y + startY - 1][x + startX - 1]
-#                         totalObstacles += tempObstacleSumArray[y + startY - 1][x + startX - 1]
-#                     if totalRoof >= INF:
-#                         return False
-#                 else:
-#                     return False
-#                 # 接下去检查是否被光伏板的阴影遮挡
-#                 if totalObstacles > 0 and not (obstacleArray[y:y + endY - startY + 1, x:x + endX - startX + 1] <
-#                                                arrange.componentHeightArray[startY:endY + 1, startX:endX + 1]).all():
-#                     return False
-#             return True
-#
-#         def overlaps(x, y, arrange, placements):
-#             for eachRect in arrange.relativePositionArray:
-#                 for placement in placements:
-#                     startX, startY = placement['start']
-#                     for eachPlacementRect in screenedArrangements[placement['ID']].relativePositionArray:
-#                         if not (x + eachRect[0][0] > startX + eachPlacementRect[1][0] or
-#                                 x + eachRect[1][0] < startX + eachPlacementRect[0][0] or
-#                                 y + eachRect[0][1] > startY + eachPlacementRect[1][1] or
-#                                 y + eachRect[1][1] < startY + eachPlacementRect[0][1]):
-#                             return True
-#             return False
-#
-#         j = 0
-#         while j < len(list(screenedArrangements.keys())):
-#             if list(screenedArrangements.values())[j].value / list(screenedArrangements.values())[
-#                 j].component.power < minComponent:
-#                 del screenedArrangements[list(screenedArrangements.keys())[j]]
-#             else:
-#                 j += 1
-#         tempArray = sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True)
-#         screenedArrangements = dict(tempArray)
-#         # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
-#         dfs(screenedArrangements, 0, 0, 0, 0, [], 0, np.array(self.obstacleArray))
-#         print(
-#             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
