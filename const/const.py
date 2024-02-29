@@ -1,5 +1,5 @@
 # 规定一些常量
-UNIT = 200  # 以毫米为单位
+UNIT = 400  # 以毫米为单位
 INF = 1000000000000  # 无穷大
 roofBoardLength = 1  # 打印屋顶示意图时，额外屋顶边缘的宽度（单位是单元格）
 PhotovoltaicPanelBoardLength = 1  # 打印屋顶示意图时，额外光伏板边缘的宽度（单位是单元格）

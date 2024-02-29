@@ -413,7 +413,7 @@ class UI:
         for text, entry in bool_entries.items():
             print(text + ": ", entry.get())
             new_obstacle[text] = entry.get()
-        outside_self.obstacle_info.append(new_obstacle)
+        self.outside_obstacle_info.append(new_obstacle)
         window.destroy()
 
     def open_panel_window(self,str_text,option_text,options,bool_text):
