@@ -10,6 +10,7 @@ from classes.obstacle import Obstacle
 # 输入都是以毫米为单位的
 class Roof:
     def __init__(self, jsonRoof, latitude):
+        UNIT = getUnit()
         self.eastExtend, self.westExtend, self.southExtend, self.northExtend = jsonRoof["extensibleDistance"]
         if not jsonRoof["isComplex"]:
             self.length = round((jsonRoof["length"] + self.southExtend + self.northExtend) / UNIT)
@@ -31,6 +32,7 @@ class Roof:
         # self.type = 0
 
     def calculateObstacleSelf(self):
+        UNIT = getUnit()
         return_list = [[0] * (self.length + 1) for _ in range(self.width + 1)]
         for obstacle in self.obstacles:  # 有问题
             if obstacle.type == '有烟烟囱':
@@ -57,7 +59,7 @@ class Roof:
             #     print("debug")
             if placement[1] < nowMaxValue:
                 continue
-            for obstacle in obstacles:
+            for obstacle in obstacles:  # todo: 待优化
                 self.obstacles.append(Obstacle(obstacle, placement[2], self.roofArray, self.latitude))
             tempObstacleSumArray = np.cumsum(np.cumsum(placement[2], axis=0), axis=1)
             allDeletedIndices = []

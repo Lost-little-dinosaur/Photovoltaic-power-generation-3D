@@ -1,9 +1,10 @@
-from const.const import UNIT
+from const.const import getUnit
 from tools import tools3D
 
 
 class Obstacle:
     def __init__(self, obstacle, obstacleArray, roofArray, latitude):
+        UNIT = getUnit()
         self.type = obstacle["type"]
         self.ID = obstacle["id"]
         if obstacle["type"] == "有烟烟囱" or obstacle["type"] == "无烟烟囱":

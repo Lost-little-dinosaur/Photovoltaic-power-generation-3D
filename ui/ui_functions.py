@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import classes.roof
 from classes.arrangement import screenArrangements
-from classes.component import assignComponentParameters
+# from classes.component import assignComponentParameters
 import json
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -534,10 +534,10 @@ class UI:
             self.panel_info[text] = entry.get()
         window.destroy()
 
-    def clear_canvas(self, ):
+    def clear_canvas(self):
         self.roofscene_canvas.delete("all")
 
-    def draw_roofscene(self, ):
+    def draw_roofscene(self):
         self.clear_canvas()
 
         draw_width = frame_width - draw_gap * 2
@@ -587,11 +587,13 @@ class UI:
                 continue
         print(self.get_input_json())
 
-    def calculate_layout(self, ):
+    def calculate_layout(self):
         jsonData = self.get_input_json()
-        # const.const.changeConst(jsonData['algorithm']['precision'], jsonData['algorithm']['maxArrangeCount'])
+        const.const.changeUnit(jsonData['algorithm']['precision'])
+        const.const.changeMaxArrangeCount(jsonData['algorithm']['maxArrangeCount'])
+
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
-        assignComponentParameters(jsonData["component"])
+        # assignComponentParameters(jsonData["component"]) # todo
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                                   jsonData["arrangeType"],
                                                   jsonData["scene"]["location"]["windPressure"])
@@ -602,7 +604,7 @@ class UI:
         roof.calculate_column(screenedArrangements)
         return roof.drawPlacement(screenedArrangements)
 
-    def cal_and_display_layout(self, ):
+    def cal_and_display_layout(self):
         for i in range(5):
             self.arrangement_btns[i].config(state="disabled")
         self.layout_imgs = self.calculate_layout()[:5]
@@ -622,7 +624,7 @@ class UI:
         except Exception as e:
             print("Exception", e)
 
-    def clear_info(self, ):
+    def clear_info(self):
 
         self.location_info = {}
         self.roof_info = {}
@@ -692,7 +694,7 @@ class UI:
         self.draw_roofscene()
         return input_json
 
-    def get_input_json(self, ):
+    def get_input_json(self):
         input_json = {}
         # guest
         input_json["guest"] = {}

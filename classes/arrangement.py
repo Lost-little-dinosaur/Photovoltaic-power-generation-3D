@@ -1,6 +1,7 @@
 import numpy as np
 
-from classes.component import Component, components
+import const.const
+from classes.component import Component, getAllComponents
 
 from const.const import *
 from math import radians, sin
@@ -10,8 +11,9 @@ ID = 0
 
 
 class Arrangement:
+
     def __init__(self, componentLayoutArray, crossPosition, component, arrangeType, maxWindPressure, isRule):
-        for c in components:
+        for c in getAllComponents():
             if component == c.specification:
                 self.component = c  # 使用组件的类型
                 break
@@ -81,6 +83,9 @@ class Arrangement:
         self.componentHeightArray = np.array(self.calculateComponentHeightArray())  # 每个光伏板具体高度（大小是这个arrangement的最小包络矩形）
 
     def calculateStandColumn(self, startX, startY, roof_Width, obstacles, deletedIndices):
+        UNIT = const.const.getUnit()
+        column, limit_column, arrangement_height = const.const.getColumnsInformation()
+
         def generate_columns(n_columns, startY, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
             column_positions = []
             ideal_spacing_min = int((width - round(1400 / UNIT)) / (n_columns - 1)) + 1  # 计算最小理想间距
@@ -487,7 +492,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                 ID += 1
         else:  # 横竖都有
             minVerticalNum = 2
-            for c in components:
+            for c in getAllComponents():
                 if c.specification == tempElement[2]:
                     tempComponent = c
                     break
@@ -581,6 +586,8 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
 # print(len(tempArrangements))
 # print(tempArrangements)
 def calculate_ar_Shadow(self, startX, startY, latitude, obstacleArray=[]):
+    column, limit_column, arrangement_height = const.const.getColumnsInformation()
+
     str = self.component.specification + self.arrangeType
 
     if len(self.relativePositionArray) == 1:

@@ -1,9 +1,10 @@
-import sys,os
+import sys, os
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import classes.roof
 from classes.arrangement import screenArrangements
-from classes.component import assignComponentParameters
+# from classes.component import assignComponentParameters
 import json
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -74,6 +75,7 @@ chn2eng = {
     "DFS（多阵列）": "dfs",
 }
 eng2chn = {v: k for k, v in chn2eng.items()}
+
 
 def open_location_window():
     location_window = tk.Toplevel(root)
@@ -460,10 +462,11 @@ def draw_roofscene():
             continue
     print(get_input_json())
 
+
 def calculate_layout():
     jsonData = get_input_json()
     roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
-    assignComponentParameters(jsonData["component"])
+    # assignComponentParameters(jsonData["component"]) # todo: 传入光伏板参数
     screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                               jsonData["arrangeType"], jsonData["scene"]["location"]["windPressure"])
     roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
@@ -473,6 +476,7 @@ def calculate_layout():
     roof.calculate_column(screenedArrangements)
     return roof.drawPlacement(screenedArrangements)
 
+
 def cal_and_display_layout():
     global layout_imgs
     for i in range(5):
@@ -481,19 +485,21 @@ def cal_and_display_layout():
     display_layout()
     for i in range(len(layout_imgs)):
         arrangement_btns[i].config(state="active")
-    
+
+
 def display_layout(index=0):
     global display_img
     try:
         image_matrix = layout_imgs[index]
         image = Image.fromarray(image_matrix)
-        scaled_image = image.resize((frame_width,frame_height))
+        scaled_image = image.resize((frame_width, frame_height))
         # image.save(os.path.join(file_dir,f"image_{index}.png"))
         # scaled_image.save(os.path.join(file_dir,f"scaled_image_{index}.png"))
         display_img = ImageTk.PhotoImage(scaled_image)
         arrangement_canvas.create_image(0, 0, anchor=tk.NW, image=display_img)
     except Exception as e:
         print("Exception", e)
+
 
 def clear_info():
     global location_info
@@ -515,7 +521,7 @@ def clear_info():
 def get_demo_input(index=0):
     with open(os.path.join(file_dir, f'input{index}.json'), 'r', encoding='utf-8') as f:
         input_json = json.load(f)
-    
+
     if "scene" in input_json:
         if "location" in input_json["scene"]:
             for key, value in input_json["scene"]["location"].items():
@@ -534,12 +540,12 @@ def get_demo_input(index=0):
                 roof_info["可探出距离（北）"] = roof_info["extensibleDistance"][3]
             if 'parapetWall' in roof_info:
                 for key, value in roof_info['parapetWall'].items():
-                    roof_info['parapetWall'+key] = value
+                    roof_info['parapetWall' + key] = value
 
             if "obstacles" in input_json["scene"]["roof"]:
                 for obstacle in input_json["scene"]["roof"]["obstacles"]:
                     new_item = {}
-                    for key,value in obstacle.items():
+                    for key, value in obstacle.items():
                         try:
                             new_item[eng2chn[key]] = value
                         except:
@@ -553,9 +559,9 @@ def get_demo_input(index=0):
                     obstacle_info.append(new_item)
 
     # if "obstacles" in input_json:
-        # for key, value in input_json["obstacles"].items():
-        #     outside_obstacle_info[eng2chn[key]] = value
-    
+    # for key, value in input_json["obstacles"].items():
+    #     outside_obstacle_info[eng2chn[key]] = value
+
     if "component" in input_json:
         for key, value in input_json["component"].items():
             panel_info[eng2chn[key]] = value
@@ -566,7 +572,6 @@ def get_demo_input(index=0):
 
     draw_roofscene()
     return input_json
-
 
 
 def get_input_json():
@@ -633,7 +638,7 @@ def get_input_json():
     input_json["component"]["specification"] = ""
     for key, value in panel_info.items():
         input_json["component"][chn2eng[key]] = value
-    
+
     # algorithm
     input_json["algorithm"] = {}
     for key, value in panel_info.items():
@@ -644,10 +649,12 @@ def get_input_json():
 
 root = tk.Tk()
 
+
 def on_closing():
     root.quit()
     root.destroy()
-    
+
+
 # 绑定窗口关闭事件
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.title("光伏板排布计算")
@@ -710,7 +717,7 @@ arrangement_btn_text.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
 # 界面切换按钮
 arrangement_btns = []
 for i in range(5):
-    arrangement_btn = tk.Button(arrangement_frame, text=f"{i+1}", command=partial(display_layout,i))
+    arrangement_btn = tk.Button(arrangement_frame, text=f"{i + 1}", command=partial(display_layout, i))
     arrangement_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
     arrangement_btn.config(state="disabled")
     arrangement_btns.append(arrangement_btn)
@@ -737,13 +744,14 @@ roofscene_btn_text.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
 # 界面切换按钮
 roofscene_btns = []
 for i in range(5):
-    roofscene_btn = tk.Button(roofscene_frame, text=f"{i+1}", command=partial(get_demo_input,i))
+    roofscene_btn = tk.Button(roofscene_frame, text=f"{i + 1}", command=partial(get_demo_input, i))
     roofscene_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
-    if os.path.exists(os.path.join(file_dir,f"input{i}.json")):
+    if os.path.exists(os.path.join(file_dir, f"input{i}.json")):
         roofscene_btn.config(state="active")
     else:
         roofscene_btn.config(state="disabled")
     roofscene_btns.append(roofscene_btn)
+
 
 # empty_text = tk.Label(roofscene_frame, text="", font=("Arial", 12))
 # empty_text.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
