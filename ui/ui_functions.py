@@ -70,6 +70,12 @@ chn2eng = {
 eng2chn = {v: k for k, v in chn2eng.items()}
 
 
+def is_nonempty_list(var):
+    if isinstance(var, list) and len(var) > 0:
+        return True
+    else:
+        return False
+
 class UI:
     def __init__(self,
                  location_ui_info,
@@ -98,45 +104,56 @@ class UI:
         left_frame = tk.Frame(self.root)
         left_frame.pack(side=tk.LEFT, padx=20, pady=20)
 
-        # Buttons for adding information
-        location_btn = tk.Button(left_frame, text="添加位置信息",
-                                 command=partial(self.open_location_window, *location_ui_info))
+        if is_nonempty_list(location_ui_info):
+            # Buttons for adding information
+            location_btn = tk.Button(left_frame, text="添加位置信息",
+                                    command=partial(self.open_location_window, *location_ui_info))
+            location_btn.pack(fill=tk.X, pady=5)
+        
+        if is_nonempty_list(roof_ui_info):
+            roof_btn = tk.Button(left_frame, text="添加屋顶信息",
+                                command=partial(self.open_roof_window, *roof_ui_info))
+            roof_btn.pack(fill=tk.X, pady=5)
+        
+        if is_nonempty_list(obstacle_ui_info):
+            obstacle_btn = tk.Button(left_frame, text="添加屋内障碍物信息",
+                                    command=partial(self.open_obstacle_window, *obstacle_ui_info))
+            obstacle_btn.pack(fill=tk.X, pady=5)
+                
+        if is_nonempty_list(outside_obstacle_ui_info):
+            outside_obstacle_btn = tk.Button(left_frame, text="添加屋外障碍物信息", 
+                                    command=partial(self.open_outside_obstacle_window, *obstacle_ui_info))
+            outside_obstacle_btn.pack(fill=tk.X, pady=5)
 
-        location_btn.pack(fill=tk.X, pady=5)
-        roof_btn = tk.Button(left_frame, text="添加屋顶信息",
-                             command=partial(self.open_roof_window, *roof_ui_info))
-
-        roof_btn.pack(fill=tk.X, pady=5)
-        obstacle_btn = tk.Button(left_frame, text="添加屋内障碍物信息",
-                                 command=partial(self.open_obstacle_window, *obstacle_ui_info))
-        obstacle_btn.pack(fill=tk.X, pady=5)
-
-        panel_btn = tk.Button(left_frame, text="添加光伏板信息",
-                              command=partial(self.open_panel_window, *panel_ui_info))
-        panel_btn.pack(fill=tk.X, pady=5)
+        if is_nonempty_list(panel_ui_info):
+            panel_btn = tk.Button(left_frame, text="添加光伏板信息",
+                                command=partial(self.open_panel_window, *panel_ui_info))
+            panel_btn.pack(fill=tk.X, pady=5)
 
         clear_btn = tk.Button(left_frame, text="清空输入信息", command=self.clear_info)
         clear_btn.pack(fill=tk.X, pady=5)
 
         # Frame for installation scheme selection
-        scheme_frame = tk.Frame(left_frame)
-        scheme_frame.pack(fill=tk.X)
-        # Installation scheme selection
-        scheme_label = tk.Label(scheme_frame, text="安装方案")
-        scheme_label.pack(side=tk.LEFT)
-        self.arrangeType_var = tk.StringVar(scheme_frame)
-        self.arrangeType_var.set(scheme_options[0])
-        scheme_menu = tk.OptionMenu(scheme_frame, self.arrangeType_var, *scheme_options, )
-        scheme_menu.config(width=10)
-        scheme_menu.pack(side=tk.LEFT)
+        if is_nonempty_list(scheme_options):
+            scheme_frame = tk.Frame(left_frame)
+            scheme_frame.pack(fill=tk.X)
+            # Installation scheme selection
+            scheme_label = tk.Label(scheme_frame, text="安装方案")
+            scheme_label.pack(side=tk.LEFT)
+            self.arrangeType_var = tk.StringVar(scheme_frame)
+            self.arrangeType_var.set(scheme_options[0])
+            scheme_menu = tk.OptionMenu(scheme_frame, self.arrangeType_var, *scheme_options, )
+            scheme_menu.config(width=10)
+            scheme_menu.pack(side=tk.LEFT)
 
         # Button to calculate PV panel layout
         draw_btn = tk.Button(left_frame, text="展示屋面场景", command=self.draw_roofscene)
         draw_btn.pack(fill=tk.X, pady=(0, 20))
 
-        algorithm_btn = tk.Button(left_frame, text="选择算法类型",
-                                  command=partial(self.open_algorithm_window, *algorithm_ui_info))
-        algorithm_btn.pack(fill=tk.X, pady=0)
+        if is_nonempty_list(algorithm_ui_info):
+            algorithm_btn = tk.Button(left_frame, text="选择算法类型",
+                                    command=partial(self.open_algorithm_window, *algorithm_ui_info))
+            algorithm_btn.pack(fill=tk.X, pady=0)
 
         calculate_btn = tk.Button(left_frame, text="计算光伏板排布", command=self.cal_and_display_layout)
         calculate_btn.pack(fill=tk.X, pady=(0, 20))
@@ -145,7 +162,23 @@ class UI:
         arrangement_frame = tk.Frame(self.root)
         arrangement_frame.pack(side=tk.RIGHT, padx=20, pady=20)
 
-        # “原始拓扑”文字标签放置在右侧区域的顶部
+        # 创建右侧的区域，包括“原始拓扑”文字标签和图片显示区域
+        arrangement_info_frame = tk.Frame(arrangement_frame)
+        arrangement_info_frame.pack(side=tk.RIGHT, padx=20, pady=20)
+
+        # 文字标签放置在右侧区域
+        arrangement_info_text = tk.Label(arrangement_info_frame, text="排布信息", font=("Arial", 12))
+        arrangement_info_text.pack()
+        self.arrangement_info_text_var = tk.StringVar()
+        self.arrangement_info_text_var.set("")
+
+        arrangement_info_text = tk.Label(arrangement_info_frame, textvariable=self.arrangement_info_text_var, font=("Arial", 10))
+        arrangement_info_text.pack()
+
+        text_btn = tk.Button(arrangement_info_frame, text="测试更新排布文本", command=self.update_arrangement_info_text)
+        text_btn.pack(fill=tk.X, pady=(0, 20))
+
+        # “组件排布”文字标签放置在右侧区域的顶部
         arrangement_text = tk.Label(arrangement_frame, text="组件排布", font=("Arial", 12))
         arrangement_text.pack()
 
@@ -239,13 +272,13 @@ class UI:
 
     def get_location_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.location_info[text] = entry.get()
         for text, entry in option_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.location_info[text] = entry.get()
         for text, entry in bool_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.location_info[text] = entry.get()
         window.destroy()
 
@@ -298,13 +331,13 @@ class UI:
 
     def get_roof_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.roof_info[text] = entry.get()
         for text, entry in option_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.roof_info[text] = entry.get()
         for text, entry in bool_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.roof_info[text] = entry.get()
         window.destroy()
 
@@ -355,13 +388,13 @@ class UI:
     def get_obstacle_data(self, window, str_entries, option_entries, bool_entries):
         new_obstacle = {}
         for text, entry in str_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             new_obstacle[text] = entry.get()
         for text, entry in option_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             new_obstacle[text] = entry.get()
         for text, entry in bool_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             new_obstacle[text] = entry.get()
         self.obstacle_info.append(new_obstacle)
         window.destroy()
@@ -413,13 +446,13 @@ class UI:
     def get_outside_obstacle_window_data(self, window, str_entries, option_entries, bool_entries):
         new_obstacle = {}
         for text, entry in str_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             new_obstacle[text] = entry.get()
         for text, entry in option_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             new_obstacle[text] = entry.get()
         for text, entry in bool_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             new_obstacle[text] = entry.get()
         self.outside_obstacle_info.append(new_obstacle)
         window.destroy()
@@ -469,13 +502,13 @@ class UI:
 
     def get_panel_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.panel_info[text] = entry.get()
         for text, entry in option_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.panel_info[text] = entry.get()
         for text, entry in bool_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.panel_info[text] = entry.get()
         window.destroy()
 
@@ -524,13 +557,13 @@ class UI:
 
     def get_algorithm_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.panel_info[text] = entry.get()
         for text, entry in option_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.panel_info[text] = entry.get()
         for text, entry in bool_entries.items():
-            print(text + ": ", entry.get())
+            # print(text + ": ", entry.get())
             self.panel_info[text] = entry.get()
         window.destroy()
 
@@ -583,9 +616,14 @@ class UI:
                     x2 = roof_left + (centerX + width) * scale
                     y2 = roof_top + (centerY + length) * scale
                     self.roofscene_canvas.create_rectangle(x1, y1, x2, y2, outline='red')
+                if len(obstacle["ID"]) > 0:
+                    self.roofscene_canvas.create_text( x2+draw_width*0.01, y2+draw_height*0.01, 
+                    text = f"{obstacle['ID']}", 
+                    font = ("Arial",10),
+                    fill = "red")
             except:
                 continue
-        print(self.get_input_json())
+        # print(self.get_input_json())
 
     def calculate_layout(self, ):
         jsonData = self.get_input_json()
@@ -767,3 +805,6 @@ class UI:
     def on_closing(self):
         self.root.quit()
         self.root.destroy()
+
+    def update_arrangement_info_text(self):
+        self.arrangement_info_text_var.set("展示文本\n展示文本\n")
