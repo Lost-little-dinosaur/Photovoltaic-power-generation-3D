@@ -21,7 +21,7 @@
       "isComplex": false,
       "category": "平屋顶",
       "length": 9100,
-      "width": 7700,
+      "width": 7000,
       "height": 3000,
       "roofDirection": 0,
       "roofAngle": 0,
@@ -43,16 +43,18 @@
       },
       "obstacles": [
         {
-          "id": "无烟烟囱1",
-          "type": "无烟烟囱",
-          "isRound": true,
-          "diameter": 20,
-          "height": 20,
-          "centerPosition": [
-            100,
-            200
+          "id": "有烟烟囱1",
+          "type": "有烟烟囱",
+          "isRound": false,
+          "length": 500,
+          "width": 500,
+          "height": 1000,
+          "upLeftPosition": [
+            1000,
+            4000
           ],
-          "adjustedHeight": 0
+          "adjustedHeight": 0,
+          "removable": 1
         },
         {
           "id": "有烟烟囱2",
@@ -60,10 +62,10 @@
           "isRound": false,
           "length": 500,
           "width": 500,
-          "height": 2000,
+          "height": 1000,
           "upLeftPosition": [
-            5000,
-            1000
+            100,
+            200
           ],
           "adjustedHeight": 0,
           "removable": 1
