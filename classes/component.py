@@ -8,6 +8,8 @@ class Component:
         UNIT = getUnit()
         self.specification = specification
         # 将width和length转换成以UNIT为单位
+        self.realWidth = width
+        self.realLength = length
         self.width = round(width / UNIT)
         self.length = round(length / UNIT)
         self.power = power

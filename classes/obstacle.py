@@ -13,8 +13,12 @@ class Obstacle:
                 self.isRound = False
                 self.width = round(obstacle["width"] / UNIT)
                 self.length = round(obstacle["length"] / UNIT)
+                self.realwidth = obstacle["width"]
+                self.reallength = obstacle["length"]
                 self.upLeftPosition = [round(obstacle["upLeftPosition"][0] / UNIT),
                                        round(obstacle["upLeftPosition"][1] / UNIT)]
+                self.realupLeftPosition = [obstacle["upLeftPosition"][0],
+                                       obstacle["upLeftPosition"][1]]
                 tools3D.calculateShadow([[self.upLeftPosition[0], self.upLeftPosition[1],
                                           self.height + roofArray[int(self.upLeftPosition[0])][
                                               int(self.upLeftPosition[1])]],
