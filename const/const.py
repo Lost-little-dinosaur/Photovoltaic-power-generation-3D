@@ -47,7 +47,7 @@ def getMaxArrangeCount():
 #              PhotovoltaicPanel: (1.0, 1.0, 0.0, 1.0), Margin: (1.0, 0.0, 0.0, 1.0), RoofMargin: (0.0, 0.0, 0.0, 1.0),
 #              PhotovoltaicPanelMargin: (0.43, 0.43, 0.43, 1.0), PhotovoltaicPanelBorder: (0.0, 0.0, 0.0, 1.0)}
 EmptyColor = (0.0, 0.0, 0.0)  # 空地
-ObstacleColor = (0.0, 0.0, 0.0)  # 障碍物
+ObstacleColor = (247, 76, 48)  # 障碍物
 ShadowColor = (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)  # 阴影
 PhotovoltaicPanelColor = (1.0, 1.0, 0.0)  # 光伏板
 MarginColor = (1.0, 0.0, 0.0)  # 边缘

@@ -384,7 +384,7 @@ class Arrangement:
             for node_c in temp:
                 self.componentPositionArray.append(
                     [[node_c[0], node_c[1]], [node_c[0] + self.component.realWidth - 1,
-                                              node_c[1] + self.component.realLengthr - 1]])
+                                              node_c[1] + self.component.realLength - 1]])
     # def chooseLayout(self):
     #     if self.specification == "竖二" and self.type == "基墩":
     #         array_x = [107, 1707, 3307]
