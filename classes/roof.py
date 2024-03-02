@@ -49,7 +49,7 @@ class Roof:
                         return_list[x][y] = 1
         return return_list
 
-    def addObstaclesConcern(self, obstacles, screenedArrangements):
+    def addObstaclesConcern(self, screenedArrangements):
         time1 = time.time()
         print("开始分析阴影并选出最佳方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         nowMaxValue = -INF
@@ -59,8 +59,8 @@ class Roof:
             #     print("debug")
             if placement[1] < nowMaxValue:
                 continue
-            for obstacle in obstacles:  # todo: 待优化
-                self.obstacles.append(Obstacle(obstacle, placement[2], self.roofArray, self.latitude))
+            # placement[2]取为obstacleArray和placement[2]的最大值
+            placement[2] = np.maximum(placement[2], self.obstacleArray)
             tempObstacleSumArray = np.cumsum(np.cumsum(placement[2], axis=0), axis=1)
             allDeletedIndices = []
             for arrange in placement[0]:
@@ -106,16 +106,18 @@ class Roof:
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         # 输入限制条件
-        minComponent = 1  # 最小组件数
+        minComponent = 5  # 最小组件数
+        maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
+        nowMaxValue = -INF
 
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
             betterFlag = False
             IDArray = list(arrangeDict.keys())
             for y in range(startY, self.length):
                 for x in range(startX, self.width):
-                    for i in range(startI, len(list(arrangeDict))):
-                        if canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray) and \
-                                not overlaps(x, y, arrangeDict[IDArray[i]], placements):
+                    for i in range(startI, len(IDArray)):
+                        if not overlaps(x, y, arrangeDict[IDArray[i]], placements) and \
+                                canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray):
                             newPlacement = {'ID': IDArray[i], 'start': (x, y)}
                             placements.append(newPlacement)
                             currentValue += arrangeDict[IDArray[i]].value
@@ -123,16 +125,15 @@ class Roof:
                             arrangeDict[IDArray[i]].calculateArrangementShadow(x, y, self.latitude, tempObstacleArray)
                             if layer < maxArrangeCount:
                                 temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
-                                           i, currentValue + arrangeDict[IDArray[i]].value, placements, layer + 1,
-                                           np.array(tempObstacleArray))
-                                if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的
+                                           i, currentValue, placements, layer + 1, np.array(tempObstacleArray))
+                                if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
                                     betterFlag = True
                                 else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
                                     self.allPlacements.append(
                                         [placements.copy(), currentValue, np.array(tempObstacleArray)])
                                     if len(self.allPlacements) % 1000 == 0:
                                         print(
-                                            f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                                            f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
                                 placements.pop()
                                 currentValue -= arrangeDict[IDArray[i]].value
                             else:
@@ -140,7 +141,9 @@ class Roof:
                                     [placements.copy(), currentValue, np.array(tempObstacleArray)])
                                 if len(self.allPlacements) % 1000 == 0:
                                     print(
-                                        f"已经计算了{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                                        f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                                placements.pop()
+                                currentValue -= arrangeDict[IDArray[i]].value
                 startX = 0
             return betterFlag
 
@@ -191,16 +194,15 @@ class Roof:
                 del screenedArrangements[list(screenedArrangements.keys())[j]]
             else:
                 j += 1
-        tempArray = sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True)
-        screenedArrangements = dict(tempArray)
+        screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
-        dfs(screenedArrangements, 0, 0, 0, 0, [], 1, np.array(self.obstacleArray))
+        dfs(screenedArrangements, 0, 0, 0, 0, [], 1, np.zeros((self.length, self.width)))
         print(
             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
 
-    def addSceneObstacles(self, obstacles):  # todo: 有可能没用
+    def addObstacles(self, obstacles):
         for obstacle in obstacles:
-            self.sceneObstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
+            self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
         self.obstacleSumArray = np.cumsum(np.cumsum(self.obstacleArray, axis=0), axis=1)
 
     def calculate_column(self, screenedArrangements):
@@ -286,6 +288,7 @@ class Roof:
 
             # 获取当前的Figure对象
             fig = plt.gcf()
+            fig.patch.set_facecolor('black')  # 设置背景颜色为黑色
 
             # 获取绘图数据
             fig.canvas.draw()
@@ -296,3 +299,14 @@ class Roof:
             # allMatrix.append(matrix)
             allMatrix.append(image_array)
         return allMatrix
+
+
+def computeMission(params):
+    self, ss, arrangeArray, screenedArrangements = params
+    eachLayerPlacements = []
+    for s in ss:
+        tempArray = self.search(arrangeArray[s][0], arrangeArray[s][1], 0, 0, 0, [], self.obstacleArray,
+                                screenedArrangements)
+        if tempArray is not None:
+            eachLayerPlacements.append([tempArray, s])
+    return eachLayerPlacements

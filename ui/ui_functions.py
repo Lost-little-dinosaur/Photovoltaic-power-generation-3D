@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import classes.roof
 from classes.arrangement import screenArrangements
-# from classes.component import assignComponentParameters
+from classes.component import assignComponentParameters
 import json
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -593,13 +593,15 @@ class UI:
         const.const.changeMaxArrangeCount(jsonData['algorithm']['maxArrangeCount'])
 
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
-        # assignComponentParameters(jsonData["component"]) # todo
+        assignComponentParameters(jsonData["component"])  # todo
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                                   jsonData["arrangeType"],
                                                   jsonData["scene"]["location"]["windPressure"])
-        roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
+
         # 排布完光伏板后再添加障碍物并分析阴影
-        roof.addObstaclesConcern(jsonData["scene"]["roof"]["obstacles"], screenedArrangements)
+        roof.addObstacles(jsonData["scene"]["roof"]["obstacles"])
+        roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
+        roof.addObstaclesConcern(screenedArrangements)
         roof.obstacleArraySelf = roof.calculateObstacleSelf()
         roof.calculate_column(screenedArrangements)
         return roof.drawPlacement(screenedArrangements)

@@ -528,7 +528,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
         if arrangement.component.specification == componentSpecification and arrangement.arrangeType[0:2] == \
                 arrangeType[0:2] and arrangement.maxWindPressure == windPressure:
             for tempElement in arrangement.relativePositionArray:
-                if tempElement[1][0] > roofWidth or tempElement[1][1] > roofLength:
+                if tempElement[1][0] >= roofWidth or tempElement[1][1] >= roofLength:
                     break
             else:
                 result[k] = arrangement

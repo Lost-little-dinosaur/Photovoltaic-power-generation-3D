@@ -33,6 +33,13 @@ class Component:
 #             component.thickness = parameterDict["thickness"]
 #             break
 
+parameterDict = {}
+
+
+def assignComponentParameters(pD):
+    global parameterDict
+    parameterDict = pD
+
 
 pvPanelInclination = 20  # todo：之后再加倾角
 
@@ -49,4 +56,10 @@ def getAllComponents():
     component2 = Component("182-78", 1134, 2465, 1500, 4825, 1108, 13)  # 以米、瓦为单位
     component3 = Component("210-60", 1303, 2172, 1400, 386, 1277, 13)  # 以米、瓦为单位
     component4 = Component("210-66", 1303, 2384, 1400, 492, 0, 0)  # 以米、瓦为单位
-    return [component1, component2, component3, component4]
+    components = [component1, component2, component3, component4]
+    for component in components:
+        if component.specification == parameterDict["specification"]:
+            component.power = parameterDict["power"]
+            component.thickness = parameterDict["thickness"]
+            break
+    return components
