@@ -81,6 +81,13 @@ class Arrangement:
         self.verticalCount = 0
         self.verticalNum = 0
         self.componentHeightArray = np.array(self.calculateComponentHeightArray())  # 每个光伏板具体高度（大小是这个arrangement的最小包络矩形）
+        self.maxLength, self.maxWidth = -INF, -INF
+        for tempElement in self.relativePositionArray:
+            if tempElement[1][0] >= self.maxWidth:
+                self.maxWidth = tempElement[1][0]
+            if tempElement[1][1] >= self.maxLength:
+                self.maxLength = tempElement[1][1]
+        self.shadowArray = np.zeros((self.maxWidth + 1, self.maxLength + 1))  # 阴影数组
 
     def calculateStandColumn(self, startX, startY, roof_Width, obstacles, deletedIndices):
         UNIT = const.const.getUnit()
