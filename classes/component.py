@@ -1,10 +1,11 @@
-from const.const import INF, UNIT
+from const.const import INF, getUnit
 
 
 class Component:
     def __init__(self, specification, width, length, verticalSpacing, verticalShortSideSize, crossSpacing,
                  crossShortSideSize, power=INF, thickness=INF, statX=INF, statY=INF, endX=INF, endY=INF,
                  direction=INF, marginRight=INF, marginBottom=INF):
+        UNIT = getUnit()
         self.specification = specification
         # 将width和length转换成以UNIT为单位
         self.width = round(width / UNIT)
@@ -24,24 +25,41 @@ class Component:
         self.crossShortSideSize = round(crossShortSideSize / UNIT)  # 横梁离短边距离（横排放）
 
 
-selectedComponent = None
+# def assignComponentParameters(parameterDict):
+#     global components
+#     for component in components:
+#         if component.specification == parameterDict["specification"]:
+#             component.power = parameterDict["power"]
+#             component.thickness = parameterDict["thickness"]
+#             break
+
+parameterDict = {}
 
 
-def assignComponentParameters(parameterDict):
-    global components
-    global selectedComponent
+def assignComponentParameters(pD):
+    global parameterDict
+    parameterDict = pD
+
+
+pvPanelInclination = 20  # todo：之后再加倾角
+
+
+# component1 = Component("182-72", 1134, 2279, 1400, 439, 1108, 13)  # 以米、瓦为单位
+# component2 = Component("182-78", 1134, 2465, 1500, 4825, 1108, 13)  # 以米、瓦为单位
+# component3 = Component("210-60", 1303, 2172, 1400, 386, 1277, 13)  # 以米、瓦为单位
+# component4 = Component("210-66", 1303, 2384, 1400, 492, 0, 0)  # 以米、瓦为单位
+# components = [component1, component2, component3, component4]
+
+
+def getAllComponents():
+    component1 = Component("182-72", 1134, 2279, 1400, 439, 1108, 13)  # 以米、瓦为单位
+    component2 = Component("182-78", 1134, 2465, 1500, 4825, 1108, 13)  # 以米、瓦为单位
+    component3 = Component("210-60", 1303, 2172, 1400, 386, 1277, 13)  # 以米、瓦为单位
+    component4 = Component("210-66", 1303, 2384, 1400, 492, 0, 0)  # 以米、瓦为单位
+    components = [component1, component2, component3, component4]
     for component in components:
         if component.specification == parameterDict["specification"]:
             component.power = parameterDict["power"]
             component.thickness = parameterDict["thickness"]
-            selectedComponent = component
             break
-
-
-pvPanelInclination = 20  # todo：之后再加倾角
-# 光伏板的规格
-component1 = Component("182-72", 1134, 2279, 1400, 439, 1108, 13)  # 以米、瓦为单位
-component2 = Component("182-78", 1134, 2465, 1500, 4825, 1108, 13)  # 以米、瓦为单位
-component3 = Component("210-60", 1303, 2172, 1400, 386, 1277, 13)  # 以米、瓦为单位
-component4 = Component("210-66", 1303, 2384, 1400, 492, 0, 0)  # 以米、瓦为单位
-components = [component1, component2, component3, component4]
+    return components

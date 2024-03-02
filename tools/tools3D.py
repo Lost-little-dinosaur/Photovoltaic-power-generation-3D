@@ -1,4 +1,4 @@
-from const.const import INF, UNIT
+from const.const import INF, getUnit
 import time
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -37,7 +37,9 @@ def draw3dModel(model3DArray):
     plt.show()
 
 
+
 def arePointsCoplanar(nodeArray):
+    UNIT = getUnit()
     # 确保nodeArray的长度为4，且每个元素长度为3
     if len(nodeArray) != 4 or any(len(node) != 3 for node in nodeArray):
         return False
@@ -178,6 +180,7 @@ def findIntegerPointsInProjectedTriangle(node1, node2, node3):
 
 
 def getOnePointShadow(point: List[int], latitude):  # x,y,z
+    UNIT = getUnit()
     if point[2] == 0:  # 如果点在地面上，阴影长度为0
         return INF, INF, []
     returnList = []
