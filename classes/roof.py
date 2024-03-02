@@ -15,6 +15,8 @@ class Roof:
         if not jsonRoof["isComplex"]:
             self.length = round((jsonRoof["length"] + self.southExtend + self.northExtend) / UNIT)
             self.width = round((jsonRoof["width"] + self.eastExtend + self.westExtend) / UNIT)
+            self.realLength = jsonRoof["length"] + self.southExtend + self.northExtend
+            self.realWidth = jsonRoof["width"] + self.eastExtend + self.westExtend
             self.height = jsonRoof["height"]
             self.roofArray = np.full((self.length, self.width), 0)
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
@@ -33,17 +35,17 @@ class Roof:
 
     def calculateObstacleSelf(self):
         UNIT = getUnit()
-        return_list = [[0] * (self.length + 1) for _ in range(self.width + 1)]
+        return_list = [[0] * ((self.realLength + 1))for _ in range((self.realWidth + 1))]
         for obstacle in self.obstacles:  # 有问题
             if obstacle.type == '有烟烟囱':
                 x_min = 0
                 x_max = 0
                 y_min = 0
                 y_max = 0
-                x_min = max(0, obstacle.upLeftPosition[0] - int(round(100 / UNIT)))
-                x_max = min(self.width, obstacle.upLeftPosition[0] + obstacle.width + int(round(100 / UNIT)))
-                y_min = max(0, obstacle.upLeftPosition[1] - int(round(100 / UNIT)))
-                y_max = min(self.length, obstacle.upLeftPosition[1] + obstacle.length + int(round(100 / UNIT)))
+                x_min = max(0, obstacle.realupLeftPosition[0] - 100)
+                x_max = min(self.realWidth, obstacle.realupLeftPosition[0] + obstacle.realwidth + 100)
+                y_min = max(0, obstacle.realupLeftPosition[1] - 100)
+                y_max = min(self.realLength, obstacle.realupLeftPosition[1] + obstacle.reallength + 100)
                 for x in range(x_min, x_max):
                     for y in range(y_min, y_max):
                         return_list[x][y] = 1
@@ -213,7 +215,7 @@ class Roof:
             for arrange in allArrangement:
                 startX, startY = arrange['start']
                 screenedArrangements[arrange['ID']].calculateComponentPositionArray(startX, startY)
-                tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.width,
+                tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.realWidth,
                                                                                      self.obstacleArraySelf,
                                                                                      placement[3][arrangeI])
                 if len(tempArray) > nowMaxValue:
