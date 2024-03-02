@@ -124,7 +124,8 @@ class Roof:
                             placements.append(newPlacement)
                             currentValue += arrangeDict[IDArray[i]].value
                             tempObstacleArray = np.array(obstacleArray)
-                            arrangeDict[IDArray[i]].calculateArrangementShadow(x, y, self.latitude, tempObstacleArray)
+                            arrangeDict[IDArray[i]].calculateArrangementShadow(x, y, self.latitude,
+                                                                               tempObstacleArray)  # todo:第二个arrangement才用计算阴影
                             if layer < maxArrangeCount:
                                 temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
                                            i, currentValue, placements, layer + 1, np.array(tempObstacleArray))
@@ -136,16 +137,14 @@ class Roof:
                                     if len(self.allPlacements) % 1000 == 0:
                                         print(
                                             f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-                                placements.pop()
-                                currentValue -= arrangeDict[IDArray[i]].value
                             else:
                                 self.allPlacements.append(
                                     [placements.copy(), currentValue, np.array(tempObstacleArray)])
                                 if len(self.allPlacements) % 1000 == 0:
                                     print(
                                         f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-                                placements.pop()
-                                currentValue -= arrangeDict[IDArray[i]].value
+                            placements.pop()
+                            currentValue -= arrangeDict[IDArray[i]].value
                 startX = 0
             return betterFlag
 
