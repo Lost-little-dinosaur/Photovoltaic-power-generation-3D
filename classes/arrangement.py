@@ -91,6 +91,7 @@ class Arrangement:
         self.columnArray_y = []  # 立柱南北间距
         self.columnArray_x = []  # 立柱东西间距
         self.edgeColumn = []  # 边缘立柱
+        self.shadowrelativePosition = []
 
     def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices):
         UNIT = const.const.getUnit()
@@ -404,7 +405,7 @@ class Arrangement:
     #         layout = "Default Layout"
     #
     #     return array_x, array_y
-    def calculateArrangementShadow(self, startX, startY, latitude, obstacleArray=None):
+    def calculateArrangementShadow(self, latitude, obstacleArray=None):
         if obstacleArray is None:
             obstacleArray = []
         componentStr = self.component.specification + self.arrangeType
@@ -415,10 +416,10 @@ class Arrangement:
             hMax = hMin + (self.relativePositionArray[0][1][1] - self.relativePositionArray[0][0][1]) * sin(
                 radians(20))
             nodeArray = [
-                [self.relativePositionArray[0][0][0] + startX, self.relativePositionArray[0][0][1] + startY, hMax],
-                [self.relativePositionArray[0][1][0] + startX, self.relativePositionArray[0][0][1] + startY, hMax],
-                [self.relativePositionArray[0][1][0] + startX, self.relativePositionArray[0][1][1] + startY, hMin],
-                [self.relativePositionArray[0][0][0] + startX, self.relativePositionArray[0][1][1] + startY, hMin],
+                [self.relativePositionArray[0][0][0], self.relativePositionArray[0][0][1], hMax],
+                [self.relativePositionArray[0][1][0], self.relativePositionArray[0][0][1], hMax],
+                [self.relativePositionArray[0][1][0], self.relativePositionArray[0][1][1], hMin],
+                [self.relativePositionArray[0][0][0], self.relativePositionArray[0][1][1], hMin],
             ]
             calculateShadow(nodeArray, False, latitude, False, obstacleArray)
         else:
@@ -454,12 +455,14 @@ class Arrangement:
             for node in self.relativePositionArray:
                 hMax = hMin + (node[1][1] - node[0][1]) * sin(radians(20))
                 nodeArray = [
-                    [node[0][0] + startX, node[0][1] + startY, hMax],
-                    [node[1][0] + startX, node[0][1] + startY, hMax],
-                    [node[1][0] + startX, node[1][1] + startY, hMin],
-                    [node[0][0] + startX, node[1][1] + startY, hMin],
+                    [node[0][0], node[0][1], hMax],
+                    [node[1][0], node[0][1], hMax],
+                    [node[1][0], node[1][1], hMin],
+                    [node[0][0], node[1][1], hMin],
                 ]
-                calculateShadow(nodeArray, False, latitude, False, obstacleArray)
+                minX, minY, self.shadowArray = calculateShadow(nodeArray, False, latitude, False)
+                self.shadowrelativePosition = [-minX, -minY]
+
 
     def calculateComponentHeightArray(self):
         length = self.relativePositionArray[-1][1][1]
