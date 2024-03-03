@@ -2,12 +2,16 @@ import numpy as np
 import time
 import copy
 
-d1 = {"id": ["123", {1: 2, 3: 4}]}
-placement = []
-placement.append(d1)
-tempArray = copy.copy(placement)
-placement.append(d1)
-print(tempArray)
+arr = [1, 2]
+arr.append(1, 2)
+print(arr)
+
+# d1 = {"id": ["123", {1: 2, 3: 4}]}
+# placement = []
+# placement.append(d1)
+# tempArray = copy.copy(placement)
+# placement.append(d1)
+# print(tempArray)
 
 # 测试深浅拷贝
 # t = 500000

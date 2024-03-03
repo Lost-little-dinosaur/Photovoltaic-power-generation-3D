@@ -628,6 +628,8 @@ class UI:
                 continue
         # print(self.get_input_json())
 
+
+
     def calculate_layout(self):
         jsonData = self.get_input_json()
         const.const.changeUnit(jsonData['algorithm']['precision'])
@@ -679,7 +681,7 @@ class UI:
         execution_time = end_time - start_time
         print(f"calculate_column 代码执行时间为：{execution_time} 秒")
 
-        return roof.drawPlacement(screenedArrangements)
+        return roof.drawPlacement(screenedArrangements), [placement[5] for placement in roof.allPlacements]
 
     def cal_and_display_layout(self):
         for i in range(5):

@@ -26,6 +26,8 @@ class Roof:
         if not jsonRoof["isComplex"]:
             self.length = round((jsonRoof["length"] + self.southExtend + self.northExtend) / UNIT)
             self.width = round((jsonRoof["width"] + self.eastExtend + self.westExtend) / UNIT)
+            self.realLength = jsonRoof["length"] + self.southExtend + self.northExtend
+            self.realWidth = jsonRoof["width"] + self.eastExtend + self.westExtend
             self.height = jsonRoof["height"]
             self.roofArray = np.full((self.length, self.width), 0)
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
@@ -43,18 +45,13 @@ class Roof:
         # self.type = 0
 
     def calculateObstacleSelf(self):
-        UNIT = getUnit()
-        return_list = [[0] * (self.length + 1) for _ in range(self.width + 1)]
+        return_list = [[0] * ((self.realLength + 1000)) for _ in range((self.realWidth + 1000))]
         for obstacle in self.obstacles:  # 有问题
             if obstacle.type == '有烟烟囱':
-                x_min = 0
-                x_max = 0
-                y_min = 0
-                y_max = 0
-                x_min = max(0, obstacle.upLeftPosition[0] - int(round(100 / UNIT)))
-                x_max = min(self.width, obstacle.upLeftPosition[0] + obstacle.width + int(round(100 / UNIT)))
-                y_min = max(0, obstacle.upLeftPosition[1] - int(round(100 / UNIT)))
-                y_max = min(self.length, obstacle.upLeftPosition[1] + obstacle.length + int(round(100 / UNIT)))
+                x_min = max(0, obstacle.realupLeftPosition[0] - 100)
+                x_max = min(self.realWidth, obstacle.realupLeftPosition[0] + obstacle.realwidth + 100)
+                y_min = max(0, obstacle.realupLeftPosition[1] - 100)
+                y_max = min(self.realLength, obstacle.realupLeftPosition[1] + obstacle.reallength + 100)
                 for x in range(x_min, x_max):
                     for y in range(y_min, y_max):
                         return_list[x][y] = 1
@@ -119,7 +116,7 @@ class Roof:
         # 输入限制条件
         minComponent = 5  # 最小组件数
         maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
-        nowMaxValue = -INF
+        nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
 
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
             betterFlag = False
@@ -147,16 +144,14 @@ class Roof:
                                     if len(self.allPlacements) % 1000 == 0:
                                         print(
                                             f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-                                placements.pop()
-                                currentValue -= arrangeDict[IDArray[i]].value
                             else:
                                 self.allPlacements.append(
                                     [placements.copy(), currentValue, np.array(tempObstacleArray)])
                                 if len(self.allPlacements) % 1000 == 0:
                                     print(
                                         f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-                                placements.pop()
-                                currentValue -= arrangeDict[IDArray[i]].value
+                            placements.pop()
+                            currentValue -= arrangeDict[IDArray[i]].value
                 startX = 0
             return betterFlag
 
@@ -213,7 +208,7 @@ class Roof:
             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
 
     def addObstacles(self, obstacles):
-        for obstacle in obstacles:
+        for obstacle in obstacles:  # todo: 待优化，可以多进程计算
             self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
         self.obstacleSumArray = np.cumsum(np.cumsum(self.obstacleArray, axis=0), axis=1)
 
@@ -222,18 +217,22 @@ class Roof:
         for placement in self.allPlacements:
             allArrangement = placement[0]
             allTempArray = []
+            allTxtArray = []
             arrangeI = 0
             for arrange in allArrangement:
                 startX, startY = arrange['start']
-                screenedArrangements[arrange['ID']].calculateComponentPositionArray(startX, startY)
-                tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.width,
-                                                                                     self.obstacleArraySelf,
-                                                                                     placement[3][arrangeI])
+                screenedArrangements[arrange['ID']].calculateComponentPositionArray(startX, startY)  # todo 删掉
+                tempArray, tempTxt = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY,
+                                                                                              self.realWidth,
+                                                                                              self.obstacleArraySelf,
+                                                                                              placement[3][arrangeI])
+                tempTxt = f"第{arrangeI + 1}个arrangement的立柱排布：\n" + tempTxt + "\n"
                 if len(tempArray) > nowMaxValue:
                     nowMaxValue = len(tempArray)
                 allTempArray.append(tempArray)
+                allTxtArray.append(tempTxt)
                 arrangeI += 1
-            placement.append(allTempArray)
+            placement.extend([allTempArray, allTxtArray])
         i = 0
         while i < len(self.allPlacements):
             if self.allPlacements[i][1] < nowMaxValue:
@@ -248,10 +247,28 @@ class Roof:
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
         allMatrix = []
         magnification = 5  # 放大倍数
+        UNIT = getUnit()
+        # 画障碍物（只需要轮廓就行）
+        obstaclePointArray = []
+        for obstacle in self.obstacles:
+            if obstacle.type == '有烟烟囱':
+                if not obstacle.isRound:
+                    startX = round(obstacle.realupLeftPosition[0] / UNIT) * magnification
+                    startY = round(obstacle.realupLeftPosition[1] / UNIT) * magnification
+                    endX = round((obstacle.realupLeftPosition[0] + obstacle.realwidth) / UNIT) * magnification
+                    endY = round((obstacle.realupLeftPosition[1] + obstacle.reallength) / UNIT) * magnification
+                    for y in range(startY, endY + 1):
+                        obstaclePointArray.append((startX, y))
+                        obstaclePointArray.append((endX, y))
+                    for x in range(startX, endX + 1):
+                        obstaclePointArray.append((x, startY))
+                        obstaclePointArray.append((x, endY))
         # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
         for placement in self.allPlacements:
             matrix = np.zeros((self.length * magnification, self.width * magnification, 3))
-
+            # 先画障碍物
+            for point in obstaclePointArray:
+                matrix[point[1], point[0]] = ObstacleColor
             # 首先填充上下边界
             matrix[:roofBoardLength, :, :] = RoofMarginColor  # 上边界
             matrix[-roofBoardLength:, :, :] = RoofMarginColor  # 下边界
@@ -287,10 +304,10 @@ class Roof:
 
                 # 接下去画立柱
                 for column in placement[4][j]:  # column形式：[centerX,centerY]
-                    matrix[
-                    column[1] * magnification - standColumnPadding:column[1] * magnification + standColumnPadding + 1,
-                    column[0] * magnification - standColumnPadding:
-                    column[0] * magnification + standColumnPadding + 1] = StandColumnColor
+                    matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
+                           round(column[1] * magnification / UNIT) + standColumnPadding + 1,
+                    round(column[0] * magnification / UNIT) - standColumnPadding:
+                    round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
 
             # 绘制图像
             plt.imshow(matrix.astype("uint8"))
