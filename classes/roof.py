@@ -124,6 +124,7 @@ class Roof:
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
             betterFlag = False
             IDArray = list(arrangeDict.keys())
+            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
             for y in range(startY, self.length):
                 for x in range(startX, self.width):
                     for i in range(startI, len(IDArray)):
