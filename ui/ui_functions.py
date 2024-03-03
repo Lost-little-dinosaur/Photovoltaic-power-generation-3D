@@ -176,8 +176,8 @@ class UI:
         arrangement_info_text = tk.Label(arrangement_info_frame, textvariable=self.arrangement_info_text_var, font=("Arial", 10))
         arrangement_info_text.pack()
 
-        text_btn = tk.Button(arrangement_info_frame, text="测试更新排布文本", command=self.update_arrangement_info_text)
-        text_btn.pack(fill=tk.X, pady=(0, 20))
+        # text_btn = tk.Button(arrangement_info_frame, text="测试更新排布文本", command=self.update_arrangement_info_text)
+        # text_btn.pack(fill=tk.X, pady=(0, 20))
 
         # “组件排布”文字标签放置在右侧区域的顶部
         arrangement_text = tk.Label(arrangement_frame, text="组件排布", font=("Arial", 12))
@@ -686,7 +686,8 @@ class UI:
     def cal_and_display_layout(self):
         for i in range(5):
             self.arrangement_btns[i].config(state="disabled")
-        self.layout_imgs = self.calculate_layout()[:5]
+        placement_result = self.calculate_layout()
+        self.layout_imgs, self.placement_info = placement_result[0][:5], placement_result[1][:5]
         self.display_layout()
         for i in range(len(self.layout_imgs)):
             self.arrangement_btns[i].config(state="active")
@@ -700,6 +701,7 @@ class UI:
             # scaled_image.save(os.path.join(file_dir,f"scaled_image_{index}.png"))
             self.display_img = ImageTk.PhotoImage(scaled_image)
             self.arrangement_canvas.create_image(0, 0, anchor=tk.NW, image=self.display_img)
+            self.arrangement_info_text_var.set(self.placement_info[index])
         except Exception as e:
             print("Exception", e)
 

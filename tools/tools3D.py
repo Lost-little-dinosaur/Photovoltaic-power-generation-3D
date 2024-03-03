@@ -299,6 +299,7 @@ def calculateShadow(nodeArray, isRound, latitude, addSelfFlag, obstacleArray=Non
 
         else:  # 在obstacleArray上更新每个点的最高阴影
             # todo: 更改代码结构，适应后续可能变化的getTriangleFlatNodes
+            start_time = time.time()
             if addSelfFlag:
                 selfStartX, selfStartY, selfHeightArray = getTriangleFlatNodes(nodeArray[0], nodeArray[1], nodeArray[2])
                 sX, sY = max(0, selfStartX), max(0, selfStartY)
@@ -312,6 +313,12 @@ def calculateShadow(nodeArray, isRound, latitude, addSelfFlag, obstacleArray=Non
                 eY = min(obstacleArray.shape[0], selfStartY + selfHeightArray.shape[0])
                 obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX],
                                                          selfHeightArray[0:eY - sY, 0:eX - sX])
+            end_time = time.time()
+            execution_time = end_time - start_time
+            print(f"addSelfFlag 代码执行时间为：{execution_time} 秒")
+
+
+            start_time = time.time()
             for i in range(len(nodeArray) - 1):  # 把物体的边缘的阴影加入阴影数组
                 lineSegmentNodes = getLineSegmentNodes(nodeArray[i], nodeArray[i + 1])  # 获取线段上的点
                 for node in lineSegmentNodes:  # todo:可能有边界问题
@@ -324,6 +331,12 @@ def calculateShadow(nodeArray, isRound, latitude, addSelfFlag, obstacleArray=Non
                             obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX],
                                                                      tempShadowArray[sY - startY:eY - startY,
                                                                      sX - startX:eX - startX])  # todo: 检查这里的边界问题
+            end_time = time.time()
+            execution_time = end_time - start_time
+            print(f"第一个for 代码执行时间为：{execution_time} 秒")
+
+
+            start_time = time.time()
             lineSegmentNodes = getLineSegmentNodes(nodeArray[-1], nodeArray[0])
             for node in lineSegmentNodes:  # todo:可能有边界问题
                 startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
@@ -334,6 +347,9 @@ def calculateShadow(nodeArray, isRound, latitude, addSelfFlag, obstacleArray=Non
                     obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX],
                                                              tempShadowArray[sY - startY:eY - startY,
                                                              sX - startX:eX - startX])
+            end_time = time.time()
+            execution_time = end_time - start_time
+            print(f"第二个for 代码执行时间为：{execution_time} 秒")
     else:
         pass  # 圆形的阴影暂时不做计算
 
