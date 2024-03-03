@@ -641,7 +641,7 @@ class UI:
         roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
         roof.addObstaclesConcern(screenedArrangements)
         roof.obstacleArraySelf = roof.calculateObstacleSelf()
-        # roof.calculate_column(screenedArrangements)
+        roof.calculate_column(screenedArrangements)
         return roof.drawPlacement(screenedArrangements)
 
     def cal_and_display_layout(self):

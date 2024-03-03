@@ -109,11 +109,11 @@ class Arrangement:
             for i in range(1, n_columns):
                 x = int(i * ideal_spacing + column_positions[0])
                 column_positions.append(x)
-            precision = 50
-            if (precision >= 1):
-                for i in range(len(column_positions)):
-                    if ((column_positions[i] % precision) != 0):
-                        column_positions[i] = int(column_positions[i] / precision) * precision
+                # todo 50整数修正需要修改
+        #    precision = 50
+        #    for i in range(len(column_positions)):
+        #        if ((column_positions[i] % precision) != 0):
+        #            column_positions[i] = int(column_positions[i] / precision) * precision
             # 调整立柱距离边缘的距离
             # min_edge_distance = round(250 / UNIT)
             # if column_positions[0] + startX < min_edge_distance:
@@ -125,6 +125,7 @@ class Arrangement:
             #     column_positions[0] = round(700 / UNIT)
             # if column_positions[-1] <= round(width - 700 / UNIT):
             #     column_positions[-1] = round(width - (700 / UNIT))
+            self.columnArray_x.append(column_positions[0])
             for i in range(len(column_positions) - 1):
                 self.columnArray_x.append(column_positions[i + 1] - column_positions[i])
             self.columnArray_x.append(width - column_positions[-1])
@@ -133,10 +134,11 @@ class Arrangement:
             for x in column_positions:
                 for y in array_iny:
                     if obstacles[x + startX][y + startY] != 1 and x < width and y < length:
-                        result.append([startX + int(x), startY + int(y)])
+                    #if x < width and y < length:
+                        result.append([startX + x, startY + y])
                     if x == column_positions[0] or x == column_positions[-1]:
                         if y == array_iny[0] or y == array_iny[-1]:
-                            self.edgeColumn.append([x, y])
+                            self.edgeColumn.append([startX + x, startY + y])
             return result
 
         str_ar = self.component.specification + self.arrangeType
@@ -182,7 +184,12 @@ class Arrangement:
                     count3 = 1
                 array_y = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)].copy()
                 array_limit = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
-        length = self.relativePositionArray[-1][1][1] + 1
+        self.calculateComponentPositionArrayreal(startX, startY)
+        length = 0
+        for component in self.componentPositionArray:  # todo 更新
+            if component[1][1] > length:
+                length = component[1][1]
+        length += 1
         le = length - sum(array_y) - array_limit[0]
         if (le + array_limit[0]) / 2 < array_limit[0]:
             array_y.append(int(array_limit[0]) + array_y[-1])
@@ -209,12 +216,12 @@ class Arrangement:
                 array_x.pop()
             '''
         result_y.pop()
-        self.calculateComponentPositionArrayreal(startX, startY)
         max_spacing = 2000
         width = 0
-        for component in self.componentPositionArray:  # todo 更新
+        for component in self.componentPositionArray:
             if component[1][0] > width:
                 width = component[1][0]
+        width += 1
         column_min = int(width / max_spacing) + 1
         column_min = max(2, column_min)
         column_max = 1000

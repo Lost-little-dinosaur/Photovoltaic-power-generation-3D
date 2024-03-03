@@ -35,13 +35,9 @@ class Roof:
 
     def calculateObstacleSelf(self):
         UNIT = getUnit()
-        return_list = [[0] * ((self.realLength + 1)) for _ in range((self.realWidth + 1))]
+        return_list = [[0] * ((self.realLength + 1000)) for _ in range((self.realWidth + 1000))]
         for obstacle in self.obstacles:  # 有问题
             if obstacle.type == '有烟烟囱':
-                x_min = 0
-                x_max = 0
-                y_min = 0
-                y_max = 0
                 x_min = max(0, obstacle.realupLeftPosition[0] - 100)
                 x_max = min(self.realWidth, obstacle.realupLeftPosition[0] + obstacle.realwidth + 100)
                 y_min = max(0, obstacle.realupLeftPosition[1] - 100)
@@ -214,7 +210,7 @@ class Roof:
             arrangeI = 0
             for arrange in allArrangement:
                 startX, startY = arrange['start']
-                screenedArrangements[arrange['ID']].calculateComponentPositionArray(startX, startY)
+                screenedArrangements[arrange['ID']].calculateComponentPositionArray(startX, startY) #  todo 删掉
                 tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.realWidth,
                                                                                      self.obstacleArraySelf,
                                                                                      placement[3][arrangeI])
