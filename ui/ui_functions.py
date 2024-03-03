@@ -77,6 +77,7 @@ def is_nonempty_list(var):
     else:
         return False
 
+
 class UI:
     def __init__(self,
                  location_ui_info,
@@ -108,27 +109,27 @@ class UI:
         if is_nonempty_list(location_ui_info):
             # Buttons for adding information
             location_btn = tk.Button(left_frame, text="添加位置信息",
-                                    command=partial(self.open_location_window, *location_ui_info))
+                                     command=partial(self.open_location_window, *location_ui_info))
             location_btn.pack(fill=tk.X, pady=5)
-        
+
         if is_nonempty_list(roof_ui_info):
             roof_btn = tk.Button(left_frame, text="添加屋顶信息",
-                                command=partial(self.open_roof_window, *roof_ui_info))
+                                 command=partial(self.open_roof_window, *roof_ui_info))
             roof_btn.pack(fill=tk.X, pady=5)
-        
+
         if is_nonempty_list(obstacle_ui_info):
             obstacle_btn = tk.Button(left_frame, text="添加屋内障碍物信息",
-                                    command=partial(self.open_obstacle_window, *obstacle_ui_info))
+                                     command=partial(self.open_obstacle_window, *obstacle_ui_info))
             obstacle_btn.pack(fill=tk.X, pady=5)
-                
+
         if is_nonempty_list(outside_obstacle_ui_info):
-            outside_obstacle_btn = tk.Button(left_frame, text="添加屋外障碍物信息", 
-                                    command=partial(self.open_outside_obstacle_window, *obstacle_ui_info))
+            outside_obstacle_btn = tk.Button(left_frame, text="添加屋外障碍物信息",
+                                             command=partial(self.open_outside_obstacle_window, *obstacle_ui_info))
             outside_obstacle_btn.pack(fill=tk.X, pady=5)
 
         if is_nonempty_list(panel_ui_info):
             panel_btn = tk.Button(left_frame, text="添加光伏板信息",
-                                command=partial(self.open_panel_window, *panel_ui_info))
+                                  command=partial(self.open_panel_window, *panel_ui_info))
             panel_btn.pack(fill=tk.X, pady=5)
 
         clear_btn = tk.Button(left_frame, text="清空输入信息", command=self.clear_info)
@@ -153,7 +154,7 @@ class UI:
 
         if is_nonempty_list(algorithm_ui_info):
             algorithm_btn = tk.Button(left_frame, text="选择算法类型",
-                                    command=partial(self.open_algorithm_window, *algorithm_ui_info))
+                                      command=partial(self.open_algorithm_window, *algorithm_ui_info))
             algorithm_btn.pack(fill=tk.X, pady=0)
 
         calculate_btn = tk.Button(left_frame, text="计算光伏板排布", command=self.cal_and_display_layout)
@@ -173,7 +174,8 @@ class UI:
         self.arrangement_info_text_var = tk.StringVar()
         self.arrangement_info_text_var.set("")
 
-        arrangement_info_text = tk.Label(arrangement_info_frame, textvariable=self.arrangement_info_text_var, font=("Arial", 10))
+        arrangement_info_text = tk.Label(arrangement_info_frame, textvariable=self.arrangement_info_text_var,
+                                         font=("Arial", 10))
         arrangement_info_text.pack()
 
         # text_btn = tk.Button(arrangement_info_frame, text="测试更新排布文本", command=self.update_arrangement_info_text)
@@ -620,15 +622,13 @@ class UI:
                     y2 = roof_top + (centerY + length) * scale
                     self.roofscene_canvas.create_rectangle(x1, y1, x2, y2, outline='red')
                 if len(obstacle["ID"]) > 0:
-                    self.roofscene_canvas.create_text( x2+draw_width*0.01, y2+draw_height*0.01, 
-                    text = f"{obstacle['ID']}", 
-                    font = ("Arial",10),
-                    fill = "red")
+                    self.roofscene_canvas.create_text(x2 + draw_width * 0.01, y2 + draw_height * 0.01,
+                                                      text=f"{obstacle['ID']}",
+                                                      font=("Arial", 10),
+                                                      fill="red")
             except:
                 continue
         # print(self.get_input_json())
-
-
 
     def calculate_layout(self):
         jsonData = self.get_input_json()
@@ -641,14 +641,16 @@ class UI:
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"assignComponentParameters 代码执行时间为：{execution_time} 秒")
-        
+
         start_time = time.time()
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                                   jsonData["arrangeType"],
                                                   jsonData["scene"]["location"]["windPressure"])
+        for ID in screenedArrangements:
+            screenedArrangements[ID].calculateArrangementShadow(roof.latitude)
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"screenArrangements 代码执行时间为：{execution_time} 秒")
+        print(f"screenArrangements + calculateArrangementShadow代码执行时间为：{execution_time} 秒")
 
         # 排布完光伏板后再添加障碍物并分析阴影
         start_time = time.time()
@@ -656,7 +658,7 @@ class UI:
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"addObstacles 代码执行时间为：{execution_time} 秒")
-        
+
         start_time = time.time()
         roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
         end_time = time.time()
@@ -674,14 +676,15 @@ class UI:
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"calculateObstacleSelf 代码执行时间为：{execution_time} 秒")
-        
+
         start_time = time.time()
         roof.calculate_column(screenedArrangements)
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"calculate_column 代码执行时间为：{execution_time} 秒")
 
-        return roof.drawPlacement(screenedArrangements), [placement[5] for placement in roof.allPlacements]
+        return roof.drawPlacement(screenedArrangements)
+        # return roof.drawPlacement(screenedArrangements), [placement[5] for placement in roof.allPlacements]
 
     def cal_and_display_layout(self):
         for i in range(5):

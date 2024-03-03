@@ -37,7 +37,6 @@ def draw3dModel(model3DArray):
     plt.show()
 
 
-
 def arePointsCoplanar(nodeArray):
     UNIT = getUnit()
     # 确保nodeArray的长度为4，且每个元素长度为3
@@ -70,42 +69,28 @@ def arePointsCoplanar(nodeArray):
     return abs(np.linalg.det(np.array([node + [1] for node in tempNodeArray]))) < 1e-6  # 使用小的阈值来处理浮点数的精度问题
 
 
-def interpolateZ(x, y, x0, y0, z0, dx, dy, dz):
-    """线性插值计算z值"""
-    if dx != 0:
-        t = (x - x0) / dx
-    elif dy != 0:
-        t = (y - y0) / dy
-    else:
-        return z0  # 避免除以0
-    return z0 + t * dz
-
-
 def getLineSegmentNodes(start, end):
     x0, y0, z0 = start
     x1, y1, z1 = end
+
     dx = x1 - x0
     dy = y1 - y0
     dz = z1 - z0
 
-    nodes = []
+    points = []
 
-    if abs(dx) > abs(dy):  # x变化更大，以x为基准
-        if x0 > x1:
-            x0, x1, y0, y1, z0, z1 = x1, x0, y1, y0, z1, z0  # 确保从小到大遍历
-        for x in range(x0, x1 + 1):
-            y = round(y0 + dy * (x - x0) / dx)
-            z = interpolateZ(x, y, x0, y0, z0, dx, dy, dz)
-            nodes.append([x, y, z])
-    else:  # y变化更大，以y为基准
-        if y0 > y1:
-            x0, x1, y0, y1, z0, z1 = x1, x0, y1, y0, z1, z0  # 确保从小到大遍历
-        for y in range(y0, y1 + 1):
-            x = round(x0 + dx * (y - y0) / dy)
-            z = interpolateZ(x, y, x0, y0, z0, dx, dy, dz)
-            nodes.append([x, y, z])
+    if dx == 0 and dy == 0:  # 仅在z方向上移动
+        points = [[x0, y0, z0], [x1, y1, z1]]
+    else:
+        max_steps = max(abs(dx), abs(dy))
+        for step in range(max_steps + 1):
+            t = step / max_steps
+            x = round(x0 + t * dx)
+            y = round(y0 + t * dy)
+            z = z0 + t * dz
+            points.append([x, y, z])
 
-    return nodes
+    return points
 
 
 def isPointInTriangle(p, p0, p1, p2):
@@ -267,39 +252,44 @@ def calculateShadow(nodeArray, isRound, latitude, addSelfFlag, obstacleArray=Non
             if addSelfFlag:
                 tempArray = [getTriangleFlatNodes(nodeArray[0], nodeArray[1], nodeArray[2]),
                              getTriangleFlatNodes(nodeArray[2], nodeArray[3], nodeArray[0])]  # 把物体本体也加入阴影数组
+                minX, maxX = tempArray[0][0], tempArray[0][0] + tempArray[0][2].shape[1]
+                minY, maxY = tempArray[0][1], tempArray[0][1] + tempArray[0][2].shape[0]
             else:
                 tempArray = []
-            for i in range(len(nodeArray) - 1):
-                lineSegmentNodes = getLineSegmentNodes(nodeArray[i], nodeArray[i + 1])
-                for node in lineSegmentNodes:
-                    startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
-                    if len(tempShadowArray) != 0:
-                        tempArray.append([startX, startY, tempShadowArray])
-                        minX, minY, maxX, maxY = min(minX, startX), min(minY, startY), max(maxX, startX + len(
-                            tempShadowArray)), max(maxY, startY + len(tempShadowArray[0]))
-            lineSegmentNodes = getLineSegmentNodes(nodeArray[-1], nodeArray[0])
-            for node in lineSegmentNodes:
-                startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
-                if len(tempShadowArray) != 0:
-                    tempArray.append([startX, startY, tempShadowArray])
-                    minX, minY, maxX, maxY = min(minX, startX), min(minY, startY), max(maxX, startX + len(
-                        tempShadowArray)), max(maxY, startY + len(tempShadowArray[0]))
+                for node in nodeArray:
+                    minX, minY = min(minX, node[0]), min(minY, node[1])
+                    maxX, maxY = max(maxX, node[0]), max(maxY, node[1])
 
-            returnArray = np.array([[0 for _ in range(round(maxY - minY) + 1)] for _ in range(round(maxX - minX) + 1)])
-            detaX = 0 if minX >= 0 else -minX
-            detaY = 0 if minY >= 0 else -minY
+            for i in range(len(nodeArray)):
+                lineSegmentNodes = getLineSegmentNodes(nodeArray[i], nodeArray[(i + 1) % len(nodeArray)])
+                if abs(nodeArray[i][2] - nodeArray[(i + 1) % len(nodeArray)][2]) < 1e-6:
+                    publicStartX, publicStartY, publicShadowArray = getOnePointShadow(nodeArray[i], latitude)
+                    if len(publicShadowArray) == 0:
+                        continue
+                    tempArray.append([publicStartX, publicStartY, publicShadowArray])
+                    for j in range(1, len(lineSegmentNodes)):
+                        tempArray.append([publicStartX + lineSegmentNodes[j][0] - lineSegmentNodes[0][0],
+                                          publicStartY + lineSegmentNodes[j][1] - lineSegmentNodes[0][1],
+                                          publicShadowArray])
+                else:
+                    for node in lineSegmentNodes:  # node形式是[x, y, z]
+                        startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
+                        if len(tempShadowArray) == 0:
+                            continue
+                        tempArray.append([startX, startY, tempShadowArray])
+                        minX, minY, maxX, maxY = min(minX, startX), min(minY, startY), max(
+                            maxX, startX + tempShadowArray.shape[1]), max(maxY, startY + tempShadowArray.shape[0])
+
+            returnArray = np.zeros((round(maxY - minY) + 1, round(maxX - minX) + 1))
             for startX, startY, tempShadowArray in tempArray:  # todo:可能有边界问题
-                # 把tempShadowArray去掉detaX和detaY的部分加到returnArray上
-                returnArray[startY + detaY:startY + tempShadowArray.shape[1] + detaY,
-                startX + detaX:startX + tempShadowArray.shape[0] + detaX] = np.maximum(
-                    returnArray[startY + detaY:startY + tempShadowArray.shape[1] + detaY,
-                    startX + detaX:startX + tempShadowArray.shape[0] + detaX], tempShadowArray)
+                returnArray[startY - minY:startY + tempShadowArray.shape[0] - minY,
+                startX - minX:startX + tempShadowArray.shape[1] - minX] = np.maximum(
+                    returnArray[startY - minY:startY + tempShadowArray.shape[0] - minY,
+                    startX - minX:startX + tempShadowArray.shape[1] - minX], tempShadowArray)
             # 返回returnArray的坐标和returnArray
             return minX, minY, returnArray
 
         else:  # 在obstacleArray上更新每个点的最高阴影
-            # todo: 更改代码结构，适应后续可能变化的getTriangleFlatNodes
-            start_time = time.time()
             if addSelfFlag:
                 selfStartX, selfStartY, selfHeightArray = getTriangleFlatNodes(nodeArray[0], nodeArray[1], nodeArray[2])
                 sX, sY = max(0, selfStartX), max(0, selfStartY)
@@ -313,43 +303,40 @@ def calculateShadow(nodeArray, isRound, latitude, addSelfFlag, obstacleArray=Non
                 eY = min(obstacleArray.shape[0], selfStartY + selfHeightArray.shape[0])
                 obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX],
                                                          selfHeightArray[0:eY - sY, 0:eX - sX])
-            end_time = time.time()
-            execution_time = end_time - start_time
-            print(f"addSelfFlag 代码执行时间为：{execution_time} 秒")
-
-
-            start_time = time.time()
-            for i in range(len(nodeArray) - 1):  # 把物体的边缘的阴影加入阴影数组
-                lineSegmentNodes = getLineSegmentNodes(nodeArray[i], nodeArray[i + 1])  # 获取线段上的点
-                for node in lineSegmentNodes:  # todo:可能有边界问题
-                    startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
-                    if len(tempShadowArray) != 0:
+            for i in range(len(nodeArray)):  # 把物体的边缘的阴影加入阴影数组
+                lineSegmentNodes = getLineSegmentNodes(nodeArray[i], nodeArray[(i + 1) % len(nodeArray)])
+                if abs(nodeArray[i][2] - nodeArray[(i + 1) % len(nodeArray)][2]) < 1e-6:
+                    publicStartX, publicStartY, publicShadowArray = getOnePointShadow(nodeArray[i], latitude)
+                    if len(publicShadowArray) == 0:
+                        continue
+                    sX, sY, = max(0, publicStartX), max(0, publicStartY)
+                    eX = min(obstacleArray.shape[1], publicStartX + publicShadowArray.shape[1])
+                    eY = min(obstacleArray.shape[0], publicStartY + publicShadowArray.shape[0])
+                    if sX < obstacleArray.shape[1] and sY < obstacleArray.shape[0]:
+                        obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX],
+                                                                 publicShadowArray[sY - publicStartY:eY - publicStartY,
+                                                                 sX - publicStartX:eX - publicStartX])
+                    for j in range(1, len(lineSegmentNodes)):
+                        nowStartX = publicStartX + lineSegmentNodes[j][0] - lineSegmentNodes[0][0]
+                        nowStartY = publicStartY + lineSegmentNodes[j][1] - lineSegmentNodes[0][1]
+                        sX, sY, = max(0, nowStartX), max(0, nowStartY)
+                        eX = min(obstacleArray.shape[1], nowStartX + publicShadowArray.shape[1])
+                        eY = min(obstacleArray.shape[0], nowStartY + publicShadowArray.shape[0])
+                        if sX < obstacleArray.shape[1] and sY < obstacleArray.shape[0]:
+                            obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX], publicShadowArray \
+                                [sY - nowStartX:eY - nowStartX, sX - nowStartX:eX - nowStartX])
+                else:
+                    for node in lineSegmentNodes:  # todo:可能有边界问题
+                        startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
+                        if len(tempShadowArray) == 0:
+                            continue
                         sX, sY, = max(0, startX), max(0, startY)
                         eX = min(obstacleArray.shape[1], startX + tempShadowArray.shape[1])
                         eY = min(obstacleArray.shape[0], startY + tempShadowArray.shape[0])
                         if sX < obstacleArray.shape[1] and sY < obstacleArray.shape[0]:
                             obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX],
                                                                      tempShadowArray[sY - startY:eY - startY,
-                                                                     sX - startX:eX - startX])  # todo: 检查这里的边界问题
-            end_time = time.time()
-            execution_time = end_time - start_time
-            print(f"第一个for 代码执行时间为：{execution_time} 秒")
-
-
-            start_time = time.time()
-            lineSegmentNodes = getLineSegmentNodes(nodeArray[-1], nodeArray[0])
-            for node in lineSegmentNodes:  # todo:可能有边界问题
-                startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
-                if len(tempShadowArray) != 0:
-                    sX, sY, = max(0, startX), max(0, startY)
-                    eX = min(obstacleArray.shape[1], startX + tempShadowArray.shape[1])
-                    eY = min(obstacleArray.shape[0], startY + tempShadowArray.shape[0])
-                    obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX],
-                                                             tempShadowArray[sY - startY:eY - startY,
-                                                             sX - startX:eX - startX])
-            end_time = time.time()
-            execution_time = end_time - start_time
-            print(f"第二个for 代码执行时间为：{execution_time} 秒")
+                                                                     sX - startX:eX - startX])
     else:
         pass  # 圆形的阴影暂时不做计算
 

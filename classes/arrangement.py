@@ -91,7 +91,7 @@ class Arrangement:
         self.columnArray_y = []  # 立柱南北间距
         self.columnArray_x = []  # 立柱东西间距
         self.edgeColumn = []  # 边缘立柱
-        self.shadowrelativePosition = []
+        self.shadowRelativePosition = []
 
     def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices):
         UNIT = const.const.getUnit()
@@ -437,7 +437,8 @@ class Arrangement:
                 [self.relativePositionArray[0][1][0], self.relativePositionArray[0][1][1], hMin],
                 [self.relativePositionArray[0][0][0], self.relativePositionArray[0][1][1], hMin],
             ]
-            calculateShadow(nodeArray, False, latitude, False, obstacleArray)
+            minX, minY, self.shadowArray = calculateShadow(nodeArray, False, latitude, False)
+            self.shadowRelativePosition = [-minX, -minY]
         else:
             if self.crossPosition == INF:  # 只有竖排
                 first_element = self.componentLayoutArray[0]
@@ -477,7 +478,7 @@ class Arrangement:
                     [node[0][0], node[1][1], hMin],
                 ]
                 minX, minY, self.shadowArray = calculateShadow(nodeArray, False, latitude, False)
-                self.shadowrelativePosition = [-minX, -minY]
+                self.shadowRelativePosition = [-minX, -minY]
 
     def calculateComponentHeightArray(self):
         length = self.relativePositionArray[-1][1][1]
