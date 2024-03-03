@@ -249,7 +249,8 @@ class Roof:
         magnification = 5  # 放大倍数
         UNIT = getUnit()
         # 画障碍物（只需要轮廓就行）
-        obstaclePointArray = []
+        # obstaclePointArray = []
+        obstaclePointArray = np.empty((0,2),dtype=np.int32)
         for obstacle in self.obstacles:
             if obstacle.type == '有烟烟囱':
                 if not obstacle.isRound:
@@ -257,12 +258,23 @@ class Roof:
                     startY = round(obstacle.realupLeftPosition[1] / UNIT) * magnification
                     endX = round((obstacle.realupLeftPosition[0] + obstacle.realwidth) / UNIT) * magnification
                     endY = round((obstacle.realupLeftPosition[1] + obstacle.reallength) / UNIT) * magnification
-                    for y in range(startY, endY + 1):
-                        obstaclePointArray.append((startX, y))
-                        obstaclePointArray.append((endX, y))
-                    for x in range(startX, endX + 1):
-                        obstaclePointArray.append((x, startY))
-                        obstaclePointArray.append((x, endY))
+                    
+                    ### 尽量不要用for append，能用Numpy就用numpy
+                    # for y in range(startY, endY + 1):
+                    #     obstaclePointArray.append((startX, y))
+                    #     obstaclePointArray.append((endX, y))
+                    lenY = endY + 1 - startY
+                    column = np.tile([startX,endX], lenY)
+                    matrix = np.column_stack((column, np.repeat(np.array(list(range(startY, endY + 1))), 2)))   
+                    obstaclePointArray = np.concatenate((obstaclePointArray, matrix), axis=0, dtype=np.int32)
+                    # for x in range(startX, endX + 1):
+                    #     obstaclePointArray.append((x, startY))
+                    #     obstaclePointArray.append((x, endY))
+                    lenX = endX + 1 - startX
+                    column = np.tile([startY,endY], lenX)
+                    matrix = np.column_stack((np.repeat(np.array(list(range(startX, endX + 1))), 2), column))
+                    obstaclePointArray = np.concatenate((obstaclePointArray, matrix), axis=0, dtype=np.int32)
+
         # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
         for placement in self.allPlacements:
             matrix = np.zeros((self.length * magnification, self.width * magnification, 3))
