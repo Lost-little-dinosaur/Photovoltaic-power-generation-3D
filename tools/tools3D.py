@@ -69,43 +69,28 @@ def arePointsCoplanar(nodeArray):
     # 如果行列式的值为零，则点共面，否则不共面
     return abs(np.linalg.det(np.array([node + [1] for node in tempNodeArray]))) < 1e-6  # 使用小的阈值来处理浮点数的精度问题
 
-
-def interpolateZ(x, y, x0, y0, z0, dx, dy, dz):
-    """线性插值计算z值"""
-    if dx != 0:
-        t = (x - x0) / dx
-    elif dy != 0:
-        t = (y - y0) / dy
-    else:
-        return z0  # 避免除以0
-    return z0 + t * dz
-
-
 def getLineSegmentNodes(start, end):
     x0, y0, z0 = start
     x1, y1, z1 = end
+
     dx = x1 - x0
     dy = y1 - y0
     dz = z1 - z0
 
-    nodes = []
+    points = []
 
-    if abs(dx) > abs(dy):  # x变化更大，以x为基准
-        if x0 > x1:
-            x0, x1, y0, y1, z0, z1 = x1, x0, y1, y0, z1, z0  # 确保从小到大遍历
-        for x in range(x0, x1 + 1):
-            y = round(y0 + dy * (x - x0) / dx)
-            z = interpolateZ(x, y, x0, y0, z0, dx, dy, dz)
-            nodes.append([x, y, z])
-    else:  # y变化更大，以y为基准
-        if y0 > y1:
-            x0, x1, y0, y1, z0, z1 = x1, x0, y1, y0, z1, z0  # 确保从小到大遍历
-        for y in range(y0, y1 + 1):
-            x = round(x0 + dx * (y - y0) / dy)
-            z = interpolateZ(x, y, x0, y0, z0, dx, dy, dz)
-            nodes.append([x, y, z])
+    if dx == 0 and dy == 0:  # 仅在z方向上移动
+        points = [[x0, y0, z0], [x1, y1, z1]]
+    else:
+        max_steps = max(abs(dx), abs(dy))
+        for step in range(max_steps + 1):
+            t = step / max_steps
+            x = round(x0 + t * dx)
+            y = round(y0 + t * dy)
+            z = z0 + t * dz
+            points.append([x, y, z])
 
-    return nodes
+    return points
 
 
 def isPointInTriangle(p, p0, p1, p2):

@@ -226,7 +226,7 @@ class Roof:
                                                                                               self.realWidth,
                                                                                               self.obstacleArraySelf,
                                                                                               placement[3][arrangeI])
-                tempTxt = f"第{arrangeI + 1}个arrangement的立柱排布：\n" + tempTxt + "\n"
+                tempTxt = f"第{arrangeI + 1}个阵列的立柱排布：\n" + tempTxt + "\n"
                 if len(tempArray) > nowMaxValue:
                     nowMaxValue = len(tempArray)
                 allTempArray.append(tempArray)
