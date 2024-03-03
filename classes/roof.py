@@ -132,7 +132,8 @@ class Roof:
                             obstacleArray[y - sRPY:y - sRPY + sizeY, x - sRPX:x - sRPX + sizeX] = \
                                 np.maximum(obstacleArray[y - sRPY:y - sRPY + sizeY, x - sRPX:x - sRPX + sizeX],
                                            arrangeDict[IDArray[i]].shadowArray)
-                        if not canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray):
+                            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
+                        if not canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray, tempObstacleSumArray):
                             continue
 
                         newPlacement = {'ID': IDArray[i], 'start': (x, y)}
@@ -161,8 +162,7 @@ class Roof:
                 startX = 0
             return betterFlag
 
-        def canPlaceArrangement(x, y, arrange, obstacleArray):
-            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
+        def canPlaceArrangement(x, y, arrange, obstacleArray, tempObstacleSumArray):
             for eachRect in arrange.relativePositionArray:
                 startX, startY = eachRect[0]
                 endX, endY = eachRect[1]
