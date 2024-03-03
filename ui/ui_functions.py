@@ -625,6 +625,8 @@ class UI:
                 continue
         # print(self.get_input_json())
 
+
+
     def calculate_layout(self):
         jsonData = self.get_input_json()
         const.const.changeUnit(jsonData['algorithm']['precision'])
@@ -642,7 +644,7 @@ class UI:
         roof.addObstaclesConcern(screenedArrangements)
         roof.obstacleArraySelf = roof.calculateObstacleSelf()
         roof.calculate_column(screenedArrangements)
-        return roof.drawPlacement(screenedArrangements)
+        return roof.drawPlacement(screenedArrangements), [placement[5] for placement in roof.allPlacements]
 
     def cal_and_display_layout(self):
         for i in range(5):

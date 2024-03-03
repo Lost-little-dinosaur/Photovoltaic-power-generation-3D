@@ -34,7 +34,6 @@ class Roof:
         # self.type = 0
 
     def calculateObstacleSelf(self):
-        UNIT = getUnit()
         return_list = [[0] * ((self.realLength + 1000)) for _ in range((self.realWidth + 1000))]
         for obstacle in self.obstacles:  # 有问题
             if obstacle.type == '有烟烟囱':
@@ -207,18 +206,22 @@ class Roof:
         for placement in self.allPlacements:
             allArrangement = placement[0]
             allTempArray = []
+            allTxtArray = []
             arrangeI = 0
             for arrange in allArrangement:
                 startX, startY = arrange['start']
-                screenedArrangements[arrange['ID']].calculateComponentPositionArray(startX, startY) #  todo 删掉
-                tempArray = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY, self.realWidth,
-                                                                                     self.obstacleArraySelf,
-                                                                                     placement[3][arrangeI])
+                screenedArrangements[arrange['ID']].calculateComponentPositionArray(startX, startY)  # todo 删掉
+                tempArray, tempTxt = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY,
+                                                                                              self.realWidth,
+                                                                                              self.obstacleArraySelf,
+                                                                                              placement[3][arrangeI])
+                tempTxt = f"第{arrangeI + 1}个arrangement的立柱排布：\n" + tempTxt + "\n"
                 if len(tempArray) > nowMaxValue:
                     nowMaxValue = len(tempArray)
                 allTempArray.append(tempArray)
+                allTxtArray.append(tempTxt)
                 arrangeI += 1
-            placement.append(allTempArray)
+            placement.extend([allTempArray, allTxtArray])
         i = 0
         while i < len(self.allPlacements):
             if self.allPlacements[i][1] < nowMaxValue:
@@ -289,11 +292,11 @@ class Roof:
                     # top_left[0] + PhotovoltaicPanelBoardLength:bottom_right[0]] = PhotovoltaicPanelColor
 
                 # 接下去画立柱
-                # for column in placement[4][j]:  # column形式：[centerX,centerY]
-                #     matrix[
-                #     column[1] * magnification - standColumnPadding:column[1] * magnification + standColumnPadding + 1,
-                #     column[0] * magnification - standColumnPadding:
-                #     column[0] * magnification + standColumnPadding + 1] = StandColumnColor
+                for column in placement[4][j]:  # column形式：[centerX,centerY]
+                    matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
+                           round(column[1] * magnification / UNIT) + standColumnPadding + 1,
+                    round(column[0] * magnification / UNIT) - standColumnPadding:
+                    round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
 
             # 绘制图像
             plt.imshow(matrix.astype("uint8"))
