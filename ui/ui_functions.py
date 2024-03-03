@@ -10,6 +10,7 @@ import json
 import tkinter as tk
 from PIL import Image, ImageTk
 from functools import partial
+import time
 
 frame_width = 420
 frame_height = 320
@@ -182,7 +183,7 @@ class UI:
         arrangement_text = tk.Label(arrangement_frame, text="组件排布", font=("Arial", 12))
         arrangement_text.pack()
 
-        self.arrangement_canvas = tk.Canvas(arrangement_frame, width=frame_width, height=frame_height, bg='grey')
+        self.arrangement_canvas = tk.Canvas(arrangement_frame, width=frame_width, height=frame_height, bg='black')
         self.arrangement_canvas.pack()
 
         # “原始拓扑”文字标签放置在右侧区域的顶部
@@ -204,7 +205,7 @@ class UI:
         roofscene_text = tk.Label(roofscene_frame, text="屋面场景", font=("Arial", 12))
         roofscene_text.pack()
 
-        self.roofscene_canvas = tk.Canvas(roofscene_frame, width=frame_width, height=frame_height, bg='grey')
+        self.roofscene_canvas = tk.Canvas(roofscene_frame, width=frame_width, height=frame_height, bg='black')
         self.roofscene_canvas.pack()
 
         # “原始拓扑”文字标签放置在右侧区域的顶部
@@ -586,15 +587,17 @@ class UI:
         roof_bottom = roof_top + scaled_height
         # 在 Canvas 上绘制缩放后的矩形
         # self.roofscene_canvas.delete("roof")  # 清除之前的矩形
-        self.roofscene_canvas.create_rectangle(roof_left, roof_top, roof_right, roof_bottom, outline="blue",
+        self.roofscene_canvas.create_rectangle(roof_left, roof_top, roof_right, roof_bottom, outline="yellow",
                                                tags="roof")
         # 显示屋顶尺寸
         self.roofscene_canvas.create_text(int((roof_left + roof_right) / 2), roof_top,
                                           text=f"{self.roof_info['宽度（mm）']}",
-                                          font=("Arial", 12))
+                                          font=("Arial", 12),
+                                          fill="white")
         self.roofscene_canvas.create_text(roof_left, int((roof_top + roof_bottom) / 2),
                                           text=f"{self.roof_info['长度（mm）']}",
-                                          font=("Arial", 12))
+                                          font=("Arial", 12),
+                                          fill="white")
 
         # 绘制屋内障碍物
         for obstacle in self.obstacle_info:
@@ -631,17 +634,51 @@ class UI:
         const.const.changeMaxArrangeCount(jsonData['algorithm']['maxArrangeCount'])
 
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
+        start_time = time.time()
         assignComponentParameters(jsonData["component"])  # todo
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"assignComponentParameters 代码执行时间为：{execution_time} 秒")
+        
+        start_time = time.time()
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                                   jsonData["arrangeType"],
                                                   jsonData["scene"]["location"]["windPressure"])
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"screenArrangements 代码执行时间为：{execution_time} 秒")
 
         # 排布完光伏板后再添加障碍物并分析阴影
+        start_time = time.time()
         roof.addObstacles(jsonData["scene"]["roof"]["obstacles"])
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"addObstacles 代码执行时间为：{execution_time} 秒")
+        
+        start_time = time.time()
         roof.getValidOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"getValidOptions 代码执行时间为：{execution_time} 秒")
+
+        start_time = time.time()
         roof.addObstaclesConcern(screenedArrangements)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"addObstaclesConcern 代码执行时间为：{execution_time} 秒")
+
+        start_time = time.time()
         roof.obstacleArraySelf = roof.calculateObstacleSelf()
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"calculateObstacleSelf 代码执行时间为：{execution_time} 秒")
+        
+        start_time = time.time()
         roof.calculate_column(screenedArrangements)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"calculate_column 代码执行时间为：{execution_time} 秒")
+
         return roof.drawPlacement(screenedArrangements)
 
     def cal_and_display_layout(self):

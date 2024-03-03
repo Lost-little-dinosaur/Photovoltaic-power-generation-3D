@@ -5,7 +5,18 @@ import time
 import matplotlib.pyplot as plt
 from const.const import *
 from classes.obstacle import Obstacle
+import functools
 
+def calculate_execution_time(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"{func.__name__} 函数执行时间为：{execution_time} 秒")
+        return result
+    return wrapper
 
 # 输入都是以毫米为单位的
 class Roof:
@@ -113,16 +124,18 @@ class Roof:
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
             betterFlag = False
             IDArray = list(arrangeDict.keys())
+            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
             for y in range(startY, self.length):
                 for x in range(startX, self.width):
                     for i in range(startI, len(IDArray)):
                         if not overlaps(x, y, arrangeDict[IDArray[i]], placements) and \
-                                canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray):
+                                canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray, tempObstacleSumArray):
                             newPlacement = {'ID': IDArray[i], 'start': (x, y)}
                             placements.append(newPlacement)
                             currentValue += arrangeDict[IDArray[i]].value
                             tempObstacleArray = np.array(obstacleArray)
-                            arrangeDict[IDArray[i]].calculateArrangementShadow(x, y, self.latitude, tempObstacleArray)
+                            if len(placements) > 1:
+                                arrangeDict[IDArray[i]].calculateArrangementShadow(x, y, self.latitude, tempObstacleArray)
                             if layer < maxArrangeCount:
                                 temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
                                            i, currentValue, placements, layer + 1, np.array(tempObstacleArray))
@@ -147,8 +160,7 @@ class Roof:
                 startX = 0
             return betterFlag
 
-        def canPlaceArrangement(x, y, arrange, obstacleArray):
-            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
+        def canPlaceArrangement(x, y, arrange, obstacleArray, tempObstacleSumArray):
             for eachRect in arrange.relativePositionArray:
                 startX, startY = eachRect[0]
                 endX, endY = eachRect[1]
