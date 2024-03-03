@@ -98,6 +98,7 @@ class Arrangement:
         column, limit_column, arrangement_height = const.const.getColumnsInformation()
         startX = startXunit * UNIT
         startY = startYunit * UNIT
+
         def generate_columns(n_columns, startY, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
             column_positions = []
             self.columnArray_x = []
@@ -111,10 +112,10 @@ class Arrangement:
                 x = int(i * ideal_spacing + column_positions[0])
                 column_positions.append(x)
                 # todo 50整数修正需要修改
-        #    precision = 50
-        #    for i in range(len(column_positions)):
-        #        if ((column_positions[i] % precision) != 0):
-        #            column_positions[i] = int(column_positions[i] / precision) * precision
+            #    precision = 50
+            #    for i in range(len(column_positions)):
+            #        if ((column_positions[i] % precision) != 0):
+            #            column_positions[i] = int(column_positions[i] / precision) * precision
             # 调整立柱距离边缘的距离
             # min_edge_distance = round(250 / UNIT)
             # if column_positions[0] + startX < min_edge_distance:
@@ -135,7 +136,7 @@ class Arrangement:
             for x in column_positions:
                 for y in array_iny:
                     if obstacles[x + startX][y + startY] != 1 and x < width and y < length:
-                    #if x < width and y < length:
+                        # if x < width and y < length:
                         result.append([startX + x, startY + y])
                     if x == column_positions[0] or x == column_positions[-1]:
                         if y == array_iny[0] or y == array_iny[-1]:
@@ -246,8 +247,19 @@ class Arrangement:
                             flag = 0
                     if flag == 1:
                         final_list.append(node)
-                return final_list
-        return []
+                txt = "边缘四个立柱的坐标为："
+                for node in self.edgeColumn:
+                    txt += str(node) + "、"
+                txt = txt[:-1] + "\n"
+                txt += "南北立柱间距为："
+                for node in self.columnArray_y:
+                    txt += str(node) + "、"
+                txt = txt[:-1] + "\n"
+                txt += "东西立柱间距为："
+                for node in self.columnArray_x:
+                    txt += str(node) + "、"
+                return final_list, txt[:-1] + "\n"
+        return [], ""
 
     def calculateComponentPositionArray(self, startX, startY):
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
@@ -321,6 +333,7 @@ class Arrangement:
                 self.componentPositionArray.append(
                     [[node_c[0], node_c[1]], [node_c[0] + self.component.width - 1,
                                               node_c[1] + self.component.length - 1]])
+
     def calculateComponentPositionArrayreal(self, startX, startY):
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
         self.componentPositionArray = []
@@ -370,11 +383,13 @@ class Arrangement:
             for i in range(self.verticalCount - 1):
                 for j in range(self.componentLayoutArray[i]):
                     self.componentPositionArray.append(
-                        [[startX, startY], [startX + self.component.realWidth - 1, startY + self.component.realLength - 1]])
+                        [[startX, startY],
+                         [startX + self.component.realWidth - 1, startY + self.component.realLength - 1]])
                     startX += (self.component.realWidth + PhotovoltaicPanelCrossMargin)
                 startX -= (self.component.realWidth + PhotovoltaicPanelCrossMargin) * self.componentLayoutArray[i]
                 startY += (self.component.realLength + PhotovoltaicPanelVerticalMargin)
-            startY += (self.component.realWidth + PhotovoltaicPanelVerticalDiffMargin * 2 - PhotovoltaicPanelVerticalMargin)
+            startY += (
+                    self.component.realWidth + PhotovoltaicPanelVerticalDiffMargin * 2 - PhotovoltaicPanelVerticalMargin)
             temp_X = startX
             temp = []
             for i in range(self.componentLayoutArray[-1]):  # 最后一排
@@ -393,6 +408,7 @@ class Arrangement:
                 self.componentPositionArray.append(
                     [[node_c[0], node_c[1]], [node_c[0] + self.component.realWidth - 1,
                                               node_c[1] + self.component.realLength - 1]])
+
     # def chooseLayout(self):
     #     if self.specification == "竖二" and self.type == "基墩":
     #         array_x = [107, 1707, 3307]
@@ -462,7 +478,6 @@ class Arrangement:
                 ]
                 minX, minY, self.shadowArray = calculateShadow(nodeArray, False, latitude, False)
                 self.shadowrelativePosition = [-minX, -minY]
-
 
     def calculateComponentHeightArray(self):
         length = self.relativePositionArray[-1][1][1]
