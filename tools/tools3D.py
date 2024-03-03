@@ -37,7 +37,6 @@ def draw3dModel(model3DArray):
     plt.show()
 
 
-
 def arePointsCoplanar(nodeArray):
     UNIT = getUnit()
     # 确保nodeArray的长度为4，且每个元素长度为3
@@ -68,6 +67,7 @@ def arePointsCoplanar(nodeArray):
 
     # 如果行列式的值为零，则点共面，否则不共面
     return abs(np.linalg.det(np.array([node + [1] for node in tempNodeArray]))) < 1e-6  # 使用小的阈值来处理浮点数的精度问题
+
 
 def getLineSegmentNodes(start, end):
     x0, y0, z0 = start
@@ -252,33 +252,36 @@ def calculateShadow(nodeArray, isRound, latitude, addSelfFlag, obstacleArray=Non
             if addSelfFlag:
                 tempArray = [getTriangleFlatNodes(nodeArray[0], nodeArray[1], nodeArray[2]),
                              getTriangleFlatNodes(nodeArray[2], nodeArray[3], nodeArray[0])]  # 把物体本体也加入阴影数组
+                minX, maxX = tempArray[0][0], tempArray[0][0] + tempArray[0][2].shape[1]
+                minY, maxY = tempArray[0][1], tempArray[0][1] + tempArray[0][2].shape[0]
             else:
                 tempArray = []
-            for i in range(len(nodeArray) - 1):
+                for node in nodeArray:
+                    minX, minY = min(minX, node[0]), min(minY, node[1])
+                    maxX, maxY = max(maxX, node[0]), max(maxY, node[1])
+
+            for i in range(len(nodeArray) - 1):  # todo 待优化：所有点等高时，只需计算一次，并进行平移
                 lineSegmentNodes = getLineSegmentNodes(nodeArray[i], nodeArray[i + 1])
-                for node in lineSegmentNodes:
+                for node in lineSegmentNodes:  # node形式是[x, y, z]
                     startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
                     if len(tempShadowArray) != 0:
                         tempArray.append([startX, startY, tempShadowArray])
-                        minX, minY, maxX, maxY = min(minX, startX), min(minY, startY), max(maxX, startX + len(
-                            tempShadowArray)), max(maxY, startY + len(tempShadowArray[0]))
+                        minX, minY, maxX, maxY = min(minX, startX), min(minY, startY), max(
+                            maxX, startX + tempShadowArray.shape[1]), max(maxY, startY + tempShadowArray.shape[0])
             lineSegmentNodes = getLineSegmentNodes(nodeArray[-1], nodeArray[0])
             for node in lineSegmentNodes:
                 startX, startY, tempShadowArray = getOnePointShadow(node, latitude)
                 if len(tempShadowArray) != 0:
                     tempArray.append([startX, startY, tempShadowArray])
-                    minX, minY, maxX, maxY = min(minX, startX), min(minY, startY), max(maxX, startX + len(
-                        tempShadowArray)), max(maxY, startY + len(tempShadowArray[0]))
+                    minX, minY, maxX, maxY = min(minX, startX), min(minY, startY), max(
+                        maxX, startX + tempShadowArray.shape[1]), max(maxY, startY + tempShadowArray.shape[0])
 
-            returnArray = np.array([[0 for _ in range(round(maxY - minY) + 1)] for _ in range(round(maxX - minX) + 1)])
-            detaX = 0 if minX >= 0 else -minX
-            detaY = 0 if minY >= 0 else -minY
+            returnArray = np.zeros((round(maxY - minY) + 1, round(maxX - minX) + 1))
             for startX, startY, tempShadowArray in tempArray:  # todo:可能有边界问题
-                # 把tempShadowArray去掉detaX和detaY的部分加到returnArray上
-                returnArray[startY + detaY:startY + tempShadowArray.shape[1] + detaY,
-                startX + detaX:startX + tempShadowArray.shape[0] + detaX] = np.maximum(
-                    returnArray[startY + detaY:startY + tempShadowArray.shape[1] + detaY,
-                    startX + detaX:startX + tempShadowArray.shape[0] + detaX], tempShadowArray)
+                returnArray[startY - minY:startY + tempShadowArray.shape[0] - minY,
+                startX - minX:startX + tempShadowArray.shape[1] - minX] = np.maximum(
+                    returnArray[startY - minY:startY + tempShadowArray.shape[0] - minY,
+                    startX - minX:startX + tempShadowArray.shape[1] - minX], tempShadowArray)
             # 返回returnArray的坐标和returnArray
             return minX, minY, returnArray
 
