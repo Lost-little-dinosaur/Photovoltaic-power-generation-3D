@@ -7,6 +7,7 @@ from const.const import *
 from classes.obstacle import Obstacle
 import functools
 
+
 def calculate_execution_time(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -16,7 +17,9 @@ def calculate_execution_time(func):
         execution_time = end_time - start_time
         print(f"{func.__name__} 函数执行时间为：{execution_time} 秒")
         return result
+
     return wrapper
+
 
 # 输入都是以毫米为单位的
 class Roof:
@@ -114,7 +117,7 @@ class Roof:
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         # 输入限制条件
-        minComponent = 5  # 最小组件数
+        minComponent = 1  # 最小组件数
         maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
         nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
 
@@ -132,8 +135,7 @@ class Roof:
                             obstacleArray[y - sRPY:y - sRPY + sizeY, x - sRPX:x - sRPX + sizeX] = \
                                 np.maximum(obstacleArray[y - sRPY:y - sRPY + sizeY, x - sRPX:x - sRPX + sizeX],
                                            arrangeDict[IDArray[i]].shadowArray)
-                            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
-                        if not canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray, tempObstacleSumArray):
+                        if not canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray):
                             continue
 
                         newPlacement = {'ID': IDArray[i], 'start': (x, y)}
@@ -162,7 +164,8 @@ class Roof:
                 startX = 0
             return betterFlag
 
-        def canPlaceArrangement(x, y, arrange, obstacleArray, tempObstacleSumArray):
+        def canPlaceArrangement(x, y, arrange, obstacleArray):
+            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
             for eachRect in arrange.relativePositionArray:
                 startX, startY = eachRect[0]
                 endX, endY = eachRect[1]
@@ -256,7 +259,7 @@ class Roof:
         UNIT = getUnit()
         # 画障碍物（只需要轮廓就行）
         # obstaclePointArray = []
-        obstaclePointArray = np.empty((0,2),dtype=np.int32)
+        obstaclePointArray = np.empty((0, 2), dtype=np.int32)
         for obstacle in self.obstacles:
             if obstacle.type == '有烟烟囱':
                 if not obstacle.isRound:
@@ -264,20 +267,20 @@ class Roof:
                     startY = round(obstacle.realupLeftPosition[1] / UNIT) * magnification
                     endX = round((obstacle.realupLeftPosition[0] + obstacle.realwidth) / UNIT) * magnification
                     endY = round((obstacle.realupLeftPosition[1] + obstacle.reallength) / UNIT) * magnification
-                    
+
                     ### 尽量不要用for append，能用Numpy就用numpy
                     # for y in range(startY, endY + 1):
                     #     obstaclePointArray.append((startX, y))
                     #     obstaclePointArray.append((endX, y))
                     lenY = endY + 1 - startY
-                    column = np.tile([startX,endX], lenY)
-                    matrix = np.column_stack((column, np.repeat(np.array(list(range(startY, endY + 1))), 2)))   
+                    column = np.tile([startX, endX], lenY)
+                    matrix = np.column_stack((column, np.repeat(np.array(list(range(startY, endY + 1))), 2)))
                     obstaclePointArray = np.concatenate((obstaclePointArray, matrix), axis=0, dtype=np.int32)
                     # for x in range(startX, endX + 1):
                     #     obstaclePointArray.append((x, startY))
                     #     obstaclePointArray.append((x, endY))
                     lenX = endX + 1 - startX
-                    column = np.tile([startY,endY], lenX)
+                    column = np.tile([startY, endY], lenX)
                     matrix = np.column_stack((np.repeat(np.array(list(range(startX, endX + 1))), 2), column))
                     obstaclePointArray = np.concatenate((obstaclePointArray, matrix), axis=0, dtype=np.int32)
 
