@@ -228,18 +228,24 @@ def getTriangleFlatNodes(node1, node2, node3):
         if node[1] > max_y:
             max_y = node[1]
     final_list = [[0] * (max_x - min_x + 1) for _ in range(max_y - min_y + 1)]
-    f = -1
-    for y in range(0, max_y - min_y + 1):
-        for x in range(0, max_x - min_x + 1):
-            for node in returnList:
-                if node[0] == x + min_x and node[1] == y + min_y:
-                    f = node[2]
-                    break
-            if f != -1:
-                final_list[y][x] = f
-                f = -1
-            else:
-                final_list[y][x] = 0
+    # f = -1
+    for node in returnList:
+        x = node[0] - min_x
+        y = node[1] - min_y
+        if(0 <= x <= (max_x - min_x)) and (0 <= y <= (max_y - min_y)):
+            final_list[y][x] = node[2]
+
+    # for y in range(0, max_y - min_y + 1):
+    #    for x in range(0, max_x - min_x + 1):
+    #        for node in returnList:
+    #            if node[0] == x + min_x and node[1] == y + min_y:
+    #                f = node[2]
+    #                break
+    #        if f != -1:
+    #            final_list[y][x] = f
+    #            f = -1
+    #        else:
+    #            final_list[y][x] = 0
     return min_x, min_y, np.array(final_list)
 
 
