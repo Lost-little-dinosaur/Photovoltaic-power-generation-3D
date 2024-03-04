@@ -323,8 +323,11 @@ def calculateShadow(nodeArray, isRound, latitude, addSelfFlag, obstacleArray=Non
                 #         eX = min(obstacleArray.shape[1], nowStartX + publicShadowArray.shape[1])
                 #         eY = min(obstacleArray.shape[0], nowStartY + publicShadowArray.shape[0])
                 #         if sX < obstacleArray.shape[1] and sY < obstacleArray.shape[0]:
-                #             obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX], publicShadowArray \
-                #                 [sY - nowStartX:eY - nowStartX, sX - nowStartX:eX - nowStartX])
+                #             try:
+                #                 obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX], publicShadowArray \
+                #                     [sY - nowStartX:eY - sY, sX - nowStartX:eX - sX])
+                #             except:
+                #                 print()
                 # else:
                 for node in lineSegmentNodes:  # todo:可能有边界问题
                     startX, startY, tempShadowArray = getOnePointShadow(node, latitude)

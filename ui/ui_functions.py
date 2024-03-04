@@ -1,5 +1,6 @@
 import sys, os
 import const.const
+from tools.mutiProcessing import *
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -646,8 +647,13 @@ class UI:
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                                   jsonData["arrangeType"],
                                                   jsonData["scene"]["location"]["windPressure"])
-        for ID in screenedArrangements:
-            screenedArrangements[ID].calculateArrangementShadow(roof.latitude)
+
+        # 多进程计算阴影
+        if jsonData["algorithm"]["maxArrangeCount"] > 1:
+            chunks = chunk_it(list(screenedArrangements.keys()), cpuCount)
+            with multiprocessing.Pool(processes=cpuCount) as pool:
+                pool.map(cAS, [(chunk, roof.latitude, screenedArrangements) for chunk in chunks])
+
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"screenArrangements + calculateArrangementShadow代码执行时间为：{execution_time} 秒")
@@ -684,7 +690,12 @@ class UI:
         print(f"calculate_column 代码执行时间为：{execution_time} 秒")
 
         # return roof.drawPlacement(screenedArrangements)
-        return roof.drawPlacement(screenedArrangements), [placement[5] for placement in roof.allPlacements]
+        start_time = time.time()
+        tempArray = roof.drawPlacement(screenedArrangements), [placement[5] for placement in roof.allPlacements]
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print("drawPlacement 代码执行时间为：", execution_time, "秒")
+        return tempArray
 
     def cal_and_display_layout(self):
         for i in range(5):
@@ -856,3 +867,9 @@ class UI:
 
     def update_arrangement_info_text(self):
         self.arrangement_info_text_var.set("展示文本\n展示文本\n")
+
+
+def cAS(params):
+    chunk, latitude, screenedArrangements = params
+    for ID in chunk:
+        screenedArrangements[ID].calculateArrangementShadow(latitude)
