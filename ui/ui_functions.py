@@ -632,6 +632,7 @@ class UI:
         # print(self.get_input_json())
 
     def calculate_layout(self):
+        allTimeStart = time.time()
         jsonData = self.get_input_json()
         const.const.changeUnit(jsonData['algorithm']['precision'])
         const.const.changeMaxArrangeCount(jsonData['algorithm']['maxArrangeCount'])
@@ -694,7 +695,8 @@ class UI:
         tempArray = roof.drawPlacement(screenedArrangements), [placement[5] for placement in roof.allPlacements]
         end_time = time.time()
         execution_time = end_time - start_time
-        print("drawPlacement 代码执行时间为：", execution_time, "秒")
+        print("drawPlacement 代码执行时间为：", execution_time, "秒\n")
+        print("总代码执行时间为：", time.time() - allTimeStart, "秒\n")
         return tempArray
 
     def cal_and_display_layout(self):
