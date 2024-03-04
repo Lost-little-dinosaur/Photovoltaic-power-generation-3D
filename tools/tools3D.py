@@ -173,18 +173,34 @@ def findIntegerPointsInProjectedTriangle(node1, node2, node3):
     #         if isPointInTriangle([x, y], p1, p2, p3):
     #             points_in_triangle.append((x, y))
 
-    ### 切换到扫描线算法
+    ### 切换到扫描线算法，稍微快点，总复杂度还是O(N^2)
     triangle = [p1, p2, p3]
     for y in range(min_y, max_y+1):
         for i in range(3):
             x0, y0 = triangle[i]
             x1, y1 = triangle[(i+1)%3]
+            x2, y2 = triangle[(i+2)%3]
             if y0 > y1:
                 x0, x1, y0, y1 = x1, x0, y1, y0
             if y0 <= y < y1:
                 if y1 != y0:
-                    x = x0 + (x1 - x0) * (y - y0) // (y1 - y0)
-                    points_in_triangle.append([x,y])
+                    x_inline = x0 + (x1 - x0) * (y - y0) // (y1 - y0)
+                    points_in_triangle.append([x_inline,y])
+                    if isPointInTriangle((x_inline+1,y),p1,p2,p3): # 往右扫描
+                        for x in range(x_inline, max_x):
+                            if isPointInTriangle((x,y),p1,p2,p3):
+                                points_in_triangle.append([x,y])
+                            else:
+                                break
+                    else: # 往左扫描
+                        for x in range(min_x, x_inline):
+                            if isPointInTriangle((x,y),p1,p2,p3):
+                                points_in_triangle.append([x,y])
+                            else:
+                                break
+
+
+
 
     for [x, y] in points_in_triangle:
         z = -(A * x + B * y + D) / C
@@ -236,7 +252,7 @@ def getOnePointShadow(point: List[int], latitude):  # x,y,z
     #     max_y = int(max(max_y, node[1]))
     node_dict = {(node[0], node[1]): node[2] for node in merged_array}
     
-    # 转化成字典查询
+    # 转化成字典查询，用字典替换一个for循环
     final_list = [[0] * (max_x - min_x + 1) for _ in range(max_y - min_y + 1)]
     for y in range(0, max_y - min_y + 1):
         for x in range(0, max_x - min_x + 1):
