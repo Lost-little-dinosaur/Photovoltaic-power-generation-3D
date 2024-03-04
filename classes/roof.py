@@ -125,14 +125,15 @@ class Roof:
             betterFlag = False
             IDArray = list(arrangeDict.keys())
             if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将前一个阵列的阴影更新到obstacleArray中
-                sRPX, sRPY = arrangeDict[placements[-1]['ID']].shadowRelativePosition
-                sizeY, sizeX = arrangeDict[placements[-1]['ID']].shadowArray.shape
+                arrange = arrangeDict[placements[-1]['ID']]
+                sRPX, sRPY = arrange.shadowRelativePosition
+                sizeY, sizeX = arrange.shadowArray.shape
                 sX, sY = placements[-1]['start']
                 rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
-                obstacleArray[rsY:sY + sizeY, rsX:sX + sizeX] = np.maximum(
-                    obstacleArray[rsY:sY - sRPY + sizeY, rsX:sX - sRPX + sizeX],
-                    arrangeDict[placements[-1]['ID']].shadowArray[rsY - sY + sRPY:rsY - sY + sRPY + sizeY,
-                    rsX - sX + sRPX:rsX - sX + sRPX + sizeX])
+                eX, eY = min(self.width, sX - sRPX + sizeX), min(self.length, sY - sRPY + sizeY)
+                obstacleArray[rsY:eY, rsX:eX] = np.maximum(obstacleArray[rsY:eY, rsX:eX],
+                                                           arrange.shadowArray[rsY - sY + sRPY:rsY - sY + sRPY + sizeY,
+                                                           rsX - sX + sRPX:rsX - sX + sRPX + sizeX])
             tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
             for y in range(startY, self.length):
