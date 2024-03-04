@@ -124,38 +124,41 @@ class Roof:
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
             betterFlag = False
             IDArray = list(arrangeDict.keys())
+            if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将前一个阵列的阴影更新到obstacleArray中
+                sRPX, sRPY = arrangeDict[placements[-1]['ID']].shadowRelativePosition
+                sizeY, sizeX = arrangeDict[placements[-1]['ID']].shadowArray.shape
+                sX, sY = placements[-1]['start']
+                rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
+                obstacleArray[rsY:sY + sizeY, rsX:sX + sizeX] = np.maximum(
+                    obstacleArray[rsY:sY - sRPY + sizeY, rsX:sX - sRPX + sizeX],
+                    arrangeDict[placements[-1]['ID']].shadowArray[rsY - sY + sRPY:rsY - sY + sRPY + sizeY,
+                    rsX - sX + sRPX:rsX - sX + sRPX + sizeX])
+            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
+
             for y in range(startY, self.length):
                 for x in range(startX, self.width):
                     for i in range(startI, len(IDArray)):
                         if overlaps(x, y, arrangeDict[IDArray[i]], placements):
                             continue
-                        if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要计算前一个阵列的阴影
-                            sRPX, sRPY = arrangeDict[IDArray[i]].shadowRelativePosition
-                            sizeY, sizeX = arrangeDict[IDArray[i]].shadowArray.shape
-                            obstacleArray[y - sRPY:y - sRPY + sizeY, x - sRPX:x - sRPX + sizeX] = \
-                                np.maximum(obstacleArray[y - sRPY:y - sRPY + sizeY, x - sRPX:x - sRPX + sizeX],
-                                           arrangeDict[IDArray[i]].shadowArray)
-                        if not canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray):
+                        if not canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray, tempObstacleSumArray):
                             continue
-
                         newPlacement = {'ID': IDArray[i], 'start': (x, y)}
                         placements.append(newPlacement)
                         currentValue += arrangeDict[IDArray[i]].value
-                        tempObstacleArray = np.array(obstacleArray)
                         if layer < maxArrangeCount:
                             temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
-                                       i, currentValue, placements, layer + 1, np.array(tempObstacleArray))
+                                       i, currentValue, placements, layer + 1, np.array(obstacleArray))
                             if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
                                 betterFlag = True
                             else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
                                 self.allPlacements.append(
-                                    [placements.copy(), currentValue, np.array(tempObstacleArray)])
+                                    [placements.copy(), currentValue, np.array(obstacleArray)])
                                 if len(self.allPlacements) % 1000 == 0:
                                     print(
                                         f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
                         else:
                             self.allPlacements.append(
-                                [placements.copy(), currentValue, np.array(tempObstacleArray)])
+                                [placements.copy(), currentValue, np.array(obstacleArray)])
                             if len(self.allPlacements) % 1000 == 0:
                                 print(
                                     f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
@@ -164,8 +167,7 @@ class Roof:
                 startX = 0
             return betterFlag
 
-        def canPlaceArrangement(x, y, arrange, obstacleArray):
-            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
+        def canPlaceArrangement(x, y, arrange, obstacleArray, tempObstacleSumArray):
             for eachRect in arrange.relativePositionArray:
                 startX, startY = eachRect[0]
                 endX, endY = eachRect[1]
