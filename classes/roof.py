@@ -131,9 +131,10 @@ class Roof:
                 sX, sY = placements[-1]['start']
                 rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
                 eX, eY = min(self.width, sX - sRPX + sizeX), min(self.length, sY - sRPY + sizeY)
+                rsX1, rsY1 = max(0, -sX + sRPX), max(0, -sY + sRPY)
                 obstacleArray[rsY:eY, rsX:eX] = np.maximum(obstacleArray[rsY:eY, rsX:eX],
-                                                           arrange.shadowArray[rsY - sY + sRPY:rsY - sY + sRPY + sizeY,
-                                                           rsX - sX + sRPX:rsX - sX + sRPX + sizeX])
+                                                           arrange.shadowArray[rsY1:rsY1 + eY - rsY,
+                                                           rsX1:rsX1 + eX - rsX])
             tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
             for y in range(startY, self.length):
