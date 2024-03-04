@@ -141,6 +141,7 @@ class Roof:
                     for i in range(startI, len(IDArray)):
                         if overlaps(x, y, arrangeDict[IDArray[i]], placements):
                             continue
+
                         if not canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray, tempObstacleSumArray):
                             continue
                         newPlacement = {'ID': IDArray[i], 'start': (x, y)}
