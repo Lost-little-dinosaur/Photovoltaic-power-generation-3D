@@ -290,7 +290,9 @@ class Roof:
                     obstaclePointArray = np.concatenate((obstaclePointArray, matrix), axis=0, dtype=np.int32)
 
         # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
+
         for placement in self.allPlacements[:maxDraw]:
+
             matrix = np.zeros((self.length * magnification, self.width * magnification, 3))
             # 先画障碍物
             for point in obstaclePointArray:

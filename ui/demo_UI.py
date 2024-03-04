@@ -1,6 +1,7 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ui.ui_functions import *
+import cProfile
 
 
 def main():
@@ -18,4 +19,5 @@ def main():
 
 
 if __name__ == "__main__":
+    # cProfile.run("main()")
     main()

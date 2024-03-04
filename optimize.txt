@@ -1,4 +1,0 @@
-getValidOptions
-    canPlaceArrangement:
-        tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)需要吗？
-        我看obstacleArray是固定的，
