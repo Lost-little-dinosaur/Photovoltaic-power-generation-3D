@@ -493,10 +493,10 @@ class Arrangement:
         else:
             if self.crossPosition == INF:  # 只有竖排
                 first_element = self.componentLayoutArray[0]
-                count = 0
-                for num in self.componentLayoutArray:
-                    if num == first_element:
-                        count += 1
+                count = self.componentLayoutArray.count(first_element)
+                # for num in self.componentLayoutArray:
+                #     if num == first_element:
+                #         count += 1
                 if self.componentLayoutArray[0] < self.componentLayoutArray[-1]:
                     hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray), 0, count, 0, 0)]
                 else:
@@ -508,29 +508,44 @@ class Arrangement:
                 normal_vertical = max(self.componentLayoutArray[0], self.componentLayoutArray[-1])  # 正常的一排列数
                 normal_cross = int((normal_vertical * self.component.width + (normal_vertical - 1) *
                                     PhotovoltaicPanelCrossMargin) / self.component.length)
-                count1 = 0
-                count2 = 0
-                count3 = 0
-                for i in range(len(self.componentLayoutArray) - 2):
-                    if self.componentLayoutArray[i] < normal_vertical:
-                        count1 += 1
-                if self.componentLayoutArray[-2] < normal_cross:
-                    count2 = 1
-                if self.componentLayoutArray[-1] < normal_vertical:
-                    count3 = 1
+                # count1 = 0
+                # count2 = 0
+                # count3 = 0
+                # for i in range(len(self.componentLayoutArray) - 2):
+                #     if self.componentLayoutArray[i] < normal_vertical:
+                #         count1 += 1
+                # if self.componentLayoutArray[-2] < normal_cross:
+                #     count2 = 1
+                # if self.componentLayoutArray[-1] < normal_vertical:
+                #     count3 = 1
+                count1 = sum(1 for i in range(len(self.componentLayoutArray) - 2) if self.componentLayoutArray[i] < normal_vertical)
+                count2 = 1 if self.componentLayoutArray[-2] < normal_cross else 0
+                count3 = 1 if self.componentLayoutArray[-1] < normal_vertical else 0
                 hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
         hMax = hMin + length * sin(radians(20))
         temp = (hMax - hMin) / length
-        return_list = [[0] * (width + 1) for _ in range(length + 1)]
+        # return_list = [[0] * (width + 1) for _ in range(length + 1)]
+        # for node in self.relativePositionArray:
+        #     max_x = node[1][0]
+        #     min_x = node[0][0]
+        #     max_y = node[1][1]
+        #     min_y = node[0][1]
+
+        #     for y in range(min_y, max_y + 1):
+        #         for x in range(min_x, max_x + 1):
+        #             return_list[y][x] = hMin + temp * (length - y)
+        
+        # 换numpy
+        return_list = np.zeros((length + 1, width + 1))
         for node in self.relativePositionArray:
             max_x = node[1][0]
             min_x = node[0][0]
             max_y = node[1][1]
             min_y = node[0][1]
 
-            for y in range(min_y, max_y + 1):
-                for x in range(min_x, max_x + 1):
-                    return_list[y][x] = hMin + temp * (length - y)
+            y_range = range(min_y, max_y + 1)
+            x_range = range(min_x, max_x + 1)
+            return_list[np.ix_(y_range, x_range)] = hMin + temp * (length - np.array(y_range)[:, np.newaxis])
         return return_list
 
 

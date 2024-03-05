@@ -1,8 +1,6 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ui.ui_functions import *
-import cProfile
-
 
 def main():
     ui = UI(
@@ -22,5 +20,17 @@ def main():
 
 
 if __name__ == "__main__":
+    import cProfile
+    import pstats
+
+    prof = cProfile.Profile()
+    prof.run('main()')
+    # prof.sort_stats('cumtime')
+    prof.dump_stats('output.prof')
+
+    stream = open('output.txt', 'w')
+    stats = pstats.Stats('output.prof', stream=stream)
+    stats.sort_stats('cumtime')
+    stats.print_stats()
     # cProfile.run("main()")
-    main()
+    # main()
