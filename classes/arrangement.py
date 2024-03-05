@@ -14,8 +14,6 @@ ID = 0
 class Arrangement:
 
     def __init__(self, componentLayoutArray, crossPosition, component, arrangeType, maxWindPressure, isRule):
-        
-        time1 = time.time() 
         for c in getAllComponents():
             if component == c.specification:
                 self.component = c  # 使用组件的类型
@@ -68,9 +66,6 @@ class Arrangement:
                                                                     nowBottom + self.component.width + PhotovoltaicPanelVerticalDiffMargin - 1]])
             # else:  # 横排在中间
             #     raise Exception("横排在中间的情况还没有写")
-
-        print("first half", time.time() - time1)
-        time1 = time.time() 
         self.componentPositionArray = []  # 组合排布中组件的详细信息
         self.arrangeType = arrangeType  # 排布的类型：基墩，膨胀常规，膨胀抬高
         self.maxWindPressure = maxWindPressure  # 风压
@@ -97,7 +92,6 @@ class Arrangement:
         self.columnArray_x = []  # 立柱东西间距
         self.edgeColumn = []  # 边缘立柱
         self.shadowRelativePosition = []
-        print("second half", time.time() - time1)
 
     def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices):
         UNIT = const.const.getUnit()
@@ -600,8 +594,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                         # [4, 0, "182-78", "膨胀抬高", "低压"], [4, 1, "182-78", "膨胀抬高", "低压"],
                         # [5, 0, "182-78", "膨胀抬高", "低压"]
                         ]
-    
-    time1 = time.time() 
+
     arrangementDict = {}
     global ID
     for tempElement in tempArrangements:
@@ -647,9 +640,6 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                     arrangementDict[ID] = Arrangement(tempArr, 1, tempElement[2], tempElement[3], tempElement[4], True)
                     ID += 1
 
-    print("total first half", time.time() - time1)
-    
-    time1 = time.time() 
     # 通过输入的屋顶宽度、屋顶长度、组件类型、排布类型和风压，筛选出合适的排布
     result = {}
     for k, arrangement in arrangementDict.items():
@@ -660,7 +650,6 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                     break
             else:
                 result[k] = arrangement
-    print("total second half", time.time() - time1)
     return result
 
 

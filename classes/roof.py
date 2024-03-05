@@ -126,7 +126,10 @@ class Roof:
             IDArray = list(arrangeDict.keys())
             if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将前一个阵列的阴影更新到obstacleArray中
                 arrange = arrangeDict[placements[-1]['ID']]
-                sRPX, sRPY = arrange.shadowRelativePosition
+                try:
+                    sRPX, sRPY = arrange.shadowRelativePosition
+                except:
+                    print()
                 sizeY, sizeX = arrange.shadowArray.shape
                 sX, sY = placements[-1]['start']
                 rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)

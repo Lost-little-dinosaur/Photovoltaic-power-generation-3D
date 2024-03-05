@@ -652,8 +652,15 @@ class UI:
         # 多进程计算阴影
         if jsonData["algorithm"]["maxArrangeCount"] > 1:
             chunks = chunk_it(list(screenedArrangements.keys()), cpuCount)
+            allResultArray = []
             with multiprocessing.Pool(processes=cpuCount) as pool:
-                pool.map(cAS, [(chunk, roof.latitude, screenedArrangements) for chunk in chunks])
+                resultArray = pool.map(cAS, [(chunk, roof.latitude, screenedArrangements) for chunk in chunks])
+                for r in resultArray:
+                    for rr in r:
+                        allResultArray.append(rr)
+            for result in allResultArray:
+                screenedArrangements[result[0]].shadowRelativePosition = result[1]
+                screenedArrangements[result[0]].shadowArray = result[2]
 
         end_time = time.time()
         execution_time = end_time - start_time
@@ -873,5 +880,8 @@ class UI:
 
 def cAS(params):
     chunk, latitude, screenedArrangements = params
+    retultArray = []
     for ID in chunk:
         screenedArrangements[ID].calculateArrangementShadow(latitude)
+        retultArray.append([ID, screenedArrangements[ID].shadowRelativePosition, screenedArrangements[ID].shadowArray])
+    return retultArray
