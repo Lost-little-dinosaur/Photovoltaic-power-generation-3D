@@ -20,6 +20,7 @@
     "roof": {
       "isComplex": false,
       "category": "平屋顶",
+      "roofSurfaceCategory": "矩形",
       "A": 9100,
       "B": 7700,
       "height": 3000,

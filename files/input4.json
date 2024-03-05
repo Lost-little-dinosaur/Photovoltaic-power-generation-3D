@@ -18,7 +18,7 @@
       "distanceToGridConnection": 2000
     },
     "roof": {
-      "isComplex": false,
+      "isComplex": true,
       "category": "平屋顶",
       "roofSurfaceCategory":"正7形",
       "A": 1000,

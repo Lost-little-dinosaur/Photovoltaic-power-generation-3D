@@ -26,7 +26,8 @@ class Roof:
     def __init__(self, jsonRoof, latitude):
         UNIT = getUnit()
         self.eastExtend, self.westExtend, self.southExtend, self.northExtend = jsonRoof["extensibleDistance"]
-        if not jsonRoof["isComplex"] and jsonRoof["roofSurfaceCategory"] == "矩形":
+        self.type = jsonRoof["roofSurfaceCategory"]
+        if not jsonRoof["isComplex"]:
             # self.length = round((jsonRoof["length"] + self.southExtend + self.northExtend) / UNIT)
             # self.width = round((jsonRoof["width"] + self.eastExtend + self.westExtend) / UNIT)
             # self.realLength = jsonRoof["length"] + self.southExtend + self.northExtend
@@ -40,6 +41,21 @@ class Roof:
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
+        elif jsonRoof["isComplex"] and self.type == "正7形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = self.edgeA + self.edgeC
+            self.edgeF = self.edgeB + self.edgeD
+            self.height = jsonRoof["height"]
+            self.length = self.edgeE
+            self.width = self.edgeD
+            self.roofArray = np.full((self.length, self.width), 0)
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
@@ -53,12 +69,20 @@ class Roof:
 
     def calculateObstacleSelf(self):
         return_list = [[0] * ((self.realLength + 1000)) for _ in range((self.realWidth + 1000))]
-        for obstacle in self.obstacles:  # 有问题
+        for obstacle in self.obstacles:
             if obstacle.type == '有烟烟囱':
                 x_min = max(0, obstacle.realupLeftPosition[0] - 100)
                 x_max = min(self.realWidth, obstacle.realupLeftPosition[0] + obstacle.realwidth + 100)
                 y_min = max(0, obstacle.realupLeftPosition[1] - 100)
                 y_max = min(self.realLength, obstacle.realupLeftPosition[1] + obstacle.reallength + 100)
+                for x in range(x_min, x_max):
+                    for y in range(y_min, y_max):
+                        return_list[x][y] = 1
+            if obstacle.type == "屋面扣除":
+                x_min = obstacle.upLeftPosition[0]
+                x_max = obstacle.upLeftPosition[0] + obstacle.width
+                y_min = obstacle.upLeftPosition[1]
+                y_max = obstacle.realupLeftPosition[1] + obstacle.length
                 for x in range(x_min, x_max):
                     for y in range(y_min, y_max):
                         return_list[x][y] = 1
@@ -233,6 +257,12 @@ class Roof:
         for obstacle in obstacles:  # todo: 待优化，可以多进程计算
             self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
         self.obstacleSumArray = np.cumsum(np.cumsum(self.obstacleArray, axis=0), axis=1)
+        if self.type == "正7形":
+            obstacle = {"id": "屋面扣除1", "type": "屋面扣除", "isRound": False, "length": self.edgeA,
+                        "width": self.edgeB, "height": INF, "upLeftPosition": [0, self.edgeC],
+                        }
+            self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
+
 
     def calculate_column(self, screenedArrangements):
         nowMaxValue = -INF
