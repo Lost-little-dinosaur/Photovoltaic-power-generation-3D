@@ -135,9 +135,9 @@ class Arrangement:
             self.edgeColumn = []
             for x in column_positions:
                 for y in array_iny:
-                    if obstacles[x + startX][y + startY] != 1 and x < width and y < length:
-                        # if x < width and y < length:
-                        result.append([startX + x, startY + y])
+                    if 0 <= x + startX < width and 0 <= y + startY < length:
+                        if obstacles[x + startX][y + startY] != 1:
+                            result.append([startX + x, startY + y])
                     if x == column_positions[0] or x == column_positions[-1]:
                         if y == array_iny[0] or y == array_iny[-1]:
                             self.edgeColumn.append([startX + x, startY + y])

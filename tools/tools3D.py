@@ -175,7 +175,7 @@ def findIntegerPointsInProjectedTriangle(node1, node2, node3):
 
     ### 切换到扫描线算法，稍微快点，总复杂度还是O(N^2)
     triangle = [p1, p2, p3]
-    for y in range(min_y, max_y+1):
+    for y in range(int(min_y), int(max_y)+1):
         for i in range(3):
             x0, y0 = triangle[i]
             x1, y1 = triangle[(i+1)%3]
@@ -187,13 +187,13 @@ def findIntegerPointsInProjectedTriangle(node1, node2, node3):
                     x_inline = x0 + (x1 - x0) * (y - y0) // (y1 - y0)
                     points_in_triangle.append([x_inline,y])
                     if isPointInTriangle((x_inline+1,y),p1,p2,p3): # 往右扫描
-                        for x in range(x_inline, max_x):
+                        for x in range(int(x_inline), int(max_x)):
                             if isPointInTriangle((x,y),p1,p2,p3):
                                 points_in_triangle.append([x,y])
                             else:
                                 break
                     else: # 往左扫描
-                        for x in range(min_x, x_inline):
+                        for x in range(int(min_x), int(x_inline)):
                             if isPointInTriangle((x,y),p1,p2,p3):
                                 points_in_triangle.append([x,y])
                             else:
