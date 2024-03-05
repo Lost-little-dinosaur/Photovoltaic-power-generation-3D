@@ -634,6 +634,9 @@ class UI:
         draw_height = frame_height - draw_gap * 2
 
         roofSurfaceCategory = self.roof_info.get('roofSurfaceCategory',"矩形")
+        scale = 1.0
+        roof_left = 0
+        roof_top = 0
         if roofSurfaceCategory == "矩形": #绘制矩形屋顶
             scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['A']))
             scaled_width = float(self.roof_info['B']) * scale
@@ -661,8 +664,10 @@ class UI:
             AC_height = self.roof_info['A'] + self.roof_info['C']
             scale = min(draw_width / float(self.roof_info['H']), draw_height / float(AC_height))
             
+            roof_left = (frame_width - self.roof_info['H'] * scale) / 2
+            roof_top = (frame_height - AC_height * scale) / 2
             
-            p1 = [(frame_width - self.roof_info['H'] * scale) / 2, (frame_height + AC_height * scale) / 2] # point between AH
+            p1 = [roof_left, (frame_height + AC_height * scale) / 2] # point between AH
             p0 = [p1[0], p1[1] - self.roof_info['A'] * scale] # point between AB
             p2 = [p0[0] + self.roof_info['H'] * scale ,p1[1]] # HG
             p3 = [p2[0], p2[1] - self.roof_info['G'] * scale] # FG
@@ -711,6 +716,8 @@ class UI:
             self.roof_info['F'] = self.roof_info['D'] - self.roof_info['B']
             scale = min(draw_width / float(self.roof_info['D']), draw_height / float(self.roof_info['E']))
             
+            roof_left = (frame_width - self.roof_info['D'] * scale) / 2
+            roof_top = (frame_height - self.roof_info['E'] * scale) / 2
             p0 = [(frame_width - self.roof_info['D'] * scale) / 2, (frame_height - self.roof_info['E'] * scale) / 2] # point between CD
             p1 = [p0[0], p0[1] + self.roof_info['C'] * scale] # point between BC
             p2 = [p1[0] + self.roof_info['B'] * scale ,p1[1]] # AB
@@ -759,7 +766,7 @@ class UI:
                     self.roofscene_canvas.create_oval(x1, y1, x2, y2, outline='red')
                 else:
                     width = float(obstacle['width'])
-                    length = float(obstacle['height'])
+                    length = float(obstacle['length'])
                     x1 = roof_left + centerX * scale
                     y1 = roof_top + centerY * scale
                     x2 = roof_left + (centerX + width) * scale

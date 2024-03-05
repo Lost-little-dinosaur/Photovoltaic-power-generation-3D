@@ -20,8 +20,8 @@
     "roof": {
       "isComplex": false,
       "category": "平屋顶",
-      "length": 9100,
-      "width": 7700,
+      "A": 9100,
+      "B": 7700,
       "height": 3000,
       "roofDirection": 0,
       "roofAngle": 0,
