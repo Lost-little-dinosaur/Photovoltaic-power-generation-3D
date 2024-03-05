@@ -21,200 +21,40 @@
       "isComplex": false,
       "category": "平屋顶",
       "roofSurfaceCategory":"正7形",
-      "A": 4100,
-      "B": 1700,
-      "C": 2300,
-      "D": 6800,
-      "height": 3000,
+      "A": 1000,
+      "B": 4300,
+      "C": 7800,
+      "D": 16400,
+      "height": 5000,
       "roofDirection": 0,
       "roofAngle": 0,
       "extensibleDistance": [
         0,
-        60,
-        60,
+        0,
+        0,
         0
       ],
       "maintenanceChannel": false,
-      "haveParapetWall": true,
+      "haveParapetWall": false,
       "haveOverhangingEave": false,
-      "parapetWall": {
-        "thick": 50,
-        "eastHeight": 1200,
-        "southHeight": 1200,
-        "westHeight": 1200,
-        "northHeight": 1200
-      },
       "obstacles": [
         {
-          "id": "有烟烟囱1",
-          "type": "有烟烟囱",
+          "id": "无烟烟囱1",
+          "type": "无烟烟囱",
           "isRound": false,
-          "length": 500,
-          "width": 500,
-          "height": 1000,
+          "length": 1000,
+          "width": 1000,
+          "height": 500,
           "upLeftPosition": [
-            1000,
-            4000
+            8300,
+            2800
           ],
           "adjustedHeight": 0,
-          "removable": 1
-        },
-        {
-          "id": "有烟烟囱2",
-          "type": "有烟烟囱",
-          "isRound": false,
-          "length": 500,
-          "width": 500,
-          "height": 1000,
-          "upLeftPosition": [
-            100,
-            200
-          ],
-          "adjustedHeight": 0,
-          "removable": 1
-        },
-        {
-          "id": "热水器1",
-          "type": "热水器",
-          "isRound": false,
-          "southHeight": 20,
-          "northHeight": 20,
-          "eastWestLength": 20,
-          "northSouthLength": 20,
-          "upLeftPosition": [
-            100,
-            200
-          ],
-          "adjustedHeight": 0
-        },
-        {
-          "id": "水塔1",
-          "type": "水塔",
-          "isRound": false,
-          "northHeight": 20,
-          "eastWestLength": 20,
-          "northSouthLength": 20,
-          "diameter": 20,
-          "upLeftPosition": [
-            100,
-            200
-          ],
-          "adjustedHeight": 0
-        },
-        {
-          "id": "水塔2",
-          "type": "水塔",
-          "isRound": true,
-          "height": 20,
-          "diameter": 20,
-          "centerPosition": [
-            100,
-            200
-          ],
-          "adjustedHeight": 0
-        },
-        {
-          "id": "上人通道1",
-          "type": "上人通道",
-          "subType": 1,
-          "isRound": false,
-          "channelType": 1,
-          "height": 20,
-          "eastWestLength": 20,
-          "northSouthLength": 20,
-          "upLeftPosition": [
-            100,
-            200
-          ],
-          "adjustedDistance": [
-            0,
-            0,
-            0,
-            0
-          ]
+          "removable": 0
         }
       ]
     },
     "obstacles": [
-      {
-        "id": "邻居房屋1",
-        "type": "邻居房屋",
-        "isRound": false,
-        "shape": 1,
-        "eastWestLength": 20,
-        "northSouthLength": 20,
-        "height": 20,
-        "aLength": 20,
-        "bLength": 20,
-        "upLeftPosition": [
-          100,
-          200
-        ],
-        "adjustedHeight": 0
-      },
-      {
-        "id": "邻居房屋2",
-        "type": "邻居房屋",
-        "isRound": false,
-        "shape": 2,
-        "eastWestLength": 20,
-        "northSouthLength": 20,
-        "height": 20,
-        "orientation": 1,
-        "ridgeHeight": 20,
-        "eaveHeight": 20,
-        "aLength": 20,
-        "bLength": 20,
-        "upLeftPosition": [
-          100,
-          200
-        ],
-        "adjustedHeight": 0
-      },
-      {
-        "id": "邻居房屋3",
-        "type": "邻居房屋",
-        "isRound": false,
-        "shape": 3,
-        "selfHeight": 20,
-        "upLeftPosition": [
-          100,
-          200
-        ],
-        "adjustedHeight": 0
-      },
-      {
-        "id": "树1",
-        "type": "树",
-        "diameter": 20,
-        "height": 20,
-        "isRound": true,
-        "centerPosition": [
-          100,
-          200
-        ],
-        "adjustedHeight": 0
-      },
-      {
-        "id": "电线1",
-        "type": "电线",
-        "direction": 1,
-        "distanceToSouthWestCorner": 20,
-        "distanceToSouthEastCorner": 20,
-        "eastHeight": 20,
-        "westHeight": 20,
-        "removable": 1
-      },
-      {
-        "id": "电线2",
-        "type": "电线",
-        "direction": 2,
-        "distanceToWestSouthCorner": 20,
-        "distanceToWestNorthCorner": 20,
-        "southHeight": 20,
-        "northHeight": 20,
-        "removable": 2
-      }
     ]
   },
   "arrangeType": "膨胀螺栓",
