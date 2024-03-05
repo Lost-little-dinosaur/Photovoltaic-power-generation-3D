@@ -758,6 +758,7 @@ class UI:
                 centerX = float(obstacle['relativePositionX'])
                 centerY = float(obstacle['relativePositionY'])
                 if obstacle['isRound']:
+                    continue
                     length = float(obstacle['diameter']) / 2
                     x1 = roof_left + (centerX - length) * scale
                     y1 = roof_top + (centerY - length) * scale
@@ -993,6 +994,7 @@ class UI:
                     new_item[key] = value
             if new_item["isRound"]:
                 new_item["centerPosition"] = position
+                continue
             else:
                 new_item["upLeftPosition"] = position
 
