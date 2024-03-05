@@ -26,11 +26,15 @@ class Roof:
     def __init__(self, jsonRoof, latitude):
         UNIT = getUnit()
         self.eastExtend, self.westExtend, self.southExtend, self.northExtend = jsonRoof["extensibleDistance"]
-        if not jsonRoof["isComplex"]:
-            self.length = round((jsonRoof["length"] + self.southExtend + self.northExtend) / UNIT)
-            self.width = round((jsonRoof["width"] + self.eastExtend + self.westExtend) / UNIT)
-            self.realLength = jsonRoof["length"] + self.southExtend + self.northExtend
-            self.realWidth = jsonRoof["width"] + self.eastExtend + self.westExtend
+        if not jsonRoof["isComplex"] and jsonRoof["roofSurfaceCategory"] == "矩形":
+            # self.length = round((jsonRoof["length"] + self.southExtend + self.northExtend) / UNIT)
+            # self.width = round((jsonRoof["width"] + self.eastExtend + self.westExtend) / UNIT)
+            # self.realLength = jsonRoof["length"] + self.southExtend + self.northExtend
+            # self.realWidth = jsonRoof["width"] + self.eastExtend + self.westExtend
+            self.length = round((jsonRoof["A"] + self.southExtend + self.northExtend) / UNIT)
+            self.width = round((jsonRoof["B"] + self.eastExtend + self.westExtend) / UNIT)
+            self.realLength = jsonRoof["A"] + self.southExtend + self.northExtend
+            self.realWidth = jsonRoof["B"] + self.eastExtend + self.westExtend
             self.height = jsonRoof["height"]
             self.roofArray = np.full((self.length, self.width), 0)
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
