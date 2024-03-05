@@ -706,6 +706,44 @@ class UI:
                                             font=("Arial", 12),
                                             fill=text_color)
 
+        elif roofSurfaceCategory == "正7形":
+            self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C'] 
+            self.roof_info['F'] = self.roof_info['D'] - self.roof_info['B']
+            scale = min(draw_width / float(self.roof_info['D']), draw_height / float(self.roof_info['E']))
+            
+            p0 = [(frame_width - self.roof_info['D'] * scale) / 2, (frame_height - self.roof_info['E'] * scale) / 2] # point between CD
+            p1 = [p0[0], p0[1] + self.roof_info['C'] * scale] # point between BC
+            p2 = [p1[0] + self.roof_info['B'] * scale ,p1[1]] # AB
+            p3 = [p2[0], p2[1] + self.roof_info['A'] * scale] # AF
+            p4 = [p3[0] + self.roof_info['F'] * scale, p3[1]] # EF
+            p5 = [p4[0], p4[1] - self.roof_info['E'] * scale] # DE
+
+            self.roofscene_canvas.create_polygon([p0,p1,p2,p3,p4,p5],outline=roof_outline_color)            
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1],p3[1]),
+                                            text=f"{self.roof_info['A']}",
+                                            font=("Arial", 12),
+                                            fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0],p2[0]), p1[1],
+                                            text=f"{self.roof_info['B']}",
+                                            font=("Arial", 12),
+                                            fill=text_color)
+            self.roofscene_canvas.create_text(p0[0],half_int(p0[1],p1[1]),
+                                            text=f"{self.roof_info['C']}",
+                                            font=("Arial", 12),
+                                            fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0],p5[0]), p0[1],
+                                            text=f"{self.roof_info['D']}",
+                                            font=("Arial", 12),
+                                            fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1],p5[1]),
+                                            text=f"{self.roof_info['E']}",
+                                            font=("Arial", 12),
+                                            fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0],p4[0]), p4[1],
+                                            text=f"{self.roof_info['F']}",
+                                            font=("Arial", 12),
+                                            fill=text_color)
 
         # 绘制屋内障碍物
         for obstacle in self.obstacle_info:
