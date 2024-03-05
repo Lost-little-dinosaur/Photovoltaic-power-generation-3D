@@ -261,10 +261,8 @@ class Arrangement:
                 return final_list, txt[:-1] + "\n"
         return [], ""
 
-    def calculateComponentPositionArray(self):
+    def calculateComponentPositionArray(self, startX, startY):
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
-        startX = 0
-        startY = 0
         self.componentPositionArray = []
         if self.crossPosition == 0:  # 只有横排布（横一）
             self.crossNum = self.componentLayoutArray[0]
