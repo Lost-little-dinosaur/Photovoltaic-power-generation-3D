@@ -14,8 +14,6 @@ ID = 0
 class Arrangement:
 
     def __init__(self, componentLayoutArray, crossPosition, component, arrangeType, maxWindPressure, isRule):
-        
-        # time1 = time.time() 
         for c in getAllComponents():
             if component == c.specification:
                 self.component = c  # 使用组件的类型
@@ -68,9 +66,6 @@ class Arrangement:
                                                                     nowBottom + self.component.width + PhotovoltaicPanelVerticalDiffMargin - 1]])
             # else:  # 横排在中间
             #     raise Exception("横排在中间的情况还没有写")
-
-        # print("first half", time.time() - time1)
-        # time1 = time.time() 
         self.componentPositionArray = []  # 组合排布中组件的详细信息
         self.arrangeType = arrangeType  # 排布的类型：基墩，膨胀常规，膨胀抬高
         self.maxWindPressure = maxWindPressure  # 风压
@@ -97,7 +92,6 @@ class Arrangement:
         self.columnArray_x = []  # 立柱东西间距
         self.edgeColumn = []  # 边缘立柱
         self.shadowRelativePosition = []
-        # print("second half", time.time() - time1)
 
     def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices):
         UNIT = const.const.getUnit()
@@ -141,9 +135,9 @@ class Arrangement:
             self.edgeColumn = []
             for x in column_positions:
                 for y in array_iny:
-                    if obstacles[x + startX][y + startY] != 1 and x < width and y < length:
-                        # if x < width and y < length:
-                        result.append([startX + x, startY + y])
+                    if 0 <= x + startX < width and 0 <= y + startY < length:
+                        if obstacles[x + startX][y + startY] != 1:
+                            result.append([startX + x, startY + y])
                     if x == column_positions[0] or x == column_positions[-1]:
                         if y == array_iny[0] or y == array_iny[-1]:
                             self.edgeColumn.append([startX + x, startY + y])
@@ -267,8 +261,10 @@ class Arrangement:
                 return final_list, txt[:-1] + "\n"
         return [], ""
 
-    def calculateComponentPositionArray(self, startX, startY):
+    def calculateComponentPositionArray(self):
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
+        startX = 0
+        startY = 0
         self.componentPositionArray = []
         if self.crossPosition == 0:  # 只有横排布（横一）
             self.crossNum = self.componentLayoutArray[0]
@@ -600,8 +596,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                         # [4, 0, "182-78", "膨胀抬高", "低压"], [4, 1, "182-78", "膨胀抬高", "低压"],
                         # [5, 0, "182-78", "膨胀抬高", "低压"]
                         ]
-    
-    # time1 = time.time() 
+
     arrangementDict = {}
     global ID
     for tempElement in tempArrangements:
@@ -647,9 +642,6 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                     arrangementDict[ID] = Arrangement(tempArr, 1, tempElement[2], tempElement[3], tempElement[4], True)
                     ID += 1
 
-    # print("total first half", time.time() - time1)
-    
-    # time1 = time.time() 
     # 通过输入的屋顶宽度、屋顶长度、组件类型、排布类型和风压，筛选出合适的排布
     result = {}
     for k, arrangement in arrangementDict.items():
@@ -660,7 +652,6 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                     break
             else:
                 result[k] = arrangement
-    # print("total second half", time.time() - time1)
     return result
 
 

@@ -130,14 +130,18 @@ class Roof:
             IDArray = list(arrangeDict.keys())
             if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将前一个阵列的阴影更新到obstacleArray中
                 arrange = arrangeDict[placements[-1]['ID']]
-                sRPX, sRPY = arrange.shadowRelativePosition
+                try:
+                    sRPX, sRPY = arrange.shadowRelativePosition
+                except:
+                    print()
                 sizeY, sizeX = arrange.shadowArray.shape
                 sX, sY = placements[-1]['start']
                 rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
                 eX, eY = min(self.width, sX - sRPX + sizeX), min(self.length, sY - sRPY + sizeY)
+                rsX1, rsY1 = max(0, -sX + sRPX), max(0, -sY + sRPY)
                 obstacleArray[rsY:eY, rsX:eX] = np.maximum(obstacleArray[rsY:eY, rsX:eX],
-                                                           arrange.shadowArray[rsY - sY + sRPY:rsY - sY + sRPY + sizeY,
-                                                           rsX - sX + sRPX:rsX - sX + sRPX + sizeX])
+                                                           arrange.shadowArray[rsY1:rsY1 + eY - rsY,
+                                                           rsX1:rsX1 + eX - rsX])
             tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
             for y in range(startY, self.length):
@@ -145,6 +149,7 @@ class Roof:
                     for i in range(startI, len(IDArray)):
                         if overlaps(x, y, arrangeDict[IDArray[i]], placements):
                             continue
+
                         if not canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray, tempObstacleSumArray):
                             continue
                         newPlacement = {'ID': IDArray[i], 'start': (x, y)}
@@ -259,7 +264,7 @@ class Roof:
             f"立柱排布计算完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，共有{len(self.allPlacements)}个较优排布方案\n")
         return 0
 
-    def drawPlacement(self, screenedArrangements):  # todo: numpy优化
+    def drawPlacement(self, screenedArrangements, maxDraw=5):  # todo: numpy优化
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
         allMatrix = []
         magnification = 5  # 放大倍数
@@ -292,7 +297,9 @@ class Roof:
                     obstaclePointArray = np.concatenate((obstaclePointArray, matrix), axis=0, dtype=np.int32)
 
         # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
-        for placement in self.allPlacements[:5]:
+
+        for placement in self.allPlacements[:maxDraw]:
+
             matrix = np.zeros((self.length * magnification, self.width * magnification, 3))
             # 先画障碍物
             for point in obstaclePointArray:
