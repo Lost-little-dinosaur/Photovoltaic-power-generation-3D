@@ -133,6 +133,7 @@ class Arrangement:
             self.columnArray_x.append(width - column_positions[-1])
             result = []
             self.edgeColumn = []
+
             for x in column_positions:
                 for y in array_iny:
                     if 0 <= x + startX < width and 0 <= y + startY < length:

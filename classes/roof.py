@@ -49,14 +49,15 @@ class Roof:
             self.edgeE = self.edgeA + self.edgeC
             self.edgeF = self.edgeB + self.edgeD
             self.height = jsonRoof["height"]
-            self.length = self.edgeE
-            self.width = self.edgeD
+            self.length = jsonRoof["A"] + jsonRoof["C"]
+            self.width = jsonRoof["D"]
             self.roofArray = np.full((self.length, self.width), 0)
             self.roofArray[self.edgeC:, 0:self.edgeB] = INF
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
-
+            self.realWidth = self.width
+            self.realLength = self.length
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
@@ -79,14 +80,14 @@ class Roof:
                 for x in range(x_min, x_max):
                     for y in range(y_min, y_max):
                         return_list[x][y] = 1
-            # if obstacle.type == "屋面扣除":
-            #     x_min = obstacle.upLeftPosition[0]
-            #     x_max = obstacle.upLeftPosition[0] + obstacle.width
-            #     y_min = obstacle.upLeftPosition[1]
-            #     y_max = obstacle.realupLeftPosition[1] + obstacle.length
-            #     for x in range(x_min, x_max):
-            #         for y in range(y_min, y_max):
-            #             return_list[x][y] = 1
+            if obstacle.type == "屋面扣除":
+                x_min = obstacle.upLeftPosition[0]
+                x_max = obstacle.upLeftPosition[0] + obstacle.width
+                y_min = obstacle.upLeftPosition[1]
+                y_max = obstacle.realupLeftPosition[1] + obstacle.length
+                for x in range(x_min, x_max):
+                    for y in range(y_min, y_max):
+                        return_list[x][y] = 1
         return return_list
 
     def addObstaclesConcern(self, screenedArrangements):
