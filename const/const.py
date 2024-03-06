@@ -1,9 +1,7 @@
-import numpy as np
-
 # 规定一些常量
 UNIT = 500  # 以毫米为单位
-INF = np.inf  # 无穷大
-
+INF = 1000000  # 无穷大
+minComponent = 1  # 最小组件数
 maxArrangeCount = 1  # 最大排布数量
 
 if UNIT > 100:
@@ -23,6 +21,15 @@ def changeUnit(unit):
 def getUnit():
     global UNIT
     return UNIT
+
+
+def changeMinComponent(count):
+    global minComponent
+    minComponent = count
+
+
+def getMinComponent():
+    return minComponent
 
 
 def changeMaxArrangeCount(count):

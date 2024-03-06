@@ -20,8 +20,8 @@
     "roof": {
       "isComplex": true,
       "category": "平屋顶",
-      "roofSurfaceCategory":"正7形",
-      "A": 1000,
+      "roofSurfaceCategory": "正7形",
+      "A": 5000,
       "B": 4300,
       "C": 7800,
       "D": 16400,
@@ -64,8 +64,9 @@
     "thickness": 350
   },
   "algorithm": {
-    "precision": 1000,
-    "maxArrangeCount": 1
+    "precision": 300,
+    "maxArrangeCount": 2,
+    "minComponent": 21
   }
 }
 

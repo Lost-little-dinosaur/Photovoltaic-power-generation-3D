@@ -105,7 +105,7 @@ class Roof:
             if placement[1] < nowMaxValue:
                 continue
             if len(placement[0]) == 1:
-                mergeObstacleArray = self.obstacleArray    
+                mergeObstacleArray = self.obstacleArray  # 这个self.obstacleArray已经更新了阴影的情况
                 # zzp：没必要重复计算
                 tempObstacleSumArray = self.obstacleSumArray
             else:  # 如果多于1个阵列，则要将所有阵列的阴影更新到tempObstacleSumArray里
@@ -168,7 +168,7 @@ class Roof:
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         # 输入限制条件
-        minComponent = 1  # 最小组件数
+        minComponent = getMinComponent()  # 最小光伏板个数
         maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
         nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
 
@@ -215,29 +215,34 @@ class Roof:
                                 if len(self.allPlacements) % 10000 == 0:
                                     print(
                                         f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                                # if len(self.allPlacements) == 12590:
+                                #     print("debug")
                         else:
                             self.allPlacements.append([placements.copy(), currentValue])
                             if len(self.allPlacements) % 10000 == 0:
                                 print(
                                     f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                            # if len(self.allPlacements) == 12590:
+                            #     print("debug")
                         placements.pop()
                         currentValue -= arrangeDict[IDArray[i]].value
                 startX = 0
             return betterFlag
 
         def canPlaceArrangementRoof(x, y, arrange):
+            # if x == 1 and y == 9 and arrange.componentLayoutArray == [10, 6, 10]:
+            #     print("debug")
             for eachRect in arrange.relativePositionArray:
-                startX, startY = eachRect[0]
-                endX, endY = eachRect[1]
-                absoluteEndX, absoluteEndY = x + endX, y + endY
+                absoluteStartX, absoluteStartY = x + eachRect[0][0], y + eachRect[0][1]
+                absoluteEndX, absoluteEndY = x + eachRect[1][0], y + eachRect[1][1]
                 if self.width > absoluteEndX and self.length > absoluteEndY:
                     totalRoof = self.roofSumArray[absoluteEndY][absoluteEndX]
-                    if startX > 0:
-                        totalRoof -= self.roofSumArray[absoluteEndY][x + startX - 1]
-                    if startY > 0:
-                        totalRoof -= self.roofSumArray[y + startY - 1][absoluteEndX]
-                    if startX > 0 and startY > 0:
-                        totalRoof += self.roofSumArray[y + startY - 1][x + startX - 1]
+                    if absoluteStartX > 0:
+                        totalRoof -= self.roofSumArray[absoluteEndY][absoluteStartX - 1]
+                    if absoluteStartY > 0:
+                        totalRoof -= self.roofSumArray[absoluteStartY - 1][absoluteEndX]
+                    if absoluteStartX > 0 and absoluteStartY > 0:
+                        totalRoof += self.roofSumArray[absoluteStartY - 1][absoluteStartX - 1]
                     if totalRoof >= INF:
                         return False
                 else:
@@ -289,6 +294,10 @@ class Roof:
         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
         dfs(screenedArrangements, 0, 0, 0, 0, [], 1)
+        # tempTest = []
+        # for placement in self.allPlacements:
+        #     if len(placement[0]) == 2 and placement[0][1]["start"][1] >= 10:
+        #         tempTest.append(placement)
         print(
             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
 
