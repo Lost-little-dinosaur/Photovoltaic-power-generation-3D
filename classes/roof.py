@@ -52,6 +52,7 @@ class Roof:
             self.length = self.edgeE
             self.width = self.edgeD
             self.roofArray = np.full((self.length, self.width), 0)
+            self.roofArray[self.edgeC:, 0:self.edgeB] = INF
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
@@ -78,14 +79,14 @@ class Roof:
                 for x in range(x_min, x_max):
                     for y in range(y_min, y_max):
                         return_list[x][y] = 1
-            if obstacle.type == "屋面扣除":
-                x_min = obstacle.upLeftPosition[0]
-                x_max = obstacle.upLeftPosition[0] + obstacle.width
-                y_min = obstacle.upLeftPosition[1]
-                y_max = obstacle.realupLeftPosition[1] + obstacle.length
-                for x in range(x_min, x_max):
-                    for y in range(y_min, y_max):
-                        return_list[x][y] = 1
+            # if obstacle.type == "屋面扣除":
+            #     x_min = obstacle.upLeftPosition[0]
+            #     x_max = obstacle.upLeftPosition[0] + obstacle.width
+            #     y_min = obstacle.upLeftPosition[1]
+            #     y_max = obstacle.realupLeftPosition[1] + obstacle.length
+            #     for x in range(x_min, x_max):
+            #         for y in range(y_min, y_max):
+            #             return_list[x][y] = 1
         return return_list
 
     def addObstaclesConcern(self, screenedArrangements):
@@ -257,12 +258,11 @@ class Roof:
         for obstacle in obstacles:  # todo: 待优化，可以多进程计算
             self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
         self.obstacleSumArray = np.cumsum(np.cumsum(self.obstacleArray, axis=0), axis=1)
-        if self.type == "正7形":
-            obstacle = {"id": "屋面扣除1", "type": "屋面扣除", "isRound": False, "length": self.edgeA,
-                        "width": self.edgeB, "height": INF, "upLeftPosition": [0, self.edgeC],
-                        }
-            self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
-
+        # if self.type == "正7形":
+        #     obstacle = {"id": "屋面扣除1", "type": "屋面扣除", "isRound": False, "length": self.edgeA,
+        #                 "width": self.edgeB, "height": INF, "upLeftPosition": [0, self.edgeC],
+        #                 }
+        #     self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
 
     def calculate_column(self, screenedArrangements):
         nowMaxValue = -INF

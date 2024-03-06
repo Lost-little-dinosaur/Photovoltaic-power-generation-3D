@@ -33,13 +33,13 @@ chn2eng = {
     "长度（mm）": "length",
     "宽度（mm）": "width",
     "高度（mm）": "height",
-    "A边（mm）":"A",
-    "B边（mm）":"B",
-    "C边（mm）":"C",
-    "D边（mm）":"D",
-    "E边（mm）":"E",
-    "F边（mm）":"F",
-    
+    "A边（mm）": "A",
+    "B边（mm）": "B",
+    "C边（mm）": "C",
+    "D边（mm）": "D",
+    "E边（mm）": "E",
+    "F边（mm）": "F",
+
     "偏移角度": "roofDirection",
     "倾斜角度": "roofAngle",
     # "可探出距离": "extensibleDistance",
@@ -81,6 +81,7 @@ eng2chn = {v: k for k, v in chn2eng.items()}
 
 roof_outline_color = "yellow"
 text_color = "white"
+
 
 def is_nonempty_list(var):
     if isinstance(var, list) and len(var) > 0:
@@ -306,43 +307,43 @@ class UI:
         option_entries = {}
         bool_entries = {}
         len_option_bool = 0
+
         def create_input_options_for_irregular_roof(roof_window, value):
             global str_components, str_entries, len_option_bool, submit_btn
             roof_options = {
-                "矩形":["A","B"],
-                "上凸形":["A","B","C","D","E","F"],
-                "下凸形":["A","B","C","D","E","F"],
-                "左凸形":["A","B","C","D","E","F"],
-                "右凸形":["A","B","C","D","E","F"],
-                "上凹形":["A","B","C","D","E","F"],
-                "下凹形":["A","B","C","D","E","F"],
-                "左凹形":["A","B","C","D","E","F"],
-                "右凹形":["A","B","C","D","E","F"],
-                "正7形":["A","B","C","D"],
-                "反7形":["A","B","C","D"],
-                "正L形":["A","B","C","D"],
-                "反L形":["A","B","C","D"]
+                "矩形": ["A", "B"],
+                "上凸形": ["A", "B", "C", "D", "E", "F"],
+                "下凸形": ["A", "B", "C", "D", "E", "F"],
+                "左凸形": ["A", "B", "C", "D", "E", "F"],
+                "右凸形": ["A", "B", "C", "D", "E", "F"],
+                "上凹形": ["A", "B", "C", "D", "E", "F"],
+                "下凹形": ["A", "B", "C", "D", "E", "F"],
+                "左凹形": ["A", "B", "C", "D", "E", "F"],
+                "右凹形": ["A", "B", "C", "D", "E", "F"],
+                "正7形": ["A", "B", "C", "D"],
+                "反7形": ["A", "B", "C", "D"],
+                "正L形": ["A", "B", "C", "D"],
+                "反L形": ["A", "B", "C", "D"]
             }
             if value not in roof_options:
                 return
             for component in str_components:
                 component.grid_forget()
 
-            
             str_components = []
             str_entries = {}
             edges = [text + "边（mm）" for text in roof_options[value]] + ["高度（mm）"]
             for i, text in enumerate(edges):
                 label = tk.Label(roof_window, text=text + ": ")
-                label.grid(row=len_option_bool+i, column=0, padx=5, pady=5)
+                label.grid(row=len_option_bool + i, column=0, padx=5, pady=5)
                 entry = tk.Entry(roof_window)
-                entry.grid(row=len_option_bool+i, column=1, padx=5, pady=5)
+                entry.grid(row=len_option_bool + i, column=1, padx=5, pady=5)
                 str_entries[text] = entry
                 str_components.append(label)
-                str_components.append(entry)    
+                str_components.append(entry)
             submit_btn.grid(row=len(str_entries) + len_option_bool + 1, column=0, columnspan=2,
-                        padx=5,
-                        pady=5)
+                            padx=5,
+                            pady=5)
 
         for i, (text, option) in enumerate(zip(option_text, options)):
             label = tk.Label(roof_window, text=text)
@@ -358,7 +359,7 @@ class UI:
             scheme_menu.config(width=5)
             scheme_menu.grid(row=i, column=1, padx=5, pady=5)
             option_entries[text] = scheme_var
-                                
+
         for i, text in enumerate(bool_text):
             label = tk.Label(roof_window, text=text)
             label.grid(row=len(option_entries) + i, column=0, padx=5, pady=5)
@@ -627,17 +628,17 @@ class UI:
         self.roofscene_canvas.delete("all")
 
     def draw_roofscene(self):
-        half_int = lambda x,y: int(x+y)/2
+        half_int = lambda x, y: int(x + y) / 2
         self.clear_canvas()
 
         draw_width = frame_width - draw_gap * 2
         draw_height = frame_height - draw_gap * 2
 
-        roofSurfaceCategory = self.roof_info.get('roofSurfaceCategory',"矩形")
+        roofSurfaceCategory = self.roof_info.get('roofSurfaceCategory', "矩形")
         scale = 1.0
         roof_left = 0
         roof_top = 0
-        if roofSurfaceCategory == "矩形": #绘制矩形屋顶
+        if roofSurfaceCategory == "矩形":  # 绘制矩形屋顶
             scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['A']))
             scaled_width = float(self.roof_info['B']) * scale
             scaled_height = float(self.roof_info['A']) * scale
@@ -647,110 +648,112 @@ class UI:
             roof_right = roof_left + scaled_width
             roof_bottom = roof_top + scaled_height
             # 在 Canvas 上绘制缩放后的矩形
-            self.roofscene_canvas.create_rectangle(roof_left, roof_top, roof_right, roof_bottom, outline=roof_outline_color,
-                                                tags="roof")
+            self.roofscene_canvas.create_rectangle(roof_left, roof_top, roof_right, roof_bottom,
+                                                   outline=roof_outline_color,
+                                                   tags="roof")
             # 显示屋顶尺寸
             self.roofscene_canvas.create_text(half_int(roof_left, roof_right), roof_top,
-                                            text=f"{self.roof_info['B']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(roof_left, half_int(roof_top,roof_bottom),
-                                            text=f"{self.roof_info['A']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(roof_left, half_int(roof_top, roof_bottom),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
         elif roofSurfaceCategory == "上凸形":
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] + self.roof_info['D'] + self.roof_info['F']
             AC_height = self.roof_info['A'] + self.roof_info['C']
             scale = min(draw_width / float(self.roof_info['H']), draw_height / float(AC_height))
-            
+
             roof_left = (frame_width - self.roof_info['H'] * scale) / 2
             roof_top = (frame_height - AC_height * scale) / 2
-            
-            p1 = [roof_left, (frame_height + AC_height * scale) / 2] # point between AH
-            p0 = [p1[0], p1[1] - self.roof_info['A'] * scale] # point between AB
-            p2 = [p0[0] + self.roof_info['H'] * scale ,p1[1]] # HG
-            p3 = [p2[0], p2[1] - self.roof_info['G'] * scale] # FG
-            p4 = [p3[0] - self.roof_info['F'] * scale, p3[1]] #EF
-            p5 = [p4[0], p4[1] - self.roof_info['E'] * scale] #DE
-            p6 = [p5[0] - self.roof_info['D'] * scale, p5[1]] #CD
-            p7 = [p6[0], p0[1]] #BC
 
-            self.roofscene_canvas.create_polygon([p0,p1,p2,p3,p4,p5,p6,p7],outline=roof_outline_color)            
+            p1 = [roof_left, (frame_height + AC_height * scale) / 2]  # point between AH
+            p0 = [p1[0], p1[1] - self.roof_info['A'] * scale]  # point between AB
+            p2 = [p0[0] + self.roof_info['H'] * scale, p1[1]]  # HG
+            p3 = [p2[0], p2[1] - self.roof_info['G'] * scale]  # FG
+            p4 = [p3[0] - self.roof_info['F'] * scale, p3[1]]  # EF
+            p5 = [p4[0], p4[1] - self.roof_info['E'] * scale]  # DE
+            p6 = [p5[0] - self.roof_info['D'] * scale, p5[1]]  # CD
+            p7 = [p6[0], p0[1]]  # BC
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5, p6, p7], outline=roof_outline_color)
             # 显示屋顶尺寸
-            self.roofscene_canvas.create_text(p0[0], half_int(p0[1],p1[1]),
-                                            text=f"{self.roof_info['A']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(half_int(p0[0],p7[0]), p7[1],
-                                            text=f"{self.roof_info['B']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(p6[0],half_int(p6[1],p7[1]),
-                                            text=f"{self.roof_info['C']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(half_int(p5[0],p6[0]), p5[1],
-                                            text=f"{self.roof_info['D']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(p4[0], half_int(p4[1],p5[1]),
-                                            text=f"{self.roof_info['E']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(half_int(p3[0],p4[0]), p4[1],
-                                            text=f"{self.roof_info['F']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(p2[0],half_int(p2[1],p3[1]),
-                                            text=f"{self.roof_info['G']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(half_int(p1[0],p2[0]),p1[1],
-                                            text=f"{self.roof_info['H']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p7[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p6[0], half_int(p6[1], p7[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p5[0], p6[0]), p5[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p4[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['G']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['H']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
 
         elif roofSurfaceCategory == "正7形":
-            self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C'] 
+            self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C']
             self.roof_info['F'] = self.roof_info['D'] - self.roof_info['B']
             scale = min(draw_width / float(self.roof_info['D']), draw_height / float(self.roof_info['E']))
-            
+
             roof_left = (frame_width - self.roof_info['D'] * scale) / 2
             roof_top = (frame_height - self.roof_info['E'] * scale) / 2
-            p0 = [(frame_width - self.roof_info['D'] * scale) / 2, (frame_height - self.roof_info['E'] * scale) / 2] # point between CD
-            p1 = [p0[0], p0[1] + self.roof_info['C'] * scale] # point between BC
-            p2 = [p1[0] + self.roof_info['B'] * scale ,p1[1]] # AB
-            p3 = [p2[0], p2[1] + self.roof_info['A'] * scale] # AF
-            p4 = [p3[0] + self.roof_info['F'] * scale, p3[1]] # EF
-            p5 = [p4[0], p4[1] - self.roof_info['E'] * scale] # DE
+            p0 = [(frame_width - self.roof_info['D'] * scale) / 2,
+                  (frame_height - self.roof_info['E'] * scale) / 2]  # point between CD
+            p1 = [p0[0], p0[1] + self.roof_info['C'] * scale]  # point between BC
+            p2 = [p1[0] + self.roof_info['B'] * scale, p1[1]]  # AB
+            p3 = [p2[0], p2[1] + self.roof_info['A'] * scale]  # AF
+            p4 = [p3[0] + self.roof_info['F'] * scale, p3[1]]  # EF
+            p5 = [p4[0], p4[1] - self.roof_info['E'] * scale]  # DE
 
-            self.roofscene_canvas.create_polygon([p0,p1,p2,p3,p4,p5],outline=roof_outline_color)            
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5], outline=roof_outline_color)
             # 显示屋顶尺寸
-            self.roofscene_canvas.create_text(p2[0], half_int(p2[1],p3[1]),
-                                            text=f"{self.roof_info['A']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(half_int(p1[0],p2[0]), p1[1],
-                                            text=f"{self.roof_info['B']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(p0[0],half_int(p0[1],p1[1]),
-                                            text=f"{self.roof_info['C']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(half_int(p0[0],p5[0]), p0[1],
-                                            text=f"{self.roof_info['D']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(p4[0], half_int(p4[1],p5[1]),
-                                            text=f"{self.roof_info['E']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
-            self.roofscene_canvas.create_text(half_int(p3[0],p4[0]), p4[1],
-                                            text=f"{self.roof_info['F']}",
-                                            font=("Arial", 12),
-                                            fill=text_color)
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p5[0]), p0[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p4[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
 
         # 绘制屋内障碍物
         for obstacle in self.obstacle_info:
@@ -789,7 +792,7 @@ class UI:
 
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
         start_time = time.time()
-        assignComponentParameters(jsonData["component"])  # todo
+        assignComponentParameters(jsonData["component"])
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"assignComponentParameters 代码执行时间为：{execution_time} 秒")
