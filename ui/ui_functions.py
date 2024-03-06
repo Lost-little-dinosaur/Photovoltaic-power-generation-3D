@@ -777,7 +777,7 @@ class UI:
                     y2 = roof_top + (centerY + length) * scale
                     self.roofscene_canvas.create_rectangle(x1, y1, x2, y2, outline='red')
                 if len(obstacle["id"]) > 0:
-                    self.roofscene_canvas.create_text(x2 + draw_width * 0.01, y2 + draw_height * 0.01,
+                    self.roofscene_canvas.create_text(x2 + draw_width * 0.03, y2 + draw_height * 0.03,
                                                       text=f"{obstacle['id']}",
                                                       font=("Arial", 10),
                                                       fill="red")
