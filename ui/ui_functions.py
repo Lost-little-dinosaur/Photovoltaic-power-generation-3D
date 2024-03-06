@@ -840,20 +840,21 @@ class UI:
         print(f"addObstaclesConcern 代码执行时间为：{execution_time} 秒")
 
         start_time = time.time()
-        roof.obstacleArraySelf = roof.calculateObstacleSelf()
+        # roof.obstacleArraySelf = roof.calculateObstacleSelf()
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"calculateObstacleSelf 代码执行时间为：{execution_time} 秒")
 
         start_time = time.time()
-        roof.calculate_column(screenedArrangements)
+        # roof.calculate_column(screenedArrangements)
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"calculate_column 代码执行时间为：{execution_time} 秒")
 
         # return roof.drawPlacement(screenedArrangements)
         start_time = time.time()
-        tempArray = roof.drawPlacement(screenedArrangements), [placement[5] for placement in roof.allPlacements]
+        # tempArray = roof.drawPlacement(screenedArrangements), [placement[5] for placement in roof.allPlacements]
+        tempArray = roof.drawPlacement(screenedArrangements), ["", "", "", "", ""]
         end_time = time.time()
         execution_time = end_time - start_time
         print("drawPlacement 代码执行时间为：", execution_time, "秒\n")
