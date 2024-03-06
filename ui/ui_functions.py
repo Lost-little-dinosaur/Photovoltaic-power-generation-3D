@@ -787,16 +787,15 @@ class UI:
 
     def calculate_layout(self):
         allTimeStart = time.time()
+        print(
+            f"算法精度：{self.algorithm_info['precision']} mm，最大方案数量：{self.algorithm_info['maxArrangeCount']}，最小组件数量：{self.algorithm_info['minComponent']}")
         jsonData = self.get_input_json()
         const.const.changeUnit(jsonData['algorithm']['precision'])
+        const.const.changeMinComponent(jsonData['algorithm']['minComponent'])
         const.const.changeMaxArrangeCount(jsonData['algorithm']['maxArrangeCount'])
 
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
-        start_time = time.time()
         assignComponentParameters(jsonData["component"])
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"assignComponentParameters 代码执行时间为：{execution_time} 秒")
 
         start_time = time.time()
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],

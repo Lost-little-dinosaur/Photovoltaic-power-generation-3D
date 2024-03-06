@@ -221,7 +221,8 @@
   },
   "algorithm": {
     "precision": 200,
-    "maxArrangeCount": 1
+    "maxArrangeCount": 1,
+    "minComponent": 1
   }
 }
 
