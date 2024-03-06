@@ -49,15 +49,15 @@ class Roof:
             self.edgeE = self.edgeA + self.edgeC
             self.edgeF = self.edgeB + self.edgeD
             self.height = jsonRoof["height"]
-            self.length = jsonRoof["A"] + jsonRoof["C"]
-            self.width = jsonRoof["D"]
+            self.length = self.edgeA + self.edgeC
+            self.width = self.edgeD
             self.roofArray = np.full((self.length, self.width), 0)
             self.roofArray[self.edgeC:, 0:self.edgeB] = INF
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
-            self.realWidth = self.width
-            self.realLength = self.length
+            self.realWidth = jsonRoof["D"]
+            self.realLength = jsonRoof["A"] + jsonRoof["C"]
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
