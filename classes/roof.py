@@ -70,24 +70,28 @@ class Roof:
         # self.type = 0
 
     def calculateObstacleSelf(self):
-        return_list = [[0] * ((self.realLength + 1000)) for _ in range((self.realWidth + 1000))]
+        # zzp: numpy加速
+        return_list = np.zeros((self.realWidth + 1000, self.realLength + 1000), dtype=np.int32)
+        # return_list = [[0] * ((self.realLength + 1000)) for _ in range((self.realWidth + 1000))]
         for obstacle in self.obstacles:
             if obstacle.type == '有烟烟囱':
                 x_min = max(0, obstacle.realupLeftPosition[0] - 100)
                 x_max = min(self.realWidth, obstacle.realupLeftPosition[0] + obstacle.realwidth + 100)
                 y_min = max(0, obstacle.realupLeftPosition[1] - 100)
                 y_max = min(self.realLength, obstacle.realupLeftPosition[1] + obstacle.reallength + 100)
-                for x in range(x_min, x_max):
-                    for y in range(y_min, y_max):
-                        return_list[x][y] = 1
+                return_list[x_min:x_max, y_min:y_max] = 1
+                # for x in range(x_min, x_max):
+                #     for y in range(y_min, y_max):
+                #         return_list[x][y] = 1
             if obstacle.type == "屋面扣除":
                 x_min = obstacle.upLeftPosition[0]
                 x_max = obstacle.upLeftPosition[0] + obstacle.width
                 y_min = obstacle.upLeftPosition[1]
                 y_max = obstacle.realupLeftPosition[1] + obstacle.length
-                for x in range(x_min, x_max):
-                    for y in range(y_min, y_max):
-                        return_list[x][y] = 1
+                return_list[x_min:x_max, y_min:y_max] = 1
+                # for x in range(x_min, x_max):
+                #     for y in range(y_min, y_max):
+                #         return_list[x][y] = 1
         return return_list
 
     def addObstaclesConcern(self, screenedArrangements):
@@ -189,19 +193,20 @@ class Roof:
 
             for y in range(startY, self.length):
                 for x in range(startX, self.width):
-                    for i in range(startI, len(IDArray)):
-                        if overlaps(x, y, arrangeDict[IDArray[i]], placements):
+                    # for i in range(startI, len(IDArray)):
+                    for i, ID in enumerate(IDArray[startI:]):
+                        if overlaps(x, y, arrangeDict[ID], placements):
                             continue
-                        if not canPlaceArrangementRoof(x, y, arrangeDict[IDArray[i]]):
+                        if not canPlaceArrangementRoof(x, y, arrangeDict[ID]):
                             continue
                         if len(placements) >= 1 and not canPlaceArrangementObstacle(
-                                x, y, arrangeDict[IDArray[i]], obstacleArray, tempObstacleSumArray):
+                                x, y, arrangeDict[ID], obstacleArray, tempObstacleSumArray):
                             continue
-                        newPlacement = {'ID': IDArray[i], 'start': (x, y)}
+                        newPlacement = {'ID': ID, 'start': (x, y)}
                         placements.append(newPlacement)
-                        currentValue += arrangeDict[IDArray[i]].value
+                        currentValue += arrangeDict[ID].value
                         if layer < maxArrangeCount:
-                            temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
+                            temp = dfs(arrangeDict, x + arrangeDict[ID].relativePositionArray[0][1][0], y,
                                        i, currentValue, placements, layer + 1)
                             if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
                                 betterFlag = True
@@ -277,13 +282,15 @@ class Roof:
                             return True
             return False
 
-        j = 0
-        while j < len(list(screenedArrangements.keys())):
-            if list(screenedArrangements.values())[j].value / list(screenedArrangements.values())[
-                j].component.power < minComponent:
-                del screenedArrangements[list(screenedArrangements.keys())[j]]
-            else:
-                j += 1
+        # j = 0
+        # while j < len(list(screenedArrangements.keys())):
+        #     if list(screenedArrangements.values())[j].value / list(screenedArrangements.values())[
+        #         j].component.power < minComponent:
+        #         del screenedArrangements[list(screenedArrangements.keys())[j]]
+        #     else:
+        #         j += 1
+        # 不要一个一个删除，不断分配内存很吃时间
+        screenedArrangements = {k: v for k, v in screenedArrangements.items() if v.value / v.component.power >= minComponent}
         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
         dfs(screenedArrangements, 0, 0, 0, 0, [], 1)
