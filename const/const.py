@@ -1,6 +1,8 @@
+import numpy as np
+
 # 规定一些常量
 UNIT = 500  # 以毫米为单位
-INF = 1000000000  # 无穷大
+INF = np.inf  # 无穷大
 
 maxArrangeCount = 1  # 最大排布数量
 

@@ -51,7 +51,7 @@ class Roof:
             self.height = jsonRoof["height"]
             self.length = self.edgeA + self.edgeC
             self.width = self.edgeD
-            self.roofArray = np.full((self.length, self.width), 0)
+            self.roofArray = np.zeros((self.length, self.width))
             self.roofArray[self.edgeC:, 0:self.edgeB] = INF
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
@@ -173,18 +173,18 @@ class Roof:
             IDArray = list(arrangeDict.keys())
             obstacleArray = []
             tempObstacleSumArray = []
-            if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将前一个阵列的阴影更新到obstacleArray中
+            if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将所有阵列的阴影更新到obstacleArray中
                 obstacleArray = np.zeros(self.length, self.width)
-                arrange = arrangeDict[placements[-1]['ID']]
-                sRPX, sRPY = arrange.shadowRelativePosition
-                sizeY, sizeX = arrange.shadowArray.shape
-                sX, sY = placements[-1]['start']
-                rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
-                eX, eY = min(self.width, sX - sRPX + sizeX), min(self.length, sY - sRPY + sizeY)
-                rsX1, rsY1 = max(0, -sX + sRPX), max(0, -sY + sRPY)
-                obstacleArray[rsY:eY, rsX:eX] = np.maximum(obstacleArray[rsY:eY, rsX:eX],
-                                                           arrange.shadowArray[rsY1:rsY1 + eY - rsY,
-                                                           rsX1:rsX1 + eX - rsX])
+                for arrange in placements:
+                    sRPX, sRPY = arrangeDict[arrange['ID']].shadowRelativePosition
+                    sizeY, sizeX = arrangeDict[arrange['ID']].shadowArray.shape
+                    sX, sY = arrange['start']
+                    rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
+                    eX, eY = min(self.width, sX - sRPX + sizeX), min(self.length, sY - sRPY + sizeY)
+                    rsX1, rsY1 = max(0, -sX + sRPX), max(0, -sY + sRPY)
+                    obstacleArray[rsY:eY, rsX:eX] = np.maximum(obstacleArray[rsY:eY, rsX:eX],
+                                                               arrangeDict[arrange['ID']].shadowArray[
+                                                               rsY1:rsY1 + eY - rsY, rsX1:rsX1 + eX - rsX])
                 tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
             for y in range(startY, self.length):
@@ -328,7 +328,7 @@ class Roof:
     def drawPlacement(self, screenedArrangements, maxDraw=5):  # todo: numpy优化
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
         allMatrix = []
-        magnification = 5  # 放大倍数
+        magnification = 2  # 放大倍数
         UNIT = getUnit()
         # 画障碍物（只需要轮廓就行）
         # obstaclePointArray = []
@@ -359,18 +359,29 @@ class Roof:
 
         # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
 
-        for placement in self.allPlacements[:maxDraw]:
-
-            matrix = np.zeros((self.length * magnification, self.width * magnification, 3))
-            # 先画障碍物
-            for point in obstaclePointArray:
-                matrix[point[1], point[0]] = ObstacleColor
+        publicMatrix = np.zeros((self.length * magnification, self.width * magnification, 3))
+        # 先画障碍物
+        for point in obstaclePointArray:
+            publicMatrix[point[1], point[0]] = ObstacleColor
+        if self.type == "矩形":
             # 首先填充上下边界
-            matrix[:roofBoardLength, :, :] = RoofMarginColor  # 上边界
-            matrix[-roofBoardLength:, :, :] = RoofMarginColor  # 下边界
+            publicMatrix[:roofBoardLength, :, :] = RoofMarginColor  # 上边界
+            publicMatrix[-roofBoardLength:, :, :] = RoofMarginColor  # 下边界
             # 然后填充左右边界
-            matrix[:, :roofBoardLength, :] = RoofMarginColor  # 左边界
-            matrix[:, -roofBoardLength:, :] = RoofMarginColor  # 右边界
+            publicMatrix[:, :roofBoardLength, :] = RoofMarginColor  # 左边界
+            publicMatrix[:, -roofBoardLength:, :] = RoofMarginColor  # 右边界
+        elif self.type == "正7形":
+            MA, MB, MC = self.edgeA * magnification, self.edgeB * magnification, self.edgeC * magnification
+            MD, ME, MF = self.edgeD * magnification, self.edgeE * magnification, self.edgeF * magnification
+            publicMatrix[:MC, :roofBoardLength, :] = RoofMarginColor  # C边界
+            publicMatrix[MC - roofBoardLength:MC, :MB, :] = RoofMarginColor  # B边界
+            publicMatrix[MC - roofBoardLength:, MB:MB + roofBoardLength, :] = RoofMarginColor  # A边界
+            publicMatrix[MC + MA - roofBoardLength:, MB + roofBoardLength:, :] = RoofMarginColor  # F边界
+            publicMatrix[:ME - roofBoardLength, MD - roofBoardLength:, :] = RoofMarginColor  # E边界
+            publicMatrix[:roofBoardLength, roofBoardLength:MD - roofBoardLength, :] = RoofMarginColor  # D边界
+
+        for placement in self.allPlacements[:maxDraw]:
+            matrix = np.array(publicMatrix)
             for j in range(len(placement[0])):  # j表示第几个arrangement
                 arrange = placement[0][j]
                 start_x, start_y = arrange['start']
