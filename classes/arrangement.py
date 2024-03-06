@@ -133,7 +133,6 @@ class Arrangement:
             self.columnArray_x.append(width - column_positions[-1])
             result = []
             self.edgeColumn = []
-
             for x in column_positions:
                 for y in array_iny:
                     if 0 <= x + startX < width and 0 <= y + startY < length:
@@ -482,7 +481,7 @@ class Arrangement:
                 self.shadowRelativePosition = [-minX, -minY]
 
     def calculateComponentHeightArray(self):
-        length = self.relativePositionArray[-1][1][1]
+        length = self.relativePositionArray[-1][1][1] - self.relativePositionArray[0][0][0] + 1
         width = 0
         for node in self.relativePositionArray:
             if width < node[1][0]:
