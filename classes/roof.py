@@ -99,9 +99,22 @@ class Roof:
             #     print("debug")
             if placement[1] < nowMaxValue:
                 continue
-            # placement[2]取为obstacleArray和placement[2]的最大值
-            placement[2] = np.maximum(placement[2], self.obstacleArray)
-            tempObstacleSumArray = np.cumsum(np.cumsum(placement[2], axis=0), axis=1)
+            if len(placement[0]) == 1:
+                mergeObstacleArray = self.obstacleArray
+            else:  # 如果多于1个阵列，则要将所有阵列的阴影更新到tempObstacleSumArray里
+                mergeObstacleArray = np.array(self.obstacleArray)
+                for arrange in placement[0]:
+                    sRPX, sRPY = screenedArrangements[arrange['ID']].shadowRelativePosition
+                    sizeY, sizeX = screenedArrangements[arrange['ID']].shadowArray.shape
+                    sX, sY = arrange['start']
+                    rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
+                    eX, eY = min(self.width, sX - sRPX + sizeX), min(self.length, sY - sRPY + sizeY)
+                    rsX1, rsY1 = max(0, -sX + sRPX), max(0, -sY + sRPY)
+                    mergeObstacleArray[rsY:eY, rsX:eX] = np.maximum(mergeObstacleArray[rsY:eY, rsX:eX],
+                                                                    screenedArrangements[arrange['ID']].shadowArray[
+                                                                    rsY1:rsY1 + eY - rsY,
+                                                                    rsX1:rsX1 + eX - rsX])
+            tempObstacleSumArray = np.cumsum(np.cumsum(mergeObstacleArray, axis=0), axis=1)
             allDeletedIndices = []
             for arrange in placement[0]:
                 arrangeStartX, arrangeStartY = arrange['start']
@@ -117,12 +130,12 @@ class Roof:
                         totalComponent -= tempObstacleSumArray[tempArray[i][0][1] - 1, tempArray[i][1][0]]
                     if tempArray[i][0][0] > 0 and tempArray[i][0][1] > 0:
                         totalComponent += tempObstacleSumArray[tempArray[i][0][1] - 1, tempArray[i][0][0] - 1]
-                    if totalComponent == 0 or (placement[2][tempArray[i][0][1]:tempArray[i][1][1] + 1, tempArray[i][0][
-                        0]:tempArray[i][1][0] + 1] <= screenedArrangements[arrange['ID']].componentHeightArray[
-                                                      tempArray[i][0][1] - arrangeStartY:tempArray[i][1][
-                                                                                             1] - arrangeStartY + 1,
-                                                      tempArray[i][0][0] - arrangeStartX:tempArray[i][1][
-                                                                                             0] - arrangeStartX + 1]).all():
+                    if totalComponent == 0 or (mergeObstacleArray[tempArray[i][0][1]:tempArray[i][1][1] + 1, tempArray
+                    [i][0][0]:tempArray[i][1][0] + 1] <= screenedArrangements[arrange['ID']].componentHeightArray
+                                               [tempArray[i][0][1] - arrangeStartY:tempArray[i][1][
+                                                                                       1] - arrangeStartY + 1,
+                                                         tempArray[i][0][0] - arrangeStartX:tempArray[i][1][
+                                                                                                0] - arrangeStartX + 1]).all():
                         continue
                     else:  # 有遮挡
                         deletedIndices.append(i)
@@ -150,15 +163,15 @@ class Roof:
         maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
         nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
 
-        def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, obstacleArray):
+        def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer):
             betterFlag = False
             IDArray = list(arrangeDict.keys())
+            obstacleArray = []
+            tempObstacleSumArray = []
             if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将前一个阵列的阴影更新到obstacleArray中
+                obstacleArray = np.zeros(self.length, self.width)
                 arrange = arrangeDict[placements[-1]['ID']]
-                try:
-                    sRPX, sRPY = arrange.shadowRelativePosition
-                except:
-                    print()
+                sRPX, sRPY = arrange.shadowRelativePosition
                 sizeY, sizeX = arrange.shadowArray.shape
                 sX, sY = placements[-1]['start']
                 rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
@@ -167,33 +180,33 @@ class Roof:
                 obstacleArray[rsY:eY, rsX:eX] = np.maximum(obstacleArray[rsY:eY, rsX:eX],
                                                            arrange.shadowArray[rsY1:rsY1 + eY - rsY,
                                                            rsX1:rsX1 + eX - rsX])
-            tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
+                tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
             for y in range(startY, self.length):
                 for x in range(startX, self.width):
                     for i in range(startI, len(IDArray)):
                         if overlaps(x, y, arrangeDict[IDArray[i]], placements):
                             continue
-
-                        if not canPlaceArrangement(x, y, arrangeDict[IDArray[i]], obstacleArray, tempObstacleSumArray):
+                        if not canPlaceArrangementRoof(x, y, arrangeDict[IDArray[i]]):
+                            continue
+                        if len(placements) >= 1 and not canPlaceArrangementObstacle(
+                                x, y, arrangeDict[IDArray[i]], obstacleArray, tempObstacleSumArray):
                             continue
                         newPlacement = {'ID': IDArray[i], 'start': (x, y)}
                         placements.append(newPlacement)
                         currentValue += arrangeDict[IDArray[i]].value
                         if layer < maxArrangeCount:
                             temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
-                                       i, currentValue, placements, layer + 1, np.array(obstacleArray))
+                                       i, currentValue, placements, layer + 1)
                             if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
                                 betterFlag = True
                             else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
-                                self.allPlacements.append(
-                                    [placements.copy(), currentValue, np.array(obstacleArray)])
+                                self.allPlacements.append([placements.copy(), currentValue])
                                 if len(self.allPlacements) % 1000 == 0:
                                     print(
                                         f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
                         else:
-                            self.allPlacements.append(
-                                [placements.copy(), currentValue, np.array(obstacleArray)])
+                            self.allPlacements.append([placements.copy(), currentValue])
                             if len(self.allPlacements) % 1000 == 0:
                                 print(
                                     f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
@@ -202,25 +215,38 @@ class Roof:
                 startX = 0
             return betterFlag
 
-        def canPlaceArrangement(x, y, arrange, obstacleArray, tempObstacleSumArray):
+        def canPlaceArrangementRoof(x, y, arrange):
             for eachRect in arrange.relativePositionArray:
                 startX, startY = eachRect[0]
                 endX, endY = eachRect[1]
                 absoluteEndX, absoluteEndY = x + endX, y + endY
                 if self.width > absoluteEndX and self.length > absoluteEndY:
                     totalRoof = self.roofSumArray[absoluteEndY][absoluteEndX]
-                    totalObstacles = tempObstacleSumArray[absoluteEndY][absoluteEndX]
                     if startX > 0:
                         totalRoof -= self.roofSumArray[absoluteEndY][x + startX - 1]
-                        totalObstacles -= tempObstacleSumArray[absoluteEndY][x + startX - 1]
                     if startY > 0:
                         totalRoof -= self.roofSumArray[y + startY - 1][absoluteEndX]
-                        totalObstacles -= tempObstacleSumArray[y + startY - 1][absoluteEndX]
                     if startX > 0 and startY > 0:
                         totalRoof += self.roofSumArray[y + startY - 1][x + startX - 1]
-                        totalObstacles += tempObstacleSumArray[y + startY - 1][x + startX - 1]
                     if totalRoof >= INF:
                         return False
+                else:
+                    return False
+            return True
+
+        def canPlaceArrangementObstacle(x, y, arrange, obstacleArray, tempObstacleSumArray):
+            for eachRect in arrange.relativePositionArray:
+                startX, startY = eachRect[0]
+                endX, endY = eachRect[1]
+                absoluteEndX, absoluteEndY = x + endX, y + endY
+                if self.width > absoluteEndX and self.length > absoluteEndY:
+                    totalObstacles = tempObstacleSumArray[absoluteEndY][absoluteEndX]
+                    if startX > 0:
+                        totalObstacles -= tempObstacleSumArray[absoluteEndY][x + startX - 1]
+                    if startY > 0:
+                        totalObstacles -= tempObstacleSumArray[y + startY - 1][absoluteEndX]
+                    if startX > 0 and startY > 0:
+                        totalObstacles += tempObstacleSumArray[y + startY - 1][x + startX - 1]
                 else:
                     return False
                 # 接下去检查是否被光伏板的阴影遮挡
@@ -250,7 +276,7 @@ class Roof:
                 j += 1
         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
-        dfs(screenedArrangements, 0, 0, 0, 0, [], 1, np.zeros((self.length, self.width)))
+        dfs(screenedArrangements, 0, 0, 0, 0, [], 1)
         print(
             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
 
@@ -276,7 +302,7 @@ class Roof:
                 tempArray, tempTxt = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY,
                                                                                               self.realWidth,
                                                                                               self.obstacleArraySelf,
-                                                                                              placement[3][arrangeI])
+                                                                                              placement[2][arrangeI])
                 tempTxt = f"第{arrangeI + 1}个阵列的立柱排布：\n" + tempTxt + "\n"
                 if len(tempArray) > nowMaxValue:
                     nowMaxValue = len(tempArray)
@@ -345,7 +371,7 @@ class Roof:
                 start_x, start_y = arrange['start']
                 screenedArrangements[arrange['ID']].calculateComponentPositionArray(start_x, start_y)
                 for i in range(len(screenedArrangements[arrange['ID']].componentPositionArray)):  # todo: 为什么要扣除？
-                    if i in placement[3][j]:  # 如果这个光伏板被删了，就不画了
+                    if i in placement[2][j]:  # 如果这个光伏板被删了，就不画了
                         continue
                     top_left, bottom_right = screenedArrangements[arrange['ID']].componentPositionArray[i]
                     top_left[0], top_left[1] = top_left[0] * magnification, top_left[1] * magnification
@@ -368,11 +394,11 @@ class Roof:
                     # top_left[0] + PhotovoltaicPanelBoardLength:bottom_right[0]] = PhotovoltaicPanelColor
 
                 # 接下去画立柱
-                for column in placement[4][j]:  # column形式：[centerX,centerY]
-                    matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
-                           round(column[1] * magnification / UNIT) + standColumnPadding + 1,
-                    round(column[0] * magnification / UNIT) - standColumnPadding:
-                    round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
+                # for column in placement[3][j]:  # column形式：[centerX,centerY]
+                #     matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
+                #            round(column[1] * magnification / UNIT) + standColumnPadding + 1,
+                #     round(column[0] * magnification / UNIT) - standColumnPadding:
+                #     round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
 
             # 绘制图像
             plt.imshow(matrix.astype("uint8"))
