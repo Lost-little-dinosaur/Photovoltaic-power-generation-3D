@@ -51,7 +51,7 @@ class Roof:
             self.height = jsonRoof["height"]
             self.length = self.edgeE
             self.width = self.edgeD
-            self.roofArray = np.full((self.length, self.width), 0)
+            self.roofArray = np.zeros((self.length, self.width))
             self.roofArray[self.edgeC:, 0:self.edgeB] = INF
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
@@ -168,18 +168,18 @@ class Roof:
             IDArray = list(arrangeDict.keys())
             obstacleArray = []
             tempObstacleSumArray = []
-            if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将前一个阵列的阴影更新到obstacleArray中
+            if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将所有阵列的阴影更新到obstacleArray中
                 obstacleArray = np.zeros(self.length, self.width)
-                arrange = arrangeDict[placements[-1]['ID']]
-                sRPX, sRPY = arrange.shadowRelativePosition
-                sizeY, sizeX = arrange.shadowArray.shape
-                sX, sY = placements[-1]['start']
-                rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
-                eX, eY = min(self.width, sX - sRPX + sizeX), min(self.length, sY - sRPY + sizeY)
-                rsX1, rsY1 = max(0, -sX + sRPX), max(0, -sY + sRPY)
-                obstacleArray[rsY:eY, rsX:eX] = np.maximum(obstacleArray[rsY:eY, rsX:eX],
-                                                           arrange.shadowArray[rsY1:rsY1 + eY - rsY,
-                                                           rsX1:rsX1 + eX - rsX])
+                for arrange in placements:
+                    sRPX, sRPY = arrangeDict[arrange['ID']].shadowRelativePosition
+                    sizeY, sizeX = arrangeDict[arrange['ID']].shadowArray.shape
+                    sX, sY = arrange['start']
+                    rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
+                    eX, eY = min(self.width, sX - sRPX + sizeX), min(self.length, sY - sRPY + sizeY)
+                    rsX1, rsY1 = max(0, -sX + sRPX), max(0, -sY + sRPY)
+                    obstacleArray[rsY:eY, rsX:eX] = np.maximum(obstacleArray[rsY:eY, rsX:eX],
+                                                               arrangeDict[arrange['ID']].shadowArray[
+                                                               rsY1:rsY1 + eY - rsY, rsX1:rsX1 + eX - rsX])
                 tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
             for y in range(startY, self.length):
