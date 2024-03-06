@@ -984,6 +984,8 @@ class UI:
             else:
                 input_json["scene"]["roof"][key] = value
         input_json["scene"]["roof"]["extensibleDistance"] = extensibleDistance
+        if self.roof_info["roofSurfaceCategory"] != "矩形":
+            input_json["scene"]["roof"]["isComplex"] = True
         # obstacle in roof
         input_json["scene"]["roof"]["obstacles"] = []
         for obstacle in self.obstacle_info:

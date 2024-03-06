@@ -174,7 +174,7 @@ class Roof:
             obstacleArray = []
             tempObstacleSumArray = []
             if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将所有阵列的阴影更新到obstacleArray中
-                obstacleArray = np.zeros(self.length, self.width)
+                obstacleArray = np.zeros((self.length, self.width))
                 for arrange in placements:
                     sRPX, sRPY = arrangeDict[arrange['ID']].shadowRelativePosition
                     sizeY, sizeX = arrangeDict[arrange['ID']].shadowArray.shape
@@ -189,19 +189,20 @@ class Roof:
 
             for y in range(startY, self.length):
                 for x in range(startX, self.width):
-                    for i in range(startI, len(IDArray)):
-                        if overlaps(x, y, arrangeDict[IDArray[i]], placements):
+                    # for i in range(startI, len(IDArray)):
+                    for i, ID in enumerate(IDArray[startI:]):
+                        if overlaps(x, y, arrangeDict[ID], placements):
                             continue
-                        if not canPlaceArrangementRoof(x, y, arrangeDict[IDArray[i]]):
+                        if not canPlaceArrangementRoof(x, y, arrangeDict[ID]):
                             continue
                         if len(placements) >= 1 and not canPlaceArrangementObstacle(
-                                x, y, arrangeDict[IDArray[i]], obstacleArray, tempObstacleSumArray):
+                                x, y, arrangeDict[ID], obstacleArray, tempObstacleSumArray):
                             continue
-                        newPlacement = {'ID': IDArray[i], 'start': (x, y)}
+                        newPlacement = {'ID': ID, 'start': (x, y)}
                         placements.append(newPlacement)
-                        currentValue += arrangeDict[IDArray[i]].value
+                        currentValue += arrangeDict[ID].value
                         if layer < maxArrangeCount:
-                            temp = dfs(arrangeDict, x + arrangeDict[IDArray[i]].relativePositionArray[0][1][0], y,
+                            temp = dfs(arrangeDict, x + arrangeDict[ID].relativePositionArray[0][1][0], y,
                                        i, currentValue, placements, layer + 1)
                             if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
                                 betterFlag = True
@@ -272,13 +273,15 @@ class Roof:
                             return True
             return False
 
-        j = 0
-        while j < len(list(screenedArrangements.keys())):
-            if list(screenedArrangements.values())[j].value / list(screenedArrangements.values())[
-                j].component.power < minComponent:
-                del screenedArrangements[list(screenedArrangements.keys())[j]]
-            else:
-                j += 1
+        # j = 0
+        # while j < len(list(screenedArrangements.keys())):
+        #     if list(screenedArrangements.values())[j].value / list(screenedArrangements.values())[
+        #         j].component.power < minComponent:
+        #         del screenedArrangements[list(screenedArrangements.keys())[j]]
+        #     else:
+        #         j += 1
+        # 不要一个一个删除，不断分配内存很吃时间
+        screenedArrangements = {k: v for k, v in screenedArrangements.items() if v.value / v.component.power >= minComponent}
         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
         dfs(screenedArrangements, 0, 0, 0, 0, [], 1)
