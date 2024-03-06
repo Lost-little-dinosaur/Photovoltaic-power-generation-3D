@@ -853,8 +853,8 @@ class UI:
 
         # return roof.drawPlacement(screenedArrangements)
         start_time = time.time()
-        # tempArray = roof.drawPlacement(screenedArrangements), [placement[5] for placement in roof.allPlacements]
-        tempArray = roof.drawPlacement(screenedArrangements), ["", "", "", "", ""]
+        tempArray = roof.drawPlacement(screenedArrangements), [placement[4] for placement in roof.allPlacements]
+        # tempArray = roof.drawPlacement(screenedArrangements), ["", "", "", "", ""]
         end_time = time.time()
         execution_time = end_time - start_time
         print("drawPlacement 代码执行时间为：", execution_time, "秒\n")
