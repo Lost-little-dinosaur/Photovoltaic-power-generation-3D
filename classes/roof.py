@@ -101,7 +101,9 @@ class Roof:
             if placement[1] < nowMaxValue:
                 continue
             if len(placement[0]) == 1:
-                mergeObstacleArray = self.obstacleArray
+                mergeObstacleArray = self.obstacleArray    
+                # zzp：没必要重复计算
+                tempObstacleSumArray = self.obstacleSumArray
             else:  # 如果多于1个阵列，则要将所有阵列的阴影更新到tempObstacleSumArray里
                 mergeObstacleArray = np.array(self.obstacleArray)
                 for arrange in placement[0]:
@@ -115,7 +117,7 @@ class Roof:
                                                                     screenedArrangements[arrange['ID']].shadowArray[
                                                                     rsY1:rsY1 + eY - rsY,
                                                                     rsX1:rsX1 + eX - rsX])
-            tempObstacleSumArray = np.cumsum(np.cumsum(mergeObstacleArray, axis=0), axis=1)
+                tempObstacleSumArray = np.cumsum(np.cumsum(mergeObstacleArray, axis=0), axis=1)
             allDeletedIndices = []
             for arrange in placement[0]:
                 arrangeStartX, arrangeStartY = arrange['start']
@@ -148,11 +150,13 @@ class Roof:
                 nowMaxValue = placement[1]
                 print(f"当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
         i = 0
-        while i < len(self.allPlacements):
-            if self.allPlacements[i][1] < nowMaxValue:
-                del self.allPlacements[i]
-            else:
-                i += 1
+        self.allPlacements = [placement for placement in self.allPlacements if placement[1] >= nowMaxValue]
+        # 不要用while 一个一个删，这样内存会不断重组
+        # while i < len(self.allPlacements):
+        #     if self.allPlacements[i][1] < nowMaxValue:
+        #         del self.allPlacements[i]
+        #     else:
+        #         i += 1
         print(
             f"分析阴影并选出最佳方案完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒，共有{len(self.allPlacements)}个较优排布方案\n")
 
