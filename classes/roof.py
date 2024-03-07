@@ -226,6 +226,31 @@ class Roof:
             return betterFlag
 
         def canPlaceArrangementRoof(x, y, arrange):
+            # zzp: 提前判断，提前退出
+            # numpy版本未必有优势，数据量较少，先留着
+            # end_positions = arrange.relativePositionArray[:, 1] + [x, y]
+            # absoluteEndX = end_positions[:, 0]
+            # absoluteEndY = end_positions[:, 1]
+            # within_bounds = (self.width > absoluteEndX) & (self.length > absoluteEndY)
+            # if np.any(~within_bounds):
+            #     return False
+            
+            # totalRoof = self.roofSumArray[absoluteEndY, absoluteEndX]
+            # flag_x = np.where(arrange.relativePositionArray[:, 0, 0] > 0)[0]
+            # flag_y = np.where(arrange.relativePositionArray[:, 0, 1] > 0)[0]
+            # flag_xy = np.intersect1d(flag_x, flag_y)
+            
+            # precal_x = x + arrange.relativePositionArray[:, 0, 0] - 1
+            # precal_y = y + arrange.relativePositionArray[:, 0, 1] - 1
+            
+            # if flag_x.shape[0] > 0:
+            #     totalRoof[flag_x] -= self.roofSumArray[absoluteEndY,precal_x][flag_x]
+            # if flag_y.shape[0] > 0:
+            #     totalRoof[flag_y] -= self.roofSumArray[precal_y,absoluteEndX][flag_y]
+            # if flag_xy.shape[0] > 0:
+            #     totalRoof[flag_xy] -= self.roofSumArray[precal_y,precal_x][flag_xy]
+            # return np.all(totalRoof < INF)
+                
             for eachRect in arrange.relativePositionArray:
                 startX, startY = eachRect[0]
                 endX, endY = eachRect[1]

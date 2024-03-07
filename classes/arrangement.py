@@ -81,11 +81,12 @@ class Arrangement:
         self.componentHeightArray = np.array(self.calculateComponentHeightArray())  # 每个光伏板具体高度（大小是这个arrangement的最小包络矩形）
 
         self.maxLength, self.maxWidth = -INF, -INF
-        for tempElement in self.relativePositionArray:
-            if tempElement[1][0] >= self.maxWidth:
-                self.maxWidth = tempElement[1][0]
-            if tempElement[1][1] >= self.maxLength:
-                self.maxLength = tempElement[1][1]
+        # zzp: 将 self.relativePositionArray 转换为 NumPy 数组
+        self.relativePositionArray = np.array(self.relativePositionArray)
+
+        # 找到最大宽度和最大长度
+        self.maxWidth = np.max(self.relativePositionArray[:, 1, 0])
+        self.maxLength = np.max(self.relativePositionArray[:, 1, 1])
         self.shadowArray = np.zeros((self.maxWidth + 1, self.maxLength + 1))  # 阴影数组
 
         self.columnArray_y = []  # 立柱南北间距
