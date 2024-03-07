@@ -39,8 +39,8 @@
       "haveOverhangingEave": false,
       "obstacles": [
         {
-          "id": "无烟烟囱1",
-          "type": "无烟烟囱",
+          "id": "有烟烟囱1",
+          "type": "有烟烟囱",
           "isRound": false,
           "length": 1000,
           "width": 1000,
@@ -64,7 +64,7 @@
     "thickness": 350
   },
   "algorithm": {
-    "precision": 300,
+    "precision": 400,
     "maxArrangeCount": 2,
     "minComponent": 21
   }

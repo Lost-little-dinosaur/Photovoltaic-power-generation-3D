@@ -222,7 +222,7 @@
     "thickness": 350
   },
   "algorithm": {
-    "precision": 10,
+    "precision": 100,
     "maxArrangeCount": 1,
     "minComponent": 1
   }
