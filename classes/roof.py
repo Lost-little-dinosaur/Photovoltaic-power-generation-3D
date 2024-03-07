@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from const.const import *
 from classes.obstacle import Obstacle
 import functools
-
+import collections
 
 def calculate_execution_time(func):
     @functools.wraps(func)
@@ -66,6 +66,7 @@ class Roof:
         self.obstacles = []
         self.sceneObstacles = []
         # self.maxRects = []
+        # self.allPlacements = collections.deque()
         self.allPlacements = []
         # self.type = 0
 
@@ -98,14 +99,14 @@ class Roof:
         time1 = time.time()
         print("开始分析阴影并选出最佳方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         nowMaxValue = -INF
-        # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
+        # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
         for placement in self.allPlacements:
             # if placement[0][0]['ID'] == 396 and placement[0][1]['ID'] == 321:
             #     print("debug")
             if placement[1] < nowMaxValue:
                 continue
             if len(placement[0]) == 1:
-                mergeObstacleArray = self.obstacleArray    
+                mergeObstacleArray = self.obstacleArray  # 这个self.obstacleArray已经更新了阴影的情况
                 # zzp：没必要重复计算
                 tempObstacleSumArray = self.obstacleSumArray
             else:  # 如果多于1个阵列，则要将所有阵列的阴影更新到tempObstacleSumArray里
@@ -150,6 +151,30 @@ class Roof:
                 placement[1] -= len(deletedIndices) * screenedArrangements[arrange['ID']].component.power
                 allDeletedIndices.append(deletedIndices)
             placement.append(allDeletedIndices)
+            # 判断组件是否被障碍物遮挡
+            k = -1
+            for arrange in placement[0]:
+                k = k + 1
+                for obstacle in self.obstacles:
+                    if obstacle.type == '有烟烟囱':
+                        x1 = obstacle.upLeftPosition[0]
+                        y1 = obstacle.upLeftPosition[1]
+                        x2 = x1 + obstacle.width
+                        y2 = y1 + obstacle.length
+                        for i in range(len(screenedArrangements[arrange['ID']].componentPositionArray)):
+                            component = screenedArrangements[arrange['ID']].componentPositionArray[i]
+                            x3 = component[0][0]
+                            y3 = component[0][1]
+                            x4 = component[1][0]
+                            y4 = component[1][1]
+                            overcheck = False
+                            if x1 > x4 or x3 > x2 or y1 > y4 or y3 > y2:
+                                overcheck = False
+                            else:
+                                overcheck = True
+                            if overcheck == True:
+                                if i not in placement[2][k]:
+                                    placement[2][k].append(i)
             if placement[1] > nowMaxValue:
                 nowMaxValue = placement[1]
                 print(f"当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
@@ -168,10 +193,10 @@ class Roof:
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         # 输入限制条件
-        minComponent = 1  # 最小组件数
+        minComponent = getMinComponent()  # 最小光伏板个数
         maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
         nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
-
+        
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer):
             betterFlag = False
             IDArray = list(arrangeDict.keys())
@@ -215,11 +240,15 @@ class Roof:
                                 if len(self.allPlacements) % 10000 == 0:
                                     print(
                                         f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                                # if len(self.allPlacements) == 12590:
+                                #     print("debug")
                         else:
                             self.allPlacements.append([placements.copy(), currentValue])
                             if len(self.allPlacements) % 10000 == 0:
                                 print(
                                     f"当前已有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                            # if len(self.allPlacements) == 12590:
+                            #     print("debug")
                         placements.pop()
                         currentValue -= arrangeDict[IDArray[i]].value
                 startX = 0
@@ -252,17 +281,19 @@ class Roof:
             # return np.all(totalRoof < INF)
                 
             for eachRect in arrange.relativePositionArray:
-                startX, startY = eachRect[0]
-                endX, endY = eachRect[1]
-                absoluteEndX, absoluteEndY = x + endX, y + endY
+                p0, p1 = eachRect
+                p00, p01 = p0
+                p10, p11 = p1          
+                absoluteStartX, absoluteStartY = x + p00, y + p01
+                absoluteEndX, absoluteEndY = x + p10, y + p11
                 if self.width > absoluteEndX and self.length > absoluteEndY:
                     totalRoof = self.roofSumArray[absoluteEndY][absoluteEndX]
-                    if startX > 0:
-                        totalRoof -= self.roofSumArray[absoluteEndY][x + startX - 1]
-                    if startY > 0:
-                        totalRoof -= self.roofSumArray[y + startY - 1][absoluteEndX]
-                    if startX > 0 and startY > 0:
-                        totalRoof += self.roofSumArray[y + startY - 1][x + startX - 1]
+                    if absoluteStartX > 0:
+                        totalRoof -= self.roofSumArray[absoluteEndY][absoluteStartX - 1]
+                    if absoluteStartY > 0:
+                        totalRoof -= self.roofSumArray[absoluteStartY - 1][absoluteEndX]
+                    if absoluteStartX > 0 and absoluteStartY > 0:
+                        totalRoof += self.roofSumArray[absoluteStartY - 1][absoluteStartX - 1]
                     if totalRoof >= INF:
                         return False
                 else:
@@ -292,13 +323,18 @@ class Roof:
 
         def overlaps(x, y, arrange, placements):
             for eachRect in arrange.relativePositionArray:
+                p0, p1 = eachRect
+                p00, p01 = p0
+                p10, p11 = p1                
                 for placement in placements:
                     startX, startY = placement['start']
                     for eachPlacementRect in screenedArrangements[placement['ID']].relativePositionArray:
-                        if not (x + eachRect[0][0] > startX + eachPlacementRect[1][0] or
-                                x + eachRect[1][0] < startX + eachPlacementRect[0][0] or
-                                y + eachRect[0][1] > startY + eachPlacementRect[1][1] or
-                                y + eachRect[1][1] < startY + eachPlacementRect[0][1]):
+                        p2 = eachPlacementRect[0]
+                        p3 = eachPlacementRect[1]
+                        if not (x + p00 > startX + p3[0] or
+                                x + p10 < startX + p2[0] or
+                                y + p01 > startY + p3[1] or
+                                y + p11 < startY + p2[1]):
                             return True
             return False
 
@@ -314,6 +350,10 @@ class Roof:
         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
         dfs(screenedArrangements, 0, 0, 0, 0, [], 1)
+        # tempTest = []
+        # for placement in self.allPlacements:
+        #     if len(placement[0]) == 2 and placement[0][1]["start"][1] >= 10:
+        #         tempTest.append(placement)
         print(
             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
 
