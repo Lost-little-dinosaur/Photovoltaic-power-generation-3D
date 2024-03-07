@@ -98,7 +98,7 @@ class Roof:
         time1 = time.time()
         print("开始分析阴影并选出最佳方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         nowMaxValue = -INF
-        # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,扣除前的obstacleArray,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
+        # placement中的元素意义为：[[放置的arrangement的ID和startXY],当前value,[扣除的光伏板下标(从左到右从上到下,长度和placement[0]一样),立柱排布]
         for placement in self.allPlacements:
             # if placement[0][0]['ID'] == 396 and placement[0][1]['ID'] == 321:
             #     print("debug")
@@ -150,6 +150,30 @@ class Roof:
                 placement[1] -= len(deletedIndices) * screenedArrangements[arrange['ID']].component.power
                 allDeletedIndices.append(deletedIndices)
             placement.append(allDeletedIndices)
+            # 判断组件是否被障碍物遮挡
+            k = -1
+            for arrange in placement[0]:
+                k = k + 1
+                for obstacle in self.obstacles:
+                    if obstacle.type == '有烟烟囱':
+                        x1 = obstacle.upLeftPosition[0]
+                        y1 = obstacle.upLeftPosition[1]
+                        x2 = x1 + obstacle.width
+                        y2 = y1 + obstacle.length
+                        for i in range(len(screenedArrangements[arrange['ID']].componentPositionArray)):
+                            component = screenedArrangements[arrange['ID']].componentPositionArray[i]
+                            x3 = component[0][0]
+                            y3 = component[0][1]
+                            x4 = component[1][0]
+                            y4 = component[1][1]
+                            overcheck = False
+                            if x1 > x4 or x3 > x2 or y1 > y4 or y3 > y2:
+                                overcheck = False
+                            else:
+                                overcheck = True
+                            if overcheck == True:
+                                if i not in placement[2][k]:
+                                    placement[2][k].append(i)
             if placement[1] > nowMaxValue:
                 nowMaxValue = placement[1]
                 print(f"当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
