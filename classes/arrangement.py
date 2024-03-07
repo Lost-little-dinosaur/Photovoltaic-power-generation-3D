@@ -135,7 +135,7 @@ class Arrangement:
             self.edgeColumn = []
             for x in column_positions:
                 for y in array_iny:
-                    if 0 <= x + startX < width and 0 <= y + startY < length:
+                    if 0 <= x < width and 0 <= y< length:
                         if obstacles[x + startX][y + startY] != 1:
                             result.append([startX + x, startY + y])
                     if x == column_positions[0] or x == column_positions[-1]:
@@ -188,9 +188,10 @@ class Arrangement:
                 array_limit = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
         self.calculateComponentPositionArrayreal(startX, startY)
         length = 0
-        for component in self.componentPositionArray:  # todo 更新
-            if component[1][1] > length:
-                length = component[1][1]
+        # for component in self.componentPositionArray:  # todo 更新
+        #    if component[1][1] > length:
+        #        length = component[1][1]
+        length = self.componentPositionArray[-1][1][1] - self.componentPositionArray[0][0][1]
         length += 1
         le = length - sum(array_y) - array_limit[0]
         if (le + array_limit[0]) / 2 < array_limit[0]:
@@ -224,6 +225,7 @@ class Arrangement:
             if component[1][0] > width:
                 width = component[1][0]
         width += 1
+        width = width - self.componentPositionArray[0][0][0]
         column_min = int(width / max_spacing) + 1
         column_min = max(2, column_min)
         column_max = 1000
