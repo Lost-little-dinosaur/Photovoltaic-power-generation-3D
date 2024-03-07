@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from const.const import *
 from classes.obstacle import Obstacle
 import functools
-
+import collections
 
 def calculate_execution_time(func):
     @functools.wraps(func)
@@ -66,6 +66,7 @@ class Roof:
         self.obstacles = []
         self.sceneObstacles = []
         # self.maxRects = []
+        # self.allPlacements = collections.deque()
         self.allPlacements = []
         # self.type = 0
 
@@ -195,7 +196,7 @@ class Roof:
         minComponent = getMinComponent()  # 最小光伏板个数
         maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
         nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
-
+        
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer):
             betterFlag = False
             IDArray = list(arrangeDict.keys())
@@ -254,11 +255,37 @@ class Roof:
             return betterFlag
 
         def canPlaceArrangementRoof(x, y, arrange):
-            # if x == 1 and y == 9 and arrange.componentLayoutArray == [10, 6, 10]:
-            #     print("debug")
+            # zzp: 提前判断，提前退出
+            # numpy版本未必有优势，数据量较少，先留着
+            # end_positions = arrange.relativePositionArray[:, 1] + [x, y]
+            # absoluteEndX = end_positions[:, 0]
+            # absoluteEndY = end_positions[:, 1]
+            # within_bounds = (self.width > absoluteEndX) & (self.length > absoluteEndY)
+            # if np.any(~within_bounds):
+            #     return False
+            
+            # totalRoof = self.roofSumArray[absoluteEndY, absoluteEndX]
+            # flag_x = np.where(arrange.relativePositionArray[:, 0, 0] > 0)[0]
+            # flag_y = np.where(arrange.relativePositionArray[:, 0, 1] > 0)[0]
+            # flag_xy = np.intersect1d(flag_x, flag_y)
+            
+            # precal_x = x + arrange.relativePositionArray[:, 0, 0] - 1
+            # precal_y = y + arrange.relativePositionArray[:, 0, 1] - 1
+            
+            # if flag_x.shape[0] > 0:
+            #     totalRoof[flag_x] -= self.roofSumArray[absoluteEndY,precal_x][flag_x]
+            # if flag_y.shape[0] > 0:
+            #     totalRoof[flag_y] -= self.roofSumArray[precal_y,absoluteEndX][flag_y]
+            # if flag_xy.shape[0] > 0:
+            #     totalRoof[flag_xy] -= self.roofSumArray[precal_y,precal_x][flag_xy]
+            # return np.all(totalRoof < INF)
+                
             for eachRect in arrange.relativePositionArray:
-                absoluteStartX, absoluteStartY = x + eachRect[0][0], y + eachRect[0][1]
-                absoluteEndX, absoluteEndY = x + eachRect[1][0], y + eachRect[1][1]
+                p0, p1 = eachRect
+                p00, p01 = p0
+                p10, p11 = p1          
+                absoluteStartX, absoluteStartY = x + p00, y + p01
+                absoluteEndX, absoluteEndY = x + p10, y + p11
                 if self.width > absoluteEndX and self.length > absoluteEndY:
                     totalRoof = self.roofSumArray[absoluteEndY][absoluteEndX]
                     if absoluteStartX > 0:
@@ -296,13 +323,18 @@ class Roof:
 
         def overlaps(x, y, arrange, placements):
             for eachRect in arrange.relativePositionArray:
+                p0, p1 = eachRect
+                p00, p01 = p0
+                p10, p11 = p1                
                 for placement in placements:
                     startX, startY = placement['start']
                     for eachPlacementRect in screenedArrangements[placement['ID']].relativePositionArray:
-                        if not (x + eachRect[0][0] > startX + eachPlacementRect[1][0] or
-                                x + eachRect[1][0] < startX + eachPlacementRect[0][0] or
-                                y + eachRect[0][1] > startY + eachPlacementRect[1][1] or
-                                y + eachRect[1][1] < startY + eachPlacementRect[0][1]):
+                        p2 = eachPlacementRect[0]
+                        p3 = eachPlacementRect[1]
+                        if not (x + p00 > startX + p3[0] or
+                                x + p10 < startX + p2[0] or
+                                y + p01 > startY + p3[1] or
+                                y + p11 < startY + p2[1]):
                             return True
             return False
 
