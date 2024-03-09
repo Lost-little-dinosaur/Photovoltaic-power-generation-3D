@@ -8,6 +8,7 @@ from classes.obstacle import Obstacle
 import functools
 import collections
 
+
 def calculate_execution_time(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -188,6 +189,7 @@ class Roof:
         #         i += 1
         print(
             f"分析阴影并选出最佳方案完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒，共有{len(self.allPlacements)}个较优排布方案\n")
+        return int(nowMaxValue / screenedArrangements[self.allPlacements[0][0][0]['ID']].component.power)
 
     def getValidOptions(self, screenedArrangements):
         time1 = time.time()
@@ -196,7 +198,7 @@ class Roof:
         minComponent = getMinComponent()  # 最小光伏板个数
         maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
         nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
-        
+
         def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer):
             betterFlag = False
             IDArray = list(arrangeDict.keys())
@@ -263,15 +265,15 @@ class Roof:
             # within_bounds = (self.width > absoluteEndX) & (self.length > absoluteEndY)
             # if np.any(~within_bounds):
             #     return False
-            
+
             # totalRoof = self.roofSumArray[absoluteEndY, absoluteEndX]
             # flag_x = np.where(arrange.relativePositionArray[:, 0, 0] > 0)[0]
             # flag_y = np.where(arrange.relativePositionArray[:, 0, 1] > 0)[0]
             # flag_xy = np.intersect1d(flag_x, flag_y)
-            
+
             # precal_x = x + arrange.relativePositionArray[:, 0, 0] - 1
             # precal_y = y + arrange.relativePositionArray[:, 0, 1] - 1
-            
+
             # if flag_x.shape[0] > 0:
             #     totalRoof[flag_x] -= self.roofSumArray[absoluteEndY,precal_x][flag_x]
             # if flag_y.shape[0] > 0:
@@ -279,11 +281,11 @@ class Roof:
             # if flag_xy.shape[0] > 0:
             #     totalRoof[flag_xy] -= self.roofSumArray[precal_y,precal_x][flag_xy]
             # return np.all(totalRoof < INF)
-                
+
             for eachRect in arrange.relativePositionArray:
                 p0, p1 = eachRect
                 p00, p01 = p0
-                p10, p11 = p1          
+                p10, p11 = p1
                 absoluteStartX, absoluteStartY = x + p00, y + p01
                 absoluteEndX, absoluteEndY = x + p10, y + p11
                 if self.width > absoluteEndX and self.length > absoluteEndY:
@@ -325,7 +327,7 @@ class Roof:
             for eachRect in arrange.relativePositionArray:
                 p0, p1 = eachRect
                 p00, p01 = p0
-                p10, p11 = p1                
+                p10, p11 = p1
                 for placement in placements:
                     startX, startY = placement['start']
                     for eachPlacementRect in screenedArrangements[placement['ID']].relativePositionArray:
@@ -346,7 +348,8 @@ class Roof:
         #     else:
         #         j += 1
         # 不要一个一个删除，不断分配内存很吃时间
-        screenedArrangements = {k: v for k, v in screenedArrangements.items() if v.value / v.component.power >= minComponent}
+        screenedArrangements = {k: v for k, v in screenedArrangements.items() if
+                                v.value / v.component.power >= minComponent}
         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
         dfs(screenedArrangements, 0, 0, 0, 0, [], 1)
@@ -374,6 +377,7 @@ class Roof:
             allTempArray = []
             allTxtArray = []
             arrangeI = 0
+            tempSum = 0
             for arrange in allArrangement:
                 startX, startY = arrange['start']
                 tempArray, tempTxt = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY,
@@ -381,30 +385,42 @@ class Roof:
                                                                                               self.obstacleArraySelf,
                                                                                               placement[2][arrangeI])
                 tempTxt = f"第{arrangeI + 1}个阵列的立柱排布：\n" + tempTxt + "\n"
-                if len(tempArray) > nowMaxValue:
-                    nowMaxValue = len(tempArray)
+                tempSum += len(tempArray)
                 allTempArray.append(tempArray)
                 allTxtArray.append(tempTxt)
                 arrangeI += 1
             placement.extend([allTempArray, allTxtArray])
-        i = 0
-        while i < len(self.allPlacements):
-            if self.allPlacements[i][1] < nowMaxValue:
-                del self.allPlacements[i]
-            else:
-                i += 1
+
+            if tempSum > nowMaxValue:
+                nowMaxValue = tempSum
+
+        self.allPlacements = [placement for placement in self.allPlacements if
+                              sum([len(x) for x in placement[3]]) >= nowMaxValue]
         print(
             f"立柱排布计算完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，共有{len(self.allPlacements)}个较优排布方案\n")
-        return 0
+        return nowMaxValue
 
     def drawPlacement(self, screenedArrangements, maxDraw=5):  # todo: numpy优化
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
         allMatrix = []
-        magnification = 2  # 放大倍数
         UNIT = getUnit()
+        if UNIT <= 25:
+            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 3, 3, 3, 3
+            magnification = 1  # 放大倍数
+        elif 25 < UNIT <= 50:
+            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 2, 2, 2, 2
+            magnification = 2
+        elif 50 < UNIT <= 100:
+            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 1, 1, 1, 1
+            magnification = 3
+        elif 100 < UNIT <= 200:
+            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 1, 1, 1, 1
+            magnification = 4
+        else:
+            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 1, 1, 1, 1
+            magnification = 5
         publicMatrix = np.zeros((self.length * magnification, self.width * magnification, 3))
         # 画障碍物（只需要轮廓就行）
-        # obstaclePointArray = []
         obstaclePointArray = np.empty((0, 2), dtype=np.int32)
         for obstacle in self.obstacles:
             if obstacle.type == '无烟烟囱' or obstacle.type == '有烟烟囱':
@@ -414,21 +430,23 @@ class Roof:
                     endX = round((obstacle.realupLeftPosition[0] + obstacle.realwidth) / UNIT) * magnification
                     endY = round((obstacle.realupLeftPosition[1] + obstacle.reallength) / UNIT) * magnification
 
-                    ### 尽量不要用for append，能用Numpy就用numpy
-                    # for y in range(startY, endY + 1):
-                    #     obstaclePointArray.append((startX, y))
-                    #     obstaclePointArray.append((endX, y))
-                    lenY = endY + 1 - startY
-                    column = np.tile([startX, endX], lenY)
-                    tempMatrix = np.column_stack((column, np.repeat(np.array(list(range(startY, endY + 1))), 2)))
-                    obstaclePointArray = np.concatenate((obstaclePointArray, tempMatrix), axis=0, dtype=np.int32)
-                    # for x in range(startX, endX + 1):
-                    #     obstaclePointArray.append((x, startY))
-                    #     obstaclePointArray.append((x, endY))
-                    lenX = endX + 1 - startX
-                    column = np.tile([startY, endY], lenX)
-                    tempMatrix = np.column_stack((np.repeat(np.array(list(range(startX, endX + 1))), 2), column))
-                    obstaclePointArray = np.concatenate((obstaclePointArray, tempMatrix), axis=0, dtype=np.int32)
+                    # 处理障碍物的外轮廓
+                    for pad in range(obstaclePadding + 1):  # +1是为了包括外轮廓本身和内部的padding
+                        # 处理水平边
+                        lenY = endY + 1 - startY - pad * 2  # 调整长度以考虑内部padding
+                        if lenY > 0:  # 确保不是负数
+                            column = np.tile([startX + pad, endX - pad], lenY)
+                            tempMatrix = np.column_stack(
+                                (column, np.repeat(np.array(list(range(startY + pad, endY + 1 - pad))), 2)))
+                            obstaclePointArray = np.concatenate((obstaclePointArray, tempMatrix), axis=0)
+
+                        # 处理垂直边
+                        lenX = endX + 1 - startX - pad * 2  # 调整宽度以考虑内部padding
+                        if lenX > 0:  # 确保不是负数
+                            column = np.tile([startY + pad, endY - pad], lenX)
+                            tempMatrix = np.column_stack(
+                                (np.repeat(np.array(list(range(startX + pad, endX + 1 - pad))), 2), column))
+                            obstaclePointArray = np.concatenate((obstaclePointArray, tempMatrix), axis=0)
 
         # 先画障碍物
         for point in obstaclePointArray:
