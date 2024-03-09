@@ -189,6 +189,7 @@ class Roof:
         #         i += 1
         print(
             f"分析阴影并选出最佳方案完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒，共有{len(self.allPlacements)}个较优排布方案\n")
+        return int(nowMaxValue / screenedArrangements[self.allPlacements[0][0][0]['ID']].component.power)
 
     def getValidOptions(self, screenedArrangements):
         time1 = time.time()
@@ -376,6 +377,7 @@ class Roof:
             allTempArray = []
             allTxtArray = []
             arrangeI = 0
+            tempSum = 0
             for arrange in allArrangement:
                 startX, startY = arrange['start']
                 tempArray, tempTxt = screenedArrangements[arrange['ID']].calculateStandColumn(startX, startY,
@@ -383,21 +385,20 @@ class Roof:
                                                                                               self.obstacleArraySelf,
                                                                                               placement[2][arrangeI])
                 tempTxt = f"第{arrangeI + 1}个阵列的立柱排布：\n" + tempTxt + "\n"
-                if len(tempArray) > nowMaxValue:
-                    nowMaxValue = len(tempArray)
+                tempSum += len(tempArray)
                 allTempArray.append(tempArray)
                 allTxtArray.append(tempTxt)
                 arrangeI += 1
             placement.extend([allTempArray, allTxtArray])
-        i = 0
-        while i < len(self.allPlacements):
-            if self.allPlacements[i][1] < nowMaxValue:
-                del self.allPlacements[i]
-            else:
-                i += 1
+
+            if tempSum > nowMaxValue:
+                nowMaxValue = tempSum
+
+        self.allPlacements = [placement for placement in self.allPlacements if
+                              sum([len(x) for x in placement[3]]) >= nowMaxValue]
         print(
             f"立柱排布计算完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，共有{len(self.allPlacements)}个较优排布方案\n")
-        return 0
+        return nowMaxValue
 
     def drawPlacement(self, screenedArrangements, maxDraw=5):  # todo: numpy优化
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
