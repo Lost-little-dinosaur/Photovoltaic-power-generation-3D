@@ -6,7 +6,7 @@ from math import radians, sin
 from tools.tools3D import calculateShadow
 import time
 
-ID = 0
+ID = 0.
 
 
 class Arrangement:
@@ -290,9 +290,11 @@ class Arrangement:
             # 去掉不需要限制的位置
             while i < len(fixedColumn):
                 for j in deletedIndices:
-                    if (fixedColumn[i] > self.componentPositionArray[j][0][0] - startX) and \
-                           (fixedColumn[i] < self.componentPositionArray[j][1][0] - startX):
+                    if (fixedColumn[i] > (self.componentPositionArray[j][0][0] - startX)) and \
+                           (fixedColumn[i] < (self.componentPositionArray[j][1][0] - startX)):
                         fixedColumn.pop(i)
+                        i = i - 1
+                        break
                 i = i + 1
             # 去重
             i = 0
@@ -318,18 +320,21 @@ class Arrangement:
             for i in range(spanNums - 1):
                 column_positions.append(x1)
                 spanWidth = x2 - x1
-                column_min = int(spanWidth / max_spacing) + 1
-                column_min = max(2, column_min)
+                column_min = int(spanWidth / max_spacing)
+                column_min = max(1, column_min)
                 column_max = 1000
                 for n_columns in range(column_min, column_max):
-                    ideal_spacing = int(spanWidth / (n_columns - 1)) + 1  # 计算理想间距
+                    ideal_spacing = int(spanWidth / n_columns) + 1  # 计算理想间距
                     if ideal_spacing > max_spacing:
                         continue
-                    for i in range(1, n_columns - 1):
+                    for i in range(1, n_columns):
                         x = int(i * ideal_spacing + x1)
                         column_positions.append(x)
+                    if len(column_positions) != 0:
+                        break
                 x1 = x2
-                x2 = fixedColumn[k]
+                if k < len(fixedColumn):
+                    x2 = fixedColumn[k]
                 k += 1
             # 右边缘的立柱
             if width - fixedColumn[-1] < 700:
@@ -339,17 +344,20 @@ class Arrangement:
                 x2 = width - 500
                 column_positions.append(x1)
                 spanWidth = x2 - x1
-                column_min = int(spanWidth / max_spacing) + 1
-                column_min = max(2, column_min)
+                column_min = int(spanWidth / max_spacing)
+                column_min = max(1, column_min)
                 column_max = 1000
+                le = len(column_positions)
                 for n_columns in range(column_min, column_max):
-                    ideal_spacing = int(spanWidth / (n_columns - 1)) + 1  # 计算理想间距
+                    ideal_spacing = int(spanWidth / (n_columns)) + 1  # 计算理想间距
                     if ideal_spacing > max_spacing:
                         continue
                     ideal_spacing = min(max_spacing, ideal_spacing)
-                    for i in range(1, n_columns - 1):
+                    for i in range(1, n_columns):
                         x = int(i * ideal_spacing + x1)
                         column_positions.append(x)
+                    if len(column_positions) != le:
+                        break
                 column_positions.append(x2)
             self.columnArray_x.append(column_positions[0])
             for i in range(len(column_positions) - 1):
