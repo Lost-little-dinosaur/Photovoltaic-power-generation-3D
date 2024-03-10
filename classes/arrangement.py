@@ -147,16 +147,6 @@ class Arrangement:
                     if x == column_positions[0] or x == column_positions[-1]:
                         if y == array_iny[0] or y == array_iny[-1]:
                             self.edgeColumn.append([startX + x, startY + y])
-            #    edgeColumnremove = []  # 扣除的边缘立柱
-            #    for node in result:
-            #        for i in deletedIndices:
-            #            component = self.componentPositionArray[i]
-            #            if (component[0][0] < node[0] < component[1][0]
-            #                    and component[0][1] < node[1] < component[1][1]):
-            #                for j in self.edgeComponents:
-            #                    if i == j:
-            #                        edgeColumnremove.append(node[0] - startX)
-            #    for x in edgeColumnremove:
             final_list = []
             for node in result:
                 flag = 0
@@ -249,34 +239,159 @@ class Arrangement:
                 array_x.pop()
             '''
         result_y.pop()
+        deletedEdgecomponent = []
+        for i in deletedIndices:
+            if i in self.edgeComponents:
+                deletedEdgecomponent.append(i)
         max_spacing = 2000
         width = 0
         for component in self.componentPositionArray:
             if component[1][0] > width:
                 width = component[1][0]
         width += 1
-        width = width - self.componentPositionArray[0][0][0]
-        column_min = int(width / max_spacing) + 1
-        column_min = max(2, column_min)
-        column_max = 1000
-        for column_n in range(column_min, column_max):
-            final_list = generate_columns(column_n, startY, startX, roof_Width, width, length, max_spacing, result_y,
-                                      obstacles)
-            if len(final_list) == 0:
-                continue
+        width = width - self.componentPositionArray[0][0][0] # 绝对宽度
+        if len(deletedEdgecomponent) == 0:
+            column_min = int(width / max_spacing) + 1
+            column_min = max(2, column_min)
+            column_max = 1000
+            for column_n in range(column_min, column_max):
+                final_list = generate_columns(column_n, startY, startX, roof_Width, width, length, max_spacing,
+                                              result_y,
+                                              obstacles)
+                if len(final_list) == 0:
+                    continue
+                else:
+                    txt = "边缘四个立柱的坐标为："
+                    for node in self.edgeColumn:
+                        txt += str(node) + "、"
+                    txt = txt[:-1] + "\n"
+                    txt += "南北立柱间距为："
+                    for node in self.columnArray_y:
+                        txt += str(node) + "、"
+                    txt = txt[:-1] + "\n"
+                    txt += "东西立柱间距为："
+                    for node in self.columnArray_x:
+                        txt += str(node) + "、"
+                    return final_list, txt[:-1] + "\n"
+        else:  # 扣除边缘组件产生新的边缘组件的情况
+            column_positions = []
+            self.columnArray_x = []
+            fixedColumn = []  # 确定的立柱位置
+            for i in deletedEdgecomponent:
+                left_x = self.componentPositionArray[i][0][0] - 600 - startX
+                right_x = self.componentPositionArray[i][1][0] + 600 - startX
+            # 防止越界
+                if left_x > 0:
+                    fixedColumn.append(left_x)
+                if right_x < width:
+                    fixedColumn.append(right_x)
+            sorted(fixedColumn)
+            i = 0
+            # 去掉不需要限制的位置
+            while i < len(fixedColumn):
+                for j in deletedIndices:
+                    if (fixedColumn[i] > self.componentPositionArray[j][0][0] - startX) and \
+                           (fixedColumn[i] < self.componentPositionArray[j][1][0] - startX):
+                        fixedColumn.pop(i)
+                i = i + 1
+            # 去重
+            i = 0
+            while i < len(fixedColumn) - 1:
+                diff  = abs(fixedColumn[i] - fixedColumn[i + 1])
+                if diff < 300:
+                    average = (fixedColumn[i] + fixedColumn[i + 1]) / 2
+                    fixedColumn[i] = average
+                    fixedColumn.pop(i + 1)
+                else:
+                    i = i + 1
+            if fixedColumn[0] < 700:
+                x1 = fixedColumn[0]
+                x2 = fixedColumn[1]
+                spanNums = len(fixedColumn)
+                k = 2
             else:
-                txt = "边缘四个立柱的坐标为："
-                for node in self.edgeColumn:
-                    txt += str(node) + "、"
-                txt = txt[:-1] + "\n"
-                txt += "南北立柱间距为："
-                for node in self.columnArray_y:
-                    txt += str(node) + "、"
-                txt = txt[:-1] + "\n"
-                txt += "东西立柱间距为："
-                for node in self.columnArray_x:
-                    txt += str(node) + "、"
-                return final_list, txt[:-1] + "\n"
+                x1 = 500
+                x2 = fixedColumn[0]
+                spanNums = len(fixedColumn) + 1
+                k = 1
+
+            for i in range(spanNums - 1):
+                column_positions.append(x1)
+                spanWidth = x2 - x1
+                column_min = int(spanWidth / max_spacing) + 1
+                column_min = max(2, column_min)
+                column_max = 1000
+                for n_columns in range(column_min, column_max):
+                    ideal_spacing = int(spanWidth / (n_columns - 1)) + 1  # 计算理想间距
+                    if ideal_spacing > max_spacing:
+                        continue
+                    for i in range(1, n_columns - 1):
+                        x = int(i * ideal_spacing + x1)
+                        column_positions.append(x)
+                x1 = x2
+                x2 = fixedColumn[k]
+                k += 1
+            # 右边缘的立柱
+            if width - fixedColumn[-1] < 700:
+                column_positions.append(fixedColumn[-1])
+            else:
+                x1 = fixedColumn[-1]
+                x2 = width - 500
+                column_positions.append(x1)
+                spanWidth = x2 - x1
+                column_min = int(spanWidth / max_spacing) + 1
+                column_min = max(2, column_min)
+                column_max = 1000
+                for n_columns in range(column_min, column_max):
+                    ideal_spacing = int(spanWidth / (n_columns - 1)) + 1  # 计算理想间距
+                    if ideal_spacing > max_spacing:
+                        continue
+                    ideal_spacing = min(max_spacing, ideal_spacing)
+                    for i in range(1, n_columns - 1):
+                        x = int(i * ideal_spacing + x1)
+                        column_positions.append(x)
+                column_positions.append(x2)
+            self.columnArray_x.append(column_positions[0])
+            for i in range(len(column_positions) - 1):
+                self.columnArray_x.append(column_positions[i + 1] - column_positions[i])
+            self.columnArray_x.append(width - column_positions[-1])
+            result = []
+            self.edgeColumn = []
+            for x in column_positions:
+                for y in result_y:
+                    if 0 <= x < width and 0 <= y < length:
+                        if obstacles[x + startX][y + startY] != 1:
+                            result.append([startX + x, startY + y])
+                    if x == column_positions[0] or x == column_positions[-1]:
+                        if y == result_y[0] or y == result_y[-1]:
+                            self.edgeColumn.append([startX + x, startY + y])
+            final_list = []
+            for node in result:
+                flag = 0
+                for component in self.componentPositionArray:
+                    if (component[0][0] <= node[0] <= component[1][0]
+                            and component[0][1] <= node[1] <= component[1][1]):
+                        flag = 1
+                for i in deletedIndices:
+                    component = self.componentPositionArray[i]
+                    if (component[0][0] < node[0] < component[1][0]
+                            and component[0][1] < node[1] < component[1][1]):
+                        flag = 0
+                if flag == 1:
+                    final_list.append(node)
+            txt = "边缘四个立柱的坐标为："
+            for node in self.edgeColumn:
+                txt += str(node) + "、"
+            txt = txt[:-1] + "\n"
+            txt += "南北立柱间距为："
+            for node in self.columnArray_y:
+                txt += str(node) + "、"
+            txt = txt[:-1] + "\n"
+            txt += "东西立柱间距为："
+            for node in self.columnArray_x:
+                txt += str(node) + "、"
+            return final_list, txt[:-1] + "\n"
+
         return [], ""
 
     def calculateComponentPositionArray(self, startX, startY):
