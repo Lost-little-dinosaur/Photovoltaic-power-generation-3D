@@ -250,10 +250,10 @@ class Roof:
                 k = k + 1
                 for obstacle in self.obstacles:
                     if obstacle.type == '有烟烟囱':
+                        x2 = obstacle.upLeftPosition[0] + obstacle.width + (500 / UNIT)
+                        y2 = obstacle.upLeftPosition[1] + obstacle.length + (500 / UNIT)
                         x1 = max(obstacle.upLeftPosition[0] - (500 / UNIT), 0)
                         y1 = max(obstacle.upLeftPosition[1] - (500 / UNIT), 0)
-                        x2 = x1 + obstacle.width + (500 / UNIT)
-                        y2 = y1 + obstacle.length + (500 / UNIT)
                         for i in range(len(screenedArrangements[arrange['ID']].componentPositionArray)):
                             component = screenedArrangements[arrange['ID']].componentPositionArray[i]
                             x3 = component[0][0]
