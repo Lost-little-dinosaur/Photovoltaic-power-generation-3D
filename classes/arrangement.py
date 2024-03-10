@@ -1,8 +1,6 @@
 import numpy as np
-
-import const.const
 from classes.component import Component, getAllComponents
-
+import const.const
 from const.const import *
 from math import radians, sin
 from tools.tools3D import calculateShadow
@@ -149,6 +147,16 @@ class Arrangement:
                     if x == column_positions[0] or x == column_positions[-1]:
                         if y == array_iny[0] or y == array_iny[-1]:
                             self.edgeColumn.append([startX + x, startY + y])
+            #    edgeColumnremove = []  # 扣除的边缘立柱
+            #    for node in result:
+            #        for i in deletedIndices:
+            #            component = self.componentPositionArray[i]
+            #            if (component[0][0] < node[0] < component[1][0]
+            #                    and component[0][1] < node[1] < component[1][1]):
+            #                for j in self.edgeComponents:
+            #                    if i == j:
+            #                        edgeColumnremove.append(node[0] - startX)
+            #    for x in edgeColumnremove:
             final_list = []
             for node in result:
                 flag = 0

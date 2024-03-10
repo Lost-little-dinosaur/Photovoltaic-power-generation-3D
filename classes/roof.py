@@ -3,6 +3,8 @@ from PIL import Image
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+
+from const import const
 from const.const import *
 from classes.obstacle import Obstacle
 import functools
@@ -199,6 +201,7 @@ class Roof:
         nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
 
         def addObstaclesConcern(placement):
+            UNIT = const.getUnit()
             if len(placement[0]) == 1:
                 mergeObstacleArray = self.obstacleArray
                 tempObstacleSumArray = self.obstacleSumArray
