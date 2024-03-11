@@ -285,23 +285,24 @@ class Arrangement:
                     fixedColumn.append(left_x)
                 if right_x < width:
                     fixedColumn.append(right_x)
-            sorted(fixedColumn)
+            fixedColumn = sorted(fixedColumn)
             i = 0
             # 去掉不需要限制的位置
             while i < len(fixedColumn):
-                for j in deletedIndices:
+                for j in deletedEdgecomponent:
                     if (fixedColumn[i] > (self.componentPositionArray[j][0][0] - startX)) and \
                            (fixedColumn[i] < (self.componentPositionArray[j][1][0] - startX)):
                         fixedColumn.pop(i)
                         i = i - 1
                         break
                 i = i + 1
+            fixedColumn = sorted(fixedColumn)
             # 去重
             i = 0
             while i < len(fixedColumn) - 1:
                 diff  = abs(fixedColumn[i] - fixedColumn[i + 1])
                 if diff < 300:
-                    average = (fixedColumn[i] + fixedColumn[i + 1]) / 2
+                    average = int((fixedColumn[i] + fixedColumn[i + 1]) / 2)
                     fixedColumn[i] = average
                     fixedColumn.pop(i + 1)
                 else:
@@ -382,7 +383,7 @@ class Arrangement:
                         flag = 1
                 for i in deletedIndices:
                     component = self.componentPositionArray[i]
-                    if (component[0][0] < node[0] < component[1][0]
+                    if (component[0][0] <= node[0] <= component[1][0]
                             and component[0][1] < node[1] < component[1][1]):
                         flag = 0
                 if flag == 1:
