@@ -213,16 +213,18 @@ class Arrangement:
         length = self.componentPositionArray[-1][1][1] - self.componentPositionArray[0][0][1]
         length += 1
         le = length - sum(array_y) - array_limit[0]
-        if (le + array_limit[0]) / 2 < array_limit[0]:
-            array_y.append(int(array_limit[0]) + array_y[-1])
-            array_y.insert(0, int(le - array_limit[0]))
-        else:
-            if (le + array_limit[0]) / 2 > array_limit[1]:
-                array_y.append(int(array_limit[1]))
-                array_y.insert(0, int(le - array_limit[1]))
-            else:
-                array_y.append(int((le + array_limit[0]) / 2))
-                array_y.insert(0, int((le + array_limit[0]) / 2))
+        array_y.insert(0, array_limit[0])
+        array_y.append(le)
+    #    if (le + array_limit[0]) / 2 < array_limit[0]:
+    #        array_y.append(int(array_limit[0]) + array_y[-1])
+    #        array_y.insert(0, int(le - array_limit[0]))
+    #    else:
+    #        if (le + array_limit[0]) / 2 > array_limit[1]:
+    #            array_y.append(int(array_limit[1]))
+    #            array_y.insert(0, int(le - array_limit[1]))
+    #        else:
+    #            array_y.append(int((le + array_limit[0]) / 2))
+    #            array_y.insert(0, int((le + array_limit[0]) / 2))
         self.columnArray_y = array_y
         result_y = []
         prefix_sum = 0
