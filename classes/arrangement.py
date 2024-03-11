@@ -97,7 +97,6 @@ class Arrangement:
         self.columnArray_x = []  # 立柱东西间距
         self.edgeColumn = []  # 边缘立柱
         self.shadowRelativePosition = []
-        self.edgeComponents = []
 
     def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices):
         UNIT = const.const.getUnit()
@@ -239,10 +238,10 @@ class Arrangement:
                 array_x.pop()
             '''
         result_y.pop()
-        deletedEdgecomponent = []
-        for i in deletedIndices:
-            if i in self.edgeComponents:
-                deletedEdgecomponent.append(i)
+    #    deletedEdgecomponent = []
+    #    for i in deletedIndices:
+    #        if i in self.edgeComponents:
+    #            deletedEdgecomponent.append(i)
         max_spacing = 2000
         width = 0
         for component in self.componentPositionArray:
@@ -250,7 +249,7 @@ class Arrangement:
                 width = component[1][0]
         width += 1
         width = width - self.componentPositionArray[0][0][0] # 绝对宽度
-        if len(deletedEdgecomponent) == 0:
+        if len(deletedIndices) == 0:
             column_min = int(width / max_spacing) + 1
             column_min = max(2, column_min)
             column_max = 1000
@@ -277,7 +276,7 @@ class Arrangement:
             column_positions = []
             self.columnArray_x = []
             fixedColumn = []  # 确定的立柱位置
-            for i in deletedEdgecomponent:
+            for i in deletedIndices:
                 left_x = self.componentPositionArray[i][0][0] - 600 - startX
                 right_x = self.componentPositionArray[i][1][0] + 600 - startX
             # 防止越界
@@ -289,7 +288,7 @@ class Arrangement:
             i = 0
             # 去掉不需要限制的位置
             while i < len(fixedColumn):
-                for j in deletedEdgecomponent:
+                for j in deletedIndices:
                     if (fixedColumn[i] > (self.componentPositionArray[j][0][0] - startX)) and \
                            (fixedColumn[i] < (self.componentPositionArray[j][1][0] - startX)):
                         fixedColumn.pop(i)
@@ -479,7 +478,6 @@ class Arrangement:
     def calculateComponentPositionArrayreal(self, startX, startY):
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
         self.componentPositionArray = []
-        self.edgeComponents = []
         if self.crossPosition == 0:  # 只有横排布（横一）
             self.crossNum = self.componentLayoutArray[0]
             self.crossCount = 1
@@ -489,24 +487,16 @@ class Arrangement:
                 self.componentPositionArray.append([[startX, startY], [startX + self.component.realLength - 1,
                                                                        startY + self.component.realWidth - 1]])
                 startX += self.component.realLength + PhotovoltaicPanelCrossMargin  # 横横间隙
-            #    self.edgeComponents.append(i)
         elif self.crossPosition == INF:  # 只有竖排
             self.crossNum = 0
             self.crossCount = 0
             self.verticalCount = len(self.componentLayoutArray)
             self.verticalNum = self.componentLayoutArray[0]
-            k = 0
             for i in range(self.verticalCount):
                 for j in range(self.componentLayoutArray[i]):
                     self.componentPositionArray.append([[startX, startY], [startX + self.component.realWidth - 1,
                                                                            startY + self.component.realLength - 1]])
                     startX += self.component.realWidth + PhotovoltaicPanelCrossMargin
-                    if i == 0 or i == self.verticalCount - 1:
-                        if self.verticalCount == 1 and i == 0:
-                            self.edgeComponents.append(k)
-                        elif self.verticalCount > 1:
-                            self.edgeComponents.append(k)
-                    k = k + 1
                 startX -= (self.component.realWidth + PhotovoltaicPanelCrossMargin) * self.componentLayoutArray[i]
                 startY += self.component.realLength + PhotovoltaicPanelVerticalMargin
 
@@ -522,42 +512,33 @@ class Arrangement:
                 self.componentPositionArray.append([[startX, startY], [startX + self.component.realWidth - 1,
                                                                        startY + self.component.realLength - 1]])
                 startX += self.component.realWidth + PhotovoltaicPanelCrossMargin
-            #    self.edgeComponents.append(i)
             startX = temp
             startY = startY + self.component.realLength + PhotovoltaicPanelVerticalDiffMargin
             for i in range(self.crossNum):
                 self.componentPositionArray.append([[startX, startY], [startX + self.component.realLength - 1,
                                                                        startY + self.component.realWidth - 1]])
                 startX += self.component.realLength + PhotovoltaicPanelCrossMargin
-            #    self.edgeComponents.append(self.verticalNum + i)
         else:  # 其他横竖情况
             self.crossCount = 1
             self.crossNum = self.componentLayoutArray[-2]
             self.verticalCount = len(self.componentLayoutArray) - 1
             self.verticalNum = self.componentLayoutArray[0]
-            k = 0
             for i in range(self.verticalCount - 1):
                 for j in range(self.componentLayoutArray[i]):
                     self.componentPositionArray.append(
                         [[startX, startY],
                          [startX + self.component.realWidth - 1, startY + self.component.realLength - 1]])
                     startX += (self.component.realWidth + PhotovoltaicPanelCrossMargin)
-                    if i == 0:
-                        self.edgeComponents.append(k)
-                    k = k + 1
                 startX -= (self.component.realWidth + PhotovoltaicPanelCrossMargin) * self.componentLayoutArray[i]
                 startY += (self.component.realLength + PhotovoltaicPanelVerticalMargin)
             startY += (self.component.realWidth + PhotovoltaicPanelVerticalDiffMargin * 2 - PhotovoltaicPanelVerticalMargin)
             temp_X = startX
             temp = []
-            k = k + self.componentLayoutArray[-2]
             for i in range(self.componentLayoutArray[-1]):  # 最后一排
                 # self.componentPositionArray.append(
                 #    [[startX, startY], [startX + self.component.width - 1, startY + self.component.length - 1]])
                 temp.append([startX, startY])
                 startX += (self.component.realWidth + PhotovoltaicPanelCrossMargin)
-                self.edgeComponents.append(k)
-                k = k + 1
             startX = temp_X
             startY -= (self.component.realWidth + PhotovoltaicPanelVerticalDiffMargin)
 
