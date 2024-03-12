@@ -104,7 +104,8 @@ class Arrangement:
         startX = startXunit * UNIT
         startY = startYunit * UNIT
 
-        def generate_columns(n_columns, startY, startX, roof_width, width, length, max_spacing, array_iny, obstacles):
+        def generate_columns(n_columns, startY, startX, roof_width, width, length, max_spacing,
+                             array_iny, obstacles, array_left, array_right, leftNum, rightNum):
             column_positions = []
             self.columnArray_x = []
             ideal_spacing_min = int((width - 1400) / (n_columns - 1)) + 1  # 计算最小理想间距
@@ -138,14 +139,32 @@ class Arrangement:
             self.columnArray_x.append(width - column_positions[-1])
             result = []
             self.edgeColumn = []
-            for x in column_positions:
-                for y in array_iny:
-                    if 0 <= x < width and 0 <= y< length:
-                        if obstacles[x + startX][y + startY] != 1:
-                            result.append([startX + x, startY + y])
-                    if x == column_positions[0] or x == column_positions[-1]:
-                        if y == array_iny[0] or y == array_iny[-1]:
-                            self.edgeColumn.append([startX + x, startY + y])
+            if leftNum and rightNum == 0:
+                for x in column_positions:
+                    for y in array_iny:
+                        if 0 <= x < width and 0 <= y < length:
+                            if obstacles[x + startX][y + startY] != 1:
+                                result.append([startX + x, startY + y])
+                        if x == column_positions[0] or x == column_positions[-1]:
+                            if y == array_iny[0] or y == array_iny[-1]:
+                                self.edgeColumn.append([startX + x, startY + y])
+            else:
+                for x in column_positions:
+                    for y in array_left:
+                        if 0 <= x < bound and 0 <= y < length:
+                            if obstacles[x + startX][y + startY] != 1:
+                                result.append([startX + x, startY + y])
+                        if x == column_positions[0]:
+                            if y == array_iny[0] or y == array_iny[-1]:
+                                self.edgeColumn.append([startX + x, startY + y])
+                for x in column_positions:
+                    for y in array_right:
+                        if bound <= x < width and 0 <= y < length:
+                            if obstacles[x + startX][y + startY] != 1:
+                                result.append([startX + x, startY + y])
+                        if x == column_positions[-1]:
+                            if y == array_iny[0] or y == array_iny[-1]:
+                                self.edgeColumn.append([startX + x, startY + y])
             final_list = []
             for node in result:
                 flag = 0
@@ -162,15 +181,27 @@ class Arrangement:
                     final_list.append(node)
             return final_list
 
+        array_y = []
+        array_limit = []
+        array_yleft = []
+        array_limitleft = []
+        array_yright = []
+        array_limitright = []
+        leftNum = 0
+        rightNum = 0  # 处理拼接类型，左边列数和右边列数
+        bound = INF
+        for node in self.relativePositionArray:
+            if node[1][0] < bound:
+                bound = node[1][0]
         str_ar = self.component.specification + self.arrangeType
         if len(self.relativePositionArray) == 1 and self.crossPosition == INF:  # 规则且只包含竖排
             array_y = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)].copy()
             array_limit = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)]
             # h_min = arrangement_height[("182-78膨胀常规", 2, 1, 0)]
-        elif len(self.relativePositionArray) == 1 and self.crossPosition == 0:
+        elif len(self.relativePositionArray) == 1 and self.crossPosition == 0:  # 只有横排
             array_y = column[(str_ar, 0, 1, 0, 0, 0)].copy()
             array_limit = limit_column[(str_ar, 0, 1, 0, 0, 0)]
-        else:
+        else:  # 拼接类型和竖+横
             if self.crossPosition == INF:  # 只有竖排
                 first_element = self.componentLayoutArray[0]
                 count = 0
@@ -178,11 +209,19 @@ class Arrangement:
                     if num == first_element:
                         count += 1
                 if self.componentLayoutArray[0] < self.componentLayoutArray[-1]:  # 从上面扣除
-                    array_y = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0)].copy()
-                    array_limit = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0)]
+                    leftNum = self.componentLayoutArray[0]
+                    rightNum = self.componentLayoutArray[-1] - leftNum
+                    array_yleft = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0)].copy()
+                    array_limitleft = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0)]
+                    array_yright = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0, 1)].copy()
+                    array_limitright = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0, 1)]
                 else:
-                    array_y = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count)].copy()  # 从下面扣除
-                    array_limit = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count)]
+                    leftNum = self.componentLayoutArray[-1]
+                    rightNum = self.componentLayoutArray[0] - leftNum
+                    array_yleft = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 0)].copy()  # 从下面扣除
+                    array_limitleft = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 0)]
+                    array_yright = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 1)].copy()
+                    array_limitright = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 1)]
 
             elif len(self.componentLayoutArray) == 2 and (
                     self.componentLayoutArray[0] != self.componentLayoutArray[1]):  # 竖一横一
@@ -203,43 +242,56 @@ class Arrangement:
                     count2 = 1
                 if self.componentLayoutArray[-1] < normal_vertical:
                     count3 = 1
-                array_y = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)].copy()
-                array_limit = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
-        self.calculateComponentPositionArrayreal(startX, startY)
-        length = 0
-        # for component in self.componentPositionArray:  # todo 更新
-        #    if component[1][1] > length:
-        #        length = component[1][1]
-        length = self.componentPositionArray[-1][1][1] - self.componentPositionArray[0][0][1]
-        length += 1
-        le = length - sum(array_y) - array_limit[0]
-        array_y.insert(0, array_limit[0])
-        array_y.append(le)
-    #    if (le + array_limit[0]) / 2 < array_limit[0]:
-    #        array_y.append(int(array_limit[0]) + array_y[-1])
-    #        array_y.insert(0, int(le - array_limit[0]))
-    #    else:
-    #        if (le + array_limit[0]) / 2 > array_limit[1]:
-    #            array_y.append(int(array_limit[1]))
-    #            array_y.insert(0, int(le - array_limit[1]))
-    #        else:
-    #            array_y.append(int((le + array_limit[0]) / 2))
-    #            array_y.insert(0, int((le + array_limit[0]) / 2))
-        self.columnArray_y = array_y
-        result_y = []
-        prefix_sum = 0
-        for i in range(len(array_y) - 1, -1, -1):
-            prefix_sum += array_y[i]
-            result_y.append(prefix_sum - 1)
+                if count1 == 0 and count2 == 0 and count3 == 0:
+                    array_y = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)].copy()
+                    array_limit = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
+                else:
+                    leftNum = min(self.componentLayoutArray[0], self.componentLayoutArray[-1])
+                    rightNum = normal_vertical - leftNum
+                    array_yleft = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3, 0)].copy()
+                    array_limitleft = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3, 0)]
+                    array_yright = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3, 1)].copy()
+                    array_limitright = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3, 1)]
 
-            '''       
-            array_x = [250]
-            for i in range(int((self.width - 500) / 700)):
-                array_x.append(array_x[-1] + 700)
-            if (self.width - array_x[-1]) < 250:
-                array_x.pop()
-            '''
-        result_y.pop()
+        self.calculateComponentPositionArrayreal(startX, startY)
+        result_y = []
+        result_yleft = []
+        result_yright = []
+        if leftNum == 0 and rightNum == 0:  # 非拼接情况
+            length = self.componentPositionArray[-1][1][1] - self.componentPositionArray[0][0][1]
+            length += 1
+            le = length - sum(array_y) - array_limit[0]
+            array_y.insert(0, array_limit[0])
+            array_y.append(le)
+            self.columnArray_y = array_y
+            result_y = []
+            prefix_sum = 0
+            for i in range(len(array_y) - 1, -1, -1):
+                prefix_sum += array_y[i]
+                result_y.append(prefix_sum - 1)
+            result_y.pop()
+        else:  # 拼接情况
+            length = self.componentPositionArray[-1][1][1] - self.componentPositionArray[0][0][1]
+            length += 1
+            le = length - sum(array_yleft) - array_limitleft[0]
+            array_yleft.insert(0, array_limitleft[0])
+            array_yleft.append(le)
+            result_yleft = []
+            prefix_sum = 0
+            for i in range(len(array_yleft) - 1, -1, -1):
+                prefix_sum += array_yleft[i]
+                result_yleft.append(prefix_sum - 1)
+            result_yleft.pop()
+            le = length - sum(array_yright) - array_limitright[0]
+            array_yright.insert(0, array_limitright[0])
+            array_yright.append(le)
+            result_yright = []
+            prefix_sum = 0
+            for i in range(len(array_yright) - 1, -1, -1):
+                prefix_sum += array_yright[i]
+                result_yright.append(prefix_sum - 1)
+            result_yright.pop()
+            self.columnArray_y = array_yleft + array_yright
     #    deletedEdgecomponent = []
     #    for i in deletedIndices:
     #        if i in self.edgeComponents:
@@ -257,8 +309,7 @@ class Arrangement:
             column_max = 1000
             for column_n in range(column_min, column_max):
                 final_list = generate_columns(column_n, startY, startX, roof_Width, width, length, max_spacing,
-                                              result_y,
-                                              obstacles)
+                                              result_y, obstacles, array_yleft, array_yright, leftNum, rightNum)
                 if len(final_list) == 0:
                     continue
                 else:
@@ -279,8 +330,8 @@ class Arrangement:
             self.columnArray_x = []
             fixedColumn = []  # 确定的立柱位置
             for i in deletedIndices:
-                left_x = self.componentPositionArray[i][0][0] - 600 - startX
-                right_x = self.componentPositionArray[i][1][0] + 600 - startX
+                left_x = self.componentPositionArray[i][0][0] - 400 - startX
+                right_x = self.componentPositionArray[i][1][0] + 400 - startX
             # 防止越界
                 if left_x > 0:
                     fixedColumn.append([left_x, self.componentPositionArray[i][0][1]])
@@ -368,14 +419,32 @@ class Arrangement:
             self.columnArray_x.append(width - column_positions[-1])
             result = []
             self.edgeColumn = []
-            for x in column_positions:
-                for y in result_y:
-                    if 0 <= x < width and 0 <= y < length:
-                        if obstacles[x + startX][y + startY] != 1:
-                            result.append([startX + x, startY + y])
-                    if x == column_positions[0] or x == column_positions[-1]:
-                        if y == result_y[0] or y == result_y[-1]:
-                            self.edgeColumn.append([startX + x, startY + y])
+            if leftNum == 0 and rightNum == 0:
+                for x in column_positions:
+                    for y in result_y:
+                        if 0 <= x < width and 0 <= y < length:
+                            if obstacles[x + startX][y + startY] != 1:
+                                result.append([startX + x, startY + y])
+                        if x == column_positions[0] or x == column_positions[-1]:
+                            if y == result_y[0] or y == result_y[-1]:
+                                self.edgeColumn.append([startX + x, startY + y])
+            else:
+                for x in column_positions:
+                    for y in array_yleft:
+                        if 0 <= x < bound and 0 <= y < length:
+                            if obstacles[x + startX][y + startY] != 1:
+                                result.append([startX + x, startY + y])
+                        if x == column_positions[0]:
+                            if y == array_yleft[0] or y == array_yleft[-1]:
+                                self.edgeColumn.append([startX + x, startY + y])
+                for x in column_positions:
+                    for y in array_yright:
+                        if bound <= x < width and 0 <= y < length:
+                            if obstacles[x + startX][y + startY] != 1:
+                                result.append([startX + x, startY + y])
+                        if x == column_positions[-1]:
+                            if y == array_yright[0] or y == array_yright[-1]:
+                                self.edgeColumn.append([startX + x, startY + y])
             final_list = []
             for node in result:
                 flag = 0
@@ -626,7 +695,7 @@ class Arrangement:
                 minX, minY, self.shadowArray = calculateShadow(nodeArray, False, latitude, False)
                 self.shadowRelativePosition = [-minX, -minY]
 
-    def calculateComponentHeightArray(self):
+    def calculateComponentHeightArray(self, raiseLevel = 0):
         length = self.relativePositionArray[-1][1][1] - self.relativePositionArray[0][0][0] + 1
         width = 0
         for node in self.relativePositionArray:
@@ -668,6 +737,10 @@ class Arrangement:
                 count2 = 1 if self.componentLayoutArray[-2] < normal_cross else 0
                 count3 = 1 if self.componentLayoutArray[-1] < normal_vertical else 0
                 hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
+        if raiseLevel == 1:
+            hMin = hMin + 540
+        elif raiseLevel == 2:
+            hMin = hMin + 1000
         hMax = hMin + length * sin(radians(20))
         temp = (hMax - hMin) / length
         # return_list = [[0] * (width + 1) for _ in range(length + 1)]
