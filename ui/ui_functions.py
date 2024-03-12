@@ -287,8 +287,8 @@ class UI:
 
     def get_location_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
-            # print(text + ": ", entry.get())
-            self.location_info[chn2eng[text]] = entry.get()
+            input_str = entry.get()
+            self.location_info[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.location_info[chn2eng[text]] = entry.get()
@@ -388,8 +388,8 @@ class UI:
 
     def get_roof_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
-            # print(text + ": ", entry.get())
-            self.roof_info[chn2eng[text]] = entry.get()
+            input_str = entry.get()
+            self.roof_info[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.roof_info[chn2eng[text]] = entry.get()
@@ -445,8 +445,8 @@ class UI:
     def get_obstacle_data(self, window, str_entries, option_entries, bool_entries):
         new_obstacle = {}
         for text, entry in str_entries.items():
-            # print(text + ": ", entry.get())
-            new_obstacle[chn2eng[text]] = entry.get()
+            input_str = entry.get()
+            new_obstacle[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             new_obstacle[chn2eng[text]] = entry.get()
@@ -503,8 +503,8 @@ class UI:
     def get_outside_obstacle_window_data(self, window, str_entries, option_entries, bool_entries):
         new_obstacle = {}
         for text, entry in str_entries.items():
-            # print(text + ": ", entry.get())
-            new_obstacle[chn2eng[text]] = entry.get()
+            input_str = entry.get()
+            new_obstacle[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             new_obstacle[chn2eng[text]] = entry.get()
@@ -559,8 +559,8 @@ class UI:
 
     def get_panel_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
-            # print(text + ": ", entry.get())
-            self.panel_info[chn2eng[text]] = entry.get()
+            input_str = entry.get()
+            self.panel_info[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.panel_info[chn2eng[text]] = entry.get()
@@ -614,14 +614,14 @@ class UI:
 
     def get_algorithm_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
-            # print(text + ": ", entry.get())
-            self.panel_info[chn2eng[text]] = entry.get()
+            input_str = entry.get()
+            self.algorithm_info[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
-            self.panel_info[chn2eng[text]] = entry.get()
+            self.algorithm_info[chn2eng[text]] = entry.get()
         for text, entry in bool_entries.items():
             # print(text + ": ", entry.get())
-            self.panel_info[chn2eng[text]] = entry.get()
+            self.algorithm_info[chn2eng[text]] = entry.get()
         window.destroy()
 
     def clear_canvas(self):
@@ -830,7 +830,7 @@ class UI:
         panelValue = roof.getBestOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"getValidOptions 代码执行时间为：{execution_time} 秒")
+        print(f"getBestOptions 代码执行时间为：{execution_time} 秒")
 
         # start_time = time.time()
         # panelValue = roof.addObstaclesConcern(screenedArrangements)

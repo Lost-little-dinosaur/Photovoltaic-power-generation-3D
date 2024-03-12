@@ -20,17 +20,16 @@ def main():
 
 
 if __name__ == "__main__":
-    import cProfile
-    import pstats
+    # import cProfile
+    # import pstats
 
-    prof = cProfile.Profile()
-    prof.run('main()')
-    # prof.sort_stats('cumtime')
-    prof.dump_stats('output.prof')
+    # prof = cProfile.Profile()
+    # prof.run('main()')
+    # # prof.sort_stats('cumtime')
+    # prof.dump_stats('output.prof')
 
-    stream = open('output.txt', 'w')
-    stats = pstats.Stats('output.prof', stream=stream)
-    stats.sort_stats('cumtime')
-    stats.print_stats()
-    # cProfile.run("main()")
-    # main()
+    # stream = open('output.txt', 'w')
+    # stats = pstats.Stats('output.prof', stream=stream)
+    # stats.sort_stats('cumtime')
+    # stats.print_stats()
+    main()
