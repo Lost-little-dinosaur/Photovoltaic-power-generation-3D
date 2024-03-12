@@ -830,7 +830,7 @@ class UI:
         panelValue = roof.getBestOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"getValidOptions 代码执行时间为：{execution_time} 秒")
+        print(f"getBestOptions 代码执行时间为：{execution_time} 秒")
 
         # start_time = time.time()
         # panelValue = roof.addObstaclesConcern(screenedArrangements)

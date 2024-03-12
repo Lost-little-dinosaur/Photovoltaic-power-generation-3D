@@ -199,6 +199,11 @@ class Roof:
         minComponent = getMinComponent()  # 最小光伏板个数
         maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
         nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
+        # 全局变量就不要传参，节省内存
+        screenedArrangements = {k: v for k, v in screenedArrangements.items() if
+                                v.value / v.component.power >= minComponent}
+        screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
+        IDArray = list(screenedArrangements.keys())
 
         def addObstaclesConcern(placement):
             UNIT = const.getUnit()
@@ -269,9 +274,8 @@ class Roof:
                                     placement[2][k].append(i)
             return placement[1]
 
-        def dfs(arrangeDict, startX, startY, startI, currentValue, placements, layer, nowMaxValue):
+        def dfs(startX, startY, startI, currentValue, placements, layer, nowMaxValue):
             betterFlag = False
-            IDArray = list(arrangeDict.keys())
             obstacleArray = []
             tempObstacleSumArray = []
             if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将所有阵列的阴影更新到obstacleArray中
@@ -290,20 +294,22 @@ class Roof:
 
             for y in range(startY, self.length):
                 for x in range(startX, self.width):
-                    # for i in range(startI, len(IDArray)):
                     for i, ID in enumerate(IDArray[startI:]):
-                        if overlaps(x, y, arrangeDict[ID], placements):
+                        # zzp：摆了也不如nowMax，那就直接跳过
+                        if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
                             continue
-                        if not canPlaceArrangementRoof(x, y, arrangeDict[ID]):
+                        if overlaps(x, y, screenedArrangements[ID], placements):
+                            continue
+                        if not canPlaceArrangementRoof(x, y, screenedArrangements[ID]):
                             continue
                         if len(placements) >= 1 and not canPlaceArrangementObstacle(
-                                x, y, arrangeDict[ID], obstacleArray, tempObstacleSumArray):
+                                x, y, screenedArrangements[ID], obstacleArray, tempObstacleSumArray):
                             continue
                         newPlacement = {'ID': ID, 'start': (x, y)}
                         placements.append(newPlacement)
-                        currentValue += arrangeDict[ID].value
+                        currentValue += screenedArrangements[ID].value
                         if layer < maxArrangeCount:
-                            temp, nowMaxValue = dfs(arrangeDict, x + arrangeDict[ID].relativePositionArray[0][1][0], y,
+                            temp, nowMaxValue = dfs(screenedArrangements, x + screenedArrangements[ID].relativePositionArray[0][1][0], y,
                                                     i, currentValue, placements, layer + 1, nowMaxValue)
                             if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
                                 betterFlag = True
@@ -326,7 +332,7 @@ class Roof:
                                 elif tempPlacementValue == nowMaxValue:
                                     self.allPlacements.append(tempPlacement)
                         placements.pop()
-                        currentValue -= arrangeDict[IDArray[i]].value
+                        currentValue -= screenedArrangements[IDArray[i]].value
                 startX = 0
             return betterFlag, nowMaxValue
 
@@ -362,14 +368,16 @@ class Roof:
                 p10, p11 = p1
                 absoluteStartX, absoluteStartY = x + p00, y + p01
                 absoluteEndX, absoluteEndY = x + p10, y + p11
+                absoluteStartX_1 = absoluteStartX - 1
+                absoluteStartY_1 = absoluteStartY - 1
                 if self.width > absoluteEndX and self.length > absoluteEndY:
                     totalRoof = self.roofSumArray[absoluteEndY][absoluteEndX]
                     if absoluteStartX > 0:
-                        totalRoof -= self.roofSumArray[absoluteEndY][absoluteStartX - 1]
+                        totalRoof -= self.roofSumArray[absoluteEndY][absoluteStartX_1]
                     if absoluteStartY > 0:
-                        totalRoof -= self.roofSumArray[absoluteStartY - 1][absoluteEndX]
+                        totalRoof -= self.roofSumArray[absoluteStartY_1][absoluteEndX]
                     if absoluteStartX > 0 and absoluteStartY > 0:
-                        totalRoof += self.roofSumArray[absoluteStartY - 1][absoluteStartX - 1]
+                        totalRoof += self.roofSumArray[absoluteStartY_1][absoluteStartX_1]
                     if totalRoof >= INF:
                         return False
                 else:
@@ -414,19 +422,7 @@ class Roof:
                             return True
             return False
 
-        # j = 0
-        # while j < len(list(screenedArrangements.keys())):
-        #     if list(screenedArrangements.values())[j].value / list(screenedArrangements.values())[
-        #         j].component.power < minComponent:
-        #         del screenedArrangements[list(screenedArrangements.keys())[j]]
-        #     else:
-        #         j += 1
-        # 不要一个一个删除，不断分配内存很吃时间
-        screenedArrangements = {k: v for k, v in screenedArrangements.items() if
-                                v.value / v.component.power >= minComponent}
-        screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
-        # screenedArrangements = [screenedArrangements[0], screenedArrangements[-1]]
-        flag, nowMaxValue = dfs(screenedArrangements, 0, 0, 0, 0, [], 1, nowMaxValue)
+        flag, nowMaxValue = dfs(0, 0, 0, 0, [], 1, nowMaxValue)
         # tempTest = []
         # for placement in self.allPlacements:
         #     if len(placement[0]) == 2 and placement[0][1]["start"][1] >= 10:
