@@ -231,19 +231,20 @@ class Roof:
                 tempArray = screenedArrangements[arrange['ID']].componentPositionArray
                 deletedIndices = []
                 for i in range(len(tempArray)):
-                    totalComponent = tempObstacleSumArray[tempArray[i][1][1], tempArray[i][0][0]]
-                    if tempArray[i][0][0] > 0:
-                        totalComponent -= tempObstacleSumArray[tempArray[i][1][1], tempArray[i][0][0] - 1]
-                    if tempArray[i][0][1] > 0:
-                        totalComponent -= tempObstacleSumArray[tempArray[i][0][1] - 1, tempArray[i][1][0]]
-                    if tempArray[i][0][0] > 0 and tempArray[i][0][1] > 0:
-                        totalComponent += tempObstacleSumArray[tempArray[i][0][1] - 1, tempArray[i][0][0] - 1]
-                    if totalComponent == 0 or (mergeObstacleArray[tempArray[i][0][1]:tempArray[i][1][1] + 1, tempArray
-                    [i][0][0]:tempArray[i][1][0] + 1] <= screenedArrangements[arrange['ID']].componentHeightArray
-                                               [tempArray[i][0][1] - arrangeStartY:tempArray[i][1][
-                                                                                       1] - arrangeStartY + 1,
-                                                         tempArray[i][0][0] - arrangeStartX:tempArray[i][1][
-                                                                                                0] - arrangeStartX + 1]).all():
+                    # zzp: 重复索引使用数量少还好，数量多了就很吃时间
+                    p00 = tempArray[i][0][0]
+                    p01 = tempArray[i][0][1]
+                    p10 = tempArray[i][1][0]
+                    p11 = tempArray[i][1][1]
+                    totalComponent = tempObstacleSumArray[p11, p00]
+                    if p00 > 0:
+                        totalComponent -= tempObstacleSumArray[p11, p00 - 1]
+                    if p01 > 0:
+                        totalComponent -= tempObstacleSumArray[p01 - 1, p10]
+                    if p00 > 0 and p01 > 0:
+                        totalComponent += tempObstacleSumArray[p01 - 1, p00 - 1]
+                    if totalComponent == 0 or (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <= screenedArrangements[arrange['ID']].componentHeightArray
+                                               [p01 - arrangeStartY:p11 - arrangeStartY + 1,p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
                         continue
                     else:
                         deletedIndices.append(i)
@@ -251,10 +252,11 @@ class Roof:
                 allDeletedIndices.append(deletedIndices)
             placement.append(allDeletedIndices)
             k = -1
-            for arrange in placement[0]:
-                k = k + 1
-                for obstacle in self.obstacles:
-                    if obstacle.type == '有烟烟囱':
+            # zzp：更改遍历顺序，减少placement[0]的遍历次数
+            for obstacle in self.obstacles:
+                if obstacle.type == '有烟烟囱':
+                    for arrange in placement[0]:
+                        k = k + 1
                         x2 = obstacle.upLeftPosition[0] + obstacle.width + (500 / UNIT)
                         y2 = obstacle.upLeftPosition[1] + obstacle.length + (500 / UNIT)
                         x1 = max(obstacle.upLeftPosition[0] - (500 / UNIT), 0)
@@ -281,14 +283,14 @@ class Roof:
             if len(placements) >= 1:  # 如果此时已经有一个及以上的阵列了，则需要将所有阵列的阴影更新到obstacleArray中
                 obstacleArray = np.zeros((self.length, self.width))
                 for arrange in placements:
-                    sRPX, sRPY = arrangeDict[arrange['ID']].shadowRelativePosition
-                    sizeY, sizeX = arrangeDict[arrange['ID']].shadowArray.shape
+                    sRPX, sRPY = screenedArrangements[arrange['ID']].shadowRelativePosition
+                    sizeY, sizeX = screenedArrangements[arrange['ID']].shadowArray.shape
                     sX, sY = arrange['start']
                     rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
                     eX, eY = min(self.width, sX - sRPX + sizeX), min(self.length, sY - sRPY + sizeY)
                     rsX1, rsY1 = max(0, -sX + sRPX), max(0, -sY + sRPY)
                     obstacleArray[rsY:eY, rsX:eX] = np.maximum(obstacleArray[rsY:eY, rsX:eX],
-                                                               arrangeDict[arrange['ID']].shadowArray[
+                                                               screenedArrangements[arrange['ID']].shadowArray[
                                                                rsY1:rsY1 + eY - rsY, rsX1:rsX1 + eX - rsX])
                 tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
@@ -298,7 +300,7 @@ class Roof:
                         # zzp：摆了也不如nowMax，那就直接跳过
                         if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
                             continue
-                        if overlaps(x, y, screenedArrangements[ID], placements):
+                        if layer > 0 and overlaps(x, y, screenedArrangements[ID], placements):
                             continue
                         if not canPlaceArrangementRoof(x, y, screenedArrangements[ID]):
                             continue
@@ -332,7 +334,7 @@ class Roof:
                                 elif tempPlacementValue == nowMaxValue:
                                     self.allPlacements.append(tempPlacement)
                         placements.pop()
-                        currentValue -= screenedArrangements[IDArray[i]].value
+                        currentValue -= screenedArrangements[ID].value
                 startX = 0
             return betterFlag, nowMaxValue
 
