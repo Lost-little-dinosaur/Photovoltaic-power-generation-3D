@@ -205,9 +205,20 @@ class Roof:
         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         IDArray = list(screenedArrangements.keys())
 
+        # 计算obstacle的额外扣除范围
+        UNIT = const.getUnit()
+        obstacleAdditionalArray = []
+        for obstacle in self.obstacles:
+            if obstacle.type == '有烟烟囱':
+                obstacleAdditionalArray.append([obstacle.upLeftPosition[0] + obstacle.width + (500 / UNIT),
+                                                obstacle.upLeftPosition[1] + obstacle.length + (500 / UNIT),
+                                                max(obstacle.upLeftPosition[0] - (500 / UNIT), 0),
+                                                max(obstacle.upLeftPosition[1] - (500 / UNIT), 0)])
+
         def addObstaclesConcern(placement):
-            UNIT = const.getUnit()
             if len(placement[0]) == 1:
+                # if placement[0][0]['ID'] == 398 and placement[0][0]['start'] == (3, 0):
+                #     print("debug")
                 mergeObstacleArray = self.obstacleArray
                 tempObstacleSumArray = self.obstacleSumArray
             else:
@@ -243,37 +254,22 @@ class Roof:
                         totalComponent -= tempObstacleSumArray[p01 - 1, p10]
                     if p00 > 0 and p01 > 0:
                         totalComponent += tempObstacleSumArray[p01 - 1, p00 - 1]
-                    if totalComponent == 0 or (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <= screenedArrangements[arrange['ID']].componentHeightArray
-                                               [p01 - arrangeStartY:p11 - arrangeStartY + 1,p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
-                        continue
+                    if totalComponent == 0 or (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
+                                               screenedArrangements[arrange['ID']].componentHeightArray
+                                               [p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                               p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
+                        for additionalObstacle in obstacleAdditionalArray:  # 额外扣除范围
+                            if not (additionalObstacle[2] > p10 or p00 > additionalObstacle[0] or
+                                    additionalObstacle[3] > p11 or p01 > additionalObstacle[1]):
+                                deletedIndices.append(i)
+                                break
                     else:
                         deletedIndices.append(i)
+
                 placement[1] -= len(deletedIndices) * screenedArrangements[arrange['ID']].component.power
                 allDeletedIndices.append(deletedIndices)
             placement.append(allDeletedIndices)
-            k = -1
-            # zzp：更改遍历顺序，减少placement[0]的遍历次数
-            for obstacle in self.obstacles:
-                if obstacle.type == '有烟烟囱':
-                    for arrange in placement[0]:
-                        k = k + 1
-                        x2 = obstacle.upLeftPosition[0] + obstacle.width + (500 / UNIT)
-                        y2 = obstacle.upLeftPosition[1] + obstacle.length + (500 / UNIT)
-                        x1 = max(obstacle.upLeftPosition[0] - (500 / UNIT), 0)
-                        y1 = max(obstacle.upLeftPosition[1] - (500 / UNIT), 0)
-                        for i in range(len(screenedArrangements[arrange['ID']].componentPositionArray)):
-                            component = screenedArrangements[arrange['ID']].componentPositionArray[i]
-                            x3 = component[0][0]
-                            y3 = component[0][1]
-                            x4 = component[1][0]
-                            y4 = component[1][1]
-                            if x1 > x4 or x3 > x2 or y1 > y4 or y3 > y2:
-                                overcheck = False
-                            else:
-                                overcheck = True
-                            if overcheck == True:
-                                if i not in placement[2][k]:
-                                    placement[2][k].append(i)
+
             return placement[1]
 
         def dfs(startX, startY, startI, currentValue, placements, layer, nowMaxValue):
@@ -311,8 +307,8 @@ class Roof:
                         placements.append(newPlacement)
                         currentValue += screenedArrangements[ID].value
                         if layer < maxArrangeCount:
-                            temp, nowMaxValue = dfs(screenedArrangements, x + screenedArrangements[ID].relativePositionArray[0][1][0], y,
-                                                    i, currentValue, placements, layer + 1, nowMaxValue)
+                            temp, nowMaxValue = dfs(x + screenedArrangements[ID].relativePositionArray[0][1][0], y, i,
+                                                    currentValue, placements, layer + 1, nowMaxValue)
                             if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
                                 betterFlag = True
                             else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
