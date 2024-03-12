@@ -712,7 +712,366 @@ class UI:
                                               text=f"{self.roof_info['H']}",
                                               font=("Arial", 12),
                                               fill=text_color)
+        elif roofSurfaceCategory == "下凸形":
+            self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] - self.roof_info['E']
+            self.roof_info['H'] = self.roof_info['D'] - self.roof_info['B'] - self.roof_info['F']
+            AC_height = self.roof_info['A'] + self.roof_info['C']
+            scale = min(draw_width / float(self.roof_info['D']), draw_height / float(AC_height))
 
+            roof_left = (frame_width - self.roof_info['D'] * scale) / 2
+            roof_top = (frame_height - AC_height * scale) / 2
+
+            p0 = [roof_left, roof_top]  # CD
+            p1 = [p0[0], p0[1] + self.roof_info['C'] * scale]  # BC
+            p2 = [p1[0] + self.roof_info['B'] * scale, p1[1]]  # AB
+            p3 = [p2[0], p2[1] + self.roof_info['A'] * scale]  # AH
+            p4 = [p3[0] + self.roof_info['H'] * scale, p3[1]]  # HG
+            p5 = [p4[0], p4[1] - self.roof_info['G'] * scale]  # FG
+            p6 = [p5[0] + self.roof_info['F'] * scale, p5[1]]  # EF
+            p7 = [p6[0], p6[1] - self.roof_info['E'] * scale]  # DE
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5, p6, p7], outline=roof_outline_color)
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p3[1],
+                                              text=f"{self.roof_info['H']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['G']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p5[0], p6[0]), p6[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p6[0], half_int(p6[1], p7[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)    
+        elif roofSurfaceCategory == "左凸形":
+            self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] + self.roof_info['E']
+            self.roof_info['H'] = self.roof_info['D'] - self.roof_info['B'] + self.roof_info['F']
+            DF_width = self.roof_info['D'] + self.roof_info['F']
+            scale = min(draw_width / float(DF_width), draw_height / float(self.roof_info['G']))
+
+            roof_left = (frame_width - DF_width * scale) / 2
+            roof_top = (frame_height - self.roof_info['G'] * scale) / 2
+
+            p0 = [roof_left, roof_top + self.roof_info['E'] * scale]  # CD
+            p1 = [p0[0], p0[1] + self.roof_info['C'] * scale]  # BC
+            p2 = [p1[0] + self.roof_info['B'] * scale, p1[1]]  # AB
+            p3 = [p2[0], p2[1] + self.roof_info['A'] * scale]  # AH
+            p4 = [p3[0] + self.roof_info['H'] * scale, p3[1]]  # HG
+            p5 = [p4[0], roof_top]  # FG
+            p6 = [p5[0] - self.roof_info['F'] * scale, p5[1]]  # EF
+            p7 = [p6[0], p0[1]]  # DE
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5, p6, p7], outline=roof_outline_color)
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p3[1],
+                                              text=f"{self.roof_info['H']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['G']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p5[0], p6[0]), p6[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p6[0], half_int(p6[1], p7[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)  
+        elif roofSurfaceCategory == "右凸形":
+            self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] - self.roof_info['E']
+            self.roof_info['H'] = self.roof_info['D'] + self.roof_info['B'] - self.roof_info['F']
+            BD_width = self.roof_info['D'] + self.roof_info['B']
+            scale = min(draw_width / float(BD_width), draw_height / float(self.roof_info['A']))
+
+            roof_left = (frame_width - BD_width * scale) / 2
+            roof_top = (frame_height - self.roof_info['A'] * scale) / 2
+
+            p0 = [roof_left, roof_top]  # AB
+            p1 = [p0[0], p0[1] + self.roof_info['A'] * scale]  # AH
+            p2 = [p1[0] + self.roof_info['H'] * scale, p1[1]]  # HG
+            p3 = [p2[0], p2[1] - self.roof_info['G'] * scale]  # FG
+            p4 = [p3[0] + self.roof_info['F'] * scale, p3[1]]  # EF
+            p5 = [p4[0], p4[1] - self.roof_info['E'] * scale]  # DE
+            p6 = [p5[0] - self.roof_info['D'] * scale, p5[1]]  # CD
+            p7 = [p6[0], p0[1]]  # BC
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5, p6, p7], outline=roof_outline_color)
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['H']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['G']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p3[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p5[0], p6[0]), p6[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p6[0], half_int(p6[1], p7[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)   
+        elif roofSurfaceCategory == "上凹形":
+            self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] + self.roof_info['E']
+            self.roof_info['H'] = self.roof_info['D'] + self.roof_info['B'] + self.roof_info['F']
+            scale = min(draw_width / float(self.roof_info['H']), draw_height / float(self.roof_info['A']))
+
+            roof_left = (frame_width - self.roof_info['H'] * scale) / 2
+            roof_top = (frame_height - self.roof_info['A'] * scale) / 2
+
+            p0 = [roof_left, roof_top]  # AB
+            p1 = [p0[0], p0[1] + self.roof_info['A'] * scale]  # AH
+            p2 = [p1[0] + self.roof_info['H'] * scale, p1[1]]  # HG
+            p3 = [p2[0], p2[1] - self.roof_info['G'] * scale]  # FG
+            p4 = [p3[0] - self.roof_info['F'] * scale, p3[1]]  # EF
+            p5 = [p4[0], p4[1] + self.roof_info['E'] * scale]  # DE
+            p6 = [p5[0] - self.roof_info['D'] * scale, p5[1]]  # CD
+            p7 = [p6[0], p0[1]]  # BC
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5, p6, p7], outline=roof_outline_color)
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['H']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['G']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p3[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p5[0], p6[0]), p6[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p6[0], half_int(p6[1], p7[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)   
+        elif roofSurfaceCategory == "下凹形":
+            self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] + self.roof_info['E']
+            self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] - self.roof_info['F']
+            scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['C']))
+
+            roof_left = (frame_width - self.roof_info['B'] * scale) / 2
+            roof_top = (frame_height - self.roof_info['C'] * scale) / 2
+
+            p0 = [roof_left, roof_top]  # AB
+            p1 = [p0[0], p0[1] + self.roof_info['A'] * scale]  # AH
+            p2 = [p1[0] + self.roof_info['H'] * scale, p1[1]]  # HG
+            p3 = [p2[0], p2[1] - self.roof_info['G'] * scale]  # FG
+            p4 = [p3[0] + self.roof_info['F'] * scale, p3[1]]  # EF
+            p5 = [p4[0], p4[1] + self.roof_info['E'] * scale]  # DE
+            p6 = [p5[0] + self.roof_info['D'] * scale, p5[1]]  # CD
+            p7 = [p6[0], p0[1]]  # BC
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5, p6, p7], outline=roof_outline_color)
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['H']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['G']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p3[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p5[0], p6[0]), p6[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p6[0], half_int(p6[1], p7[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)   
+        elif roofSurfaceCategory == "左凹形":
+            self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] + self.roof_info['E']
+            self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] + self.roof_info['F']
+            scale = min(draw_width / float(self.roof_info['H']), draw_height / float(self.roof_info['G']))
+
+            roof_left = (frame_width - self.roof_info['H'] * scale) / 2
+            roof_top = (frame_height - self.roof_info['G'] * scale) / 2
+
+            p0 = [roof_left, roof_top + (self.roof_info['E'] + self.roof_info['C']) * scale]  # AB
+            p1 = [p0[0], p0[1] + self.roof_info['A'] * scale]  # AH
+            p2 = [p1[0] + self.roof_info['H'] * scale, p1[1]]  # HG
+            p3 = [p2[0], p2[1] - self.roof_info['G'] * scale]  # FG
+            p4 = [p3[0] - self.roof_info['F'] * scale, p3[1]]  # EF
+            p5 = [p4[0], p4[1] + self.roof_info['E'] * scale]  # DE
+            p6 = [p5[0] + self.roof_info['D'] * scale, p5[1]]  # CD
+            p7 = [p6[0], p0[1]]  # BC
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5, p6, p7], outline=roof_outline_color)
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['H']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['G']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p3[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p5[0], p6[0]), p6[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p6[0], half_int(p6[1], p7[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)   
+        elif roofSurfaceCategory == "右凹形":
+            self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] - self.roof_info['E']
+            self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] + self.roof_info['F']
+            scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['A']))
+
+            roof_left = (frame_width - self.roof_info['B'] * scale) / 2
+            roof_top = (frame_height - self.roof_info['A'] * scale) / 2
+
+            p0 = [roof_left, roof_top]  # AB
+            p1 = [p0[0], p0[1] + self.roof_info['A'] * scale]  # AH
+            p2 = [p1[0] + self.roof_info['H'] * scale, p1[1]]  # HG
+            p3 = [p2[0], p2[1] - self.roof_info['G'] * scale]  # FG
+            p4 = [p3[0] - self.roof_info['F'] * scale, p3[1]]  # EF
+            p5 = [p4[0], p4[1] - self.roof_info['E'] * scale]  # DE
+            p6 = [p5[0] + self.roof_info['D'] * scale, p5[1]]  # CD
+            p7 = [p6[0], p0[1]]  # BC
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5, p6, p7], outline=roof_outline_color)
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['H']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['G']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p3[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p5[0], p6[0]), p6[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p6[0], half_int(p6[1], p7[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)   
         elif roofSurfaceCategory == "正7形":
             self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C']
             self.roof_info['F'] = self.roof_info['D'] - self.roof_info['B']
@@ -754,7 +1113,127 @@ class UI:
                                               text=f"{self.roof_info['F']}",
                                               font=("Arial", 12),
                                               fill=text_color)
+        elif roofSurfaceCategory == "反7形":
+            self.roof_info['E'] = self.roof_info['A'] - self.roof_info['C']
+            self.roof_info['F'] = self.roof_info['B'] - self.roof_info['D'] 
+            scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['A']))
 
+            roof_left = (frame_width - self.roof_info['B'] * scale) / 2
+            roof_top = (frame_height - self.roof_info['A'] * scale) / 2
+            p0 = [roof_left + self.roof_info['B'] * scale, roof_top + self.roof_info['C'] * scale]  # point between CD
+            p1 = [p0[0], roof_top]  # point between BC
+            p2 = [roof_left, p1[1]]  # AB
+            p3 = [p2[0], p2[1] + self.roof_info['A'] * scale]  # AF
+            p4 = [p3[0] + self.roof_info['F'] * scale, p3[1]]  # EF
+            p5 = [p4[0], p4[1] - self.roof_info['E'] * scale]  # DE
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5], outline=roof_outline_color)
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p5[0]), p0[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p4[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+        elif roofSurfaceCategory == "正L形":
+            self.roof_info['E'] = self.roof_info['A'] - self.roof_info['C']
+            self.roof_info['F'] = self.roof_info['B'] + self.roof_info['D'] 
+            scale = min(draw_width / float(self.roof_info['F']), draw_height / float(self.roof_info['A']))
+
+            roof_left = (frame_width - self.roof_info['F'] * scale) / 2
+            roof_top = (frame_height - self.roof_info['A'] * scale) / 2
+            p0 = [roof_left + self.roof_info['B'] * scale, roof_top + self.roof_info['C'] * scale]  # point between CD
+            p1 = [p0[0], roof_top]  # point between BC
+            p2 = [roof_left, p1[1]]  # AB
+            p3 = [p2[0], p2[1] + self.roof_info['A'] * scale]  # AF
+            p4 = [p3[0] + self.roof_info['F'] * scale, p3[1]]  # EF
+            p5 = [p4[0], p4[1] - self.roof_info['E'] * scale]  # DE
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5], outline=roof_outline_color)
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p5[0]), p0[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p4[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            
+        elif roofSurfaceCategory == "反L形":
+            self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C']
+            self.roof_info['F'] = self.roof_info['B'] + self.roof_info['D'] 
+            scale = min(draw_width / float(self.roof_info['F']), draw_height / float(self.roof_info['E']))
+
+            roof_left = (frame_width - self.roof_info['F'] * scale) / 2
+            roof_top = (frame_height - self.roof_info['E'] * scale) / 2
+            p0 = [roof_left + self.roof_info['B'] * scale, roof_top]  # point between CD
+            p1 = [p0[0], p0[1] + self.roof_info['C'] * scale]  # point between BC
+            p2 = [roof_left, p1[1]]  # AB
+            p3 = [p2[0], p2[1] + self.roof_info['A'] * scale]  # AF
+            p4 = [p3[0] + self.roof_info['F'] * scale, p3[1]]  # EF
+            p5 = [p4[0], p4[1] - self.roof_info['E'] * scale]  # DE
+
+            self.roofscene_canvas.create_polygon([p0, p1, p2, p3, p4, p5], outline=roof_outline_color)
+            # 显示屋顶尺寸
+            self.roofscene_canvas.create_text(p2[0], half_int(p2[1], p3[1]),
+                                              text=f"{self.roof_info['A']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p1[0], p2[0]), p1[1],
+                                              text=f"{self.roof_info['B']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p0[0], half_int(p0[1], p1[1]),
+                                              text=f"{self.roof_info['C']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p0[0], p5[0]), p0[1],
+                                              text=f"{self.roof_info['D']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(p4[0], half_int(p4[1], p5[1]),
+                                              text=f"{self.roof_info['E']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
+            self.roofscene_canvas.create_text(half_int(p3[0], p4[0]), p4[1],
+                                              text=f"{self.roof_info['F']}",
+                                              font=("Arial", 12),
+                                              fill=text_color)
         # 绘制屋内障碍物
         for obstacle in self.obstacle_info:
             try:
