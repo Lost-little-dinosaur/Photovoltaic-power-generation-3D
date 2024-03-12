@@ -873,6 +873,61 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                     tempArr = tempElement[0] * [j] + tempElement[1] * [maxCrossNum]
                     arrangementDict[ID] = Arrangement(tempArr, 1, tempElement[2], tempElement[3], tempElement[4], True)
                     ID += 1
+    # 添加普通方案
+
+    # 添加拼接方案
+    # arrangementDict[ID] = Arrangement([8, 8, 8, 8, 4], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([8, 8, 8, 4, 4], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([8, 8, 4, 4, 4], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([4, 8, 8, 8, 8], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([4, 4, 8, 8, 8], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([4, 4, 4, 8, 8], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([4, 4, 4, 8, 8], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    #
+    # arrangementDict[ID] = Arrangement([4, 4, 4, 3, 6], 3, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([4, 4, 6, 3, 6], 3, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([4, 6, 6, 3, 6], 3, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([6, 6, 4, 2, 4], 3, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([6, 6, 6, 2, 4], 3, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([6, 6, 6, 3, 4], 3, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    #
+    # arrangementDict[ID] = Arrangement([4, 4, 6, 6], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([4, 6, 6, 6], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([6, 6, 4, 4], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([6, 6, 6, 4], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    #
+    # arrangementDict[ID] = Arrangement([4, 4, 3, 6], 2, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([4, 6, 3, 6], 2, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([6, 6, 2, 4], 2, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([6, 6, 3, 4], 2, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    #
+    # arrangementDict[ID] = Arrangement([4, 6, 6], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([6, 6, 4], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
+    # arrangementDict[ID] = Arrangement([8, 12, 12], INF, "182-78", "膨胀常规", "低压", False)
+    # ID += 1
 
     # 通过输入的屋顶宽度、屋顶长度、组件类型、排布类型和风压，筛选出合适的排布
     result = {}
