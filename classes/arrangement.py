@@ -180,7 +180,6 @@ class Arrangement:
                 if flag == 1:
                     final_list.append(node)
             return final_list
-
         array_y = []
         array_limit = []
         array_yleft = []
@@ -190,6 +189,7 @@ class Arrangement:
         leftNum = 0
         rightNum = 0  # 处理拼接类型，左边列数和右边列数
         bound = INF
+        height = 0
         for node in self.relativePositionArray:
             if node[1][0] < bound:
                 bound = node[1][0]
@@ -222,7 +222,7 @@ class Arrangement:
                     array_limitleft = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 0)]
                     array_yright = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 1)].copy()
                     array_limitright = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 1)]
-
+                    height = self.relativePositionArray[0][1][1]  # todo 测试一下
             elif len(self.componentLayoutArray) == 2 and (
                     self.componentLayoutArray[0] != self.componentLayoutArray[1]):  # 竖一横一
                 array_y = column[(str_ar, 1, 1, 0, 0, 0)].copy()
@@ -252,7 +252,8 @@ class Arrangement:
                     array_limitleft = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3, 0)]
                     array_yright = column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3, 1)].copy()
                     array_limitright = limit_column[(str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3, 1)]
-
+                    if count3 != 0:
+                        height = self.relativePositionArray[0][1][1]  # todo 测试一下
         self.calculateComponentPositionArrayreal(startX, startY)
         result_y = []
         result_yleft = []
@@ -292,6 +293,8 @@ class Arrangement:
                 result_yright.append(prefix_sum - 1)
             result_yright.pop()
             self.columnArray_y = array_yleft + array_yright
+            for i in range(len(result_yright)):
+                result_yright[i] = result_yright[i] + height
     #    deletedEdgecomponent = []
     #    for i in deletedIndices:
     #        if i in self.edgeComponents:
