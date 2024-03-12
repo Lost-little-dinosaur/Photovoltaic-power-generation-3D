@@ -250,7 +250,7 @@ class Arrangement:
             if component[1][0] > width:
                 width = component[1][0]
         width += 1
-        width = width - self.componentPositionArray[0][0][0] # 绝对宽度
+        width = width - self.componentPositionArray[0][0][0]  # 绝对宽度
         if len(deletedIndices) == 0:
             column_min = int(width / max_spacing) + 1
             column_min = max(2, column_min)
@@ -283,39 +283,40 @@ class Arrangement:
                 right_x = self.componentPositionArray[i][1][0] + 600 - startX
             # 防止越界
                 if left_x > 0:
-                    fixedColumn.append(left_x)
+                    fixedColumn.append([left_x, self.componentPositionArray[i][0][1]])
                 if right_x < width:
-                    fixedColumn.append(right_x)
+                    fixedColumn.append([right_x, self.componentPositionArray[i][0][1]])
             fixedColumn = sorted(fixedColumn)
             i = 0
             # 去掉不需要限制的位置
             while i < len(fixedColumn):
                 for j in deletedIndices:
-                    if (fixedColumn[i] > (self.componentPositionArray[j][0][0] - startX)) and \
-                           (fixedColumn[i] < (self.componentPositionArray[j][1][0] - startX)):
-                        fixedColumn.pop(i)
-                        i = i - 1
-                        break
+                    if fixedColumn[i][1] == self.componentPositionArray[j][0][1]:
+                        if (fixedColumn[i][0] > (self.componentPositionArray[j][0][0] - startX)) and \
+                                (fixedColumn[i][0] < (self.componentPositionArray[j][1][0] - startX)):
+                            fixedColumn.pop(i)
+                            i = i - 1
+                            break
                 i = i + 1
             fixedColumn = sorted(fixedColumn)
             # 去重
             i = 0
             while i < len(fixedColumn) - 1:
-                diff  = abs(fixedColumn[i] - fixedColumn[i + 1])
-                if diff < 300:
-                    average = int((fixedColumn[i] + fixedColumn[i + 1]) / 2)
-                    fixedColumn[i] = average
+                diff  = abs(fixedColumn[i][0] - fixedColumn[i + 1][0])
+                if diff < 400:
+                    average = int((fixedColumn[i][0] + fixedColumn[i + 1][0]) / 2)
+                    fixedColumn[i][0] = average
                     fixedColumn.pop(i + 1)
                 else:
                     i = i + 1
-            if fixedColumn[0] < 700:
-                x1 = fixedColumn[0]
-                x2 = fixedColumn[1]
+            if fixedColumn[0][0] < 700:
+                x1 = fixedColumn[0][0]
+                x2 = fixedColumn[1][0]
                 spanNums = len(fixedColumn)
                 k = 2
             else:
                 x1 = 500
-                x2 = fixedColumn[0]
+                x2 = fixedColumn[0][0]
                 spanNums = len(fixedColumn) + 1
                 k = 1
 
@@ -336,13 +337,13 @@ class Arrangement:
                         break
                 x1 = x2
                 if k < len(fixedColumn):
-                    x2 = fixedColumn[k]
+                    x2 = fixedColumn[k][0]
                 k += 1
             # 右边缘的立柱
-            if width - fixedColumn[-1] < 700:
-                column_positions.append(fixedColumn[-1])
+            if width - fixedColumn[-1][0] < 700:
+                column_positions.append(fixedColumn[-1][0])
             else:
-                x1 = fixedColumn[-1]
+                x1 = fixedColumn[-1][0]
                 x2 = width - 500
                 column_positions.append(x1)
                 spanWidth = x2 - x1
