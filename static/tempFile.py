@@ -1,5 +1,12 @@
-a = b = c = 123
-print(a, b, c)
+class c:
+    def __init__(self):
+        self.a = 1
+
+
+# 判断c是否有属性a
+c1 = c()
+print(hasattr(c1, "a"))  # True
+print(hasattr(c1, "b"))  # False
 
 # d1 = {"id": ["123", {1: 2, 3: 4}]}
 # placement = []

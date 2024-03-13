@@ -335,7 +335,7 @@ class Arrangement:
             for i in deletedIndices:
                 left_x = self.componentPositionArray[i][0][0] - 400 - startX
                 right_x = self.componentPositionArray[i][1][0] + 400 - startX
-            # 防止越界
+                # 防止越界
                 if left_x > 0:
                     fixedColumn.append([left_x, self.componentPositionArray[i][0][1]])
                 if right_x < width:
@@ -356,7 +356,7 @@ class Arrangement:
             # 去重
             i = 0
             while i < len(fixedColumn) - 1:
-                diff  = abs(fixedColumn[i][0] - fixedColumn[i + 1][0])
+                diff = abs(fixedColumn[i][0] - fixedColumn[i + 1][0])
                 if diff < 400:
                     average = int((fixedColumn[i][0] + fixedColumn[i + 1][0]) / 2)
                     fixedColumn[i][0] = average
@@ -606,7 +606,8 @@ class Arrangement:
                     startX += (self.component.realWidth + PhotovoltaicPanelCrossMargin)
                 startX -= (self.component.realWidth + PhotovoltaicPanelCrossMargin) * self.componentLayoutArray[i]
                 startY += (self.component.realLength + PhotovoltaicPanelVerticalMargin)
-            startY += (self.component.realWidth + PhotovoltaicPanelVerticalDiffMargin * 2 - PhotovoltaicPanelVerticalMargin)
+            startY += (
+                        self.component.realWidth + PhotovoltaicPanelVerticalDiffMargin * 2 - PhotovoltaicPanelVerticalMargin)
             temp_X = startX
             temp = []
             for i in range(self.componentLayoutArray[-1]):  # 最后一排
@@ -625,7 +626,6 @@ class Arrangement:
                 self.componentPositionArray.append(
                     [[node_c[0], node_c[1]], [node_c[0] + self.component.realWidth - 1,
                                               node_c[1] + self.component.realLength - 1]])
-
 
     # def chooseLayout(self):
     #     if self.specification == "竖二" and self.type == "基墩":
@@ -698,7 +698,7 @@ class Arrangement:
                 minX, minY, self.shadowArray = calculateShadow(nodeArray, False, latitude, False)
                 self.shadowRelativePosition = [-minX, -minY]
 
-    def calculateComponentHeightArray(self, raiseLevel = 0):
+    def calculateComponentHeightArray(self, raiseLevel=0):
         length = self.relativePositionArray[-1][1][1] - self.relativePositionArray[0][0][0] + 1
         width = 0
         for node in self.relativePositionArray:
@@ -736,7 +736,8 @@ class Arrangement:
                 #     count2 = 1
                 # if self.componentLayoutArray[-1] < normal_vertical:
                 #     count3 = 1
-                count1 = sum(1 for i in range(len(self.componentLayoutArray) - 2) if self.componentLayoutArray[i] < normal_vertical)
+                count1 = sum(1 for i in range(len(self.componentLayoutArray) - 2) if
+                             self.componentLayoutArray[i] < normal_vertical)
                 count2 = 1 if self.componentLayoutArray[-2] < normal_cross else 0
                 count3 = 1 if self.componentLayoutArray[-1] < normal_vertical else 0
                 hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
@@ -756,7 +757,7 @@ class Arrangement:
         #     for y in range(min_y, max_y + 1):
         #         for x in range(min_x, max_x + 1):
         #             return_list[y][x] = hMin + temp * (length - y)
-        
+
         # 换numpy
         return_list = np.zeros((length + 1, width + 1))
         for node in self.relativePositionArray:
@@ -931,6 +932,23 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
     # ID += 1
     # arrangementDict[ID] = Arrangement([8, 12, 12], INF, "182-78", "膨胀常规", "低压", False)
     # ID += 1
+
+    # for i in range(2, 31):
+    #     for j in range(1, i):
+    #         arrangementDict[ID] = Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "低压", False)
+    #         ID += 1
+    #         arrangementDict[ID] = Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "低压", False)
+    #         ID += 1
+    #         arrangementDict[ID] = Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "低压", False)
+    #         ID += 1
+    #         arrangementDict[ID] = Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "低压", False)
+    #         ID += 1
+    #         arrangementDict[ID] = Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "低压", False)
+    #         ID += 1
+    #         arrangementDict[ID] = Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "低压", False)
+    #         ID += 1
+
+
 
     # 通过输入的屋顶宽度、屋顶长度、组件类型、排布类型和风压，筛选出合适的排布
     result = {}

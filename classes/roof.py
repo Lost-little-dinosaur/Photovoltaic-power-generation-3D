@@ -263,8 +263,22 @@ class Roof:
                                     additionalObstacle[3] > p11 or p01 > additionalObstacle[1]):
                                 deletedIndices.append(i)
                                 break
-                    else:
-                        deletedIndices.append(i)
+                    else:  # 做抬高分析
+                        if not hasattr(screenedArrangements[arrange['ID']], "componentHeightArray1"):
+                            screenedArrangements[arrange['ID']].componentHeightArray1 = screenedArrangements[
+                                arrange['ID']].calculateComponentHeightArray(raiseLevel=1)
+                        if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
+                                screenedArrangements[arrange['ID']].componentHeightArray1[
+                                p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
+                            if not hasattr(screenedArrangements[arrange['ID']], "componentHeightArray2"):
+                                screenedArrangements[arrange['ID']].componentHeightArray2 = screenedArrangements[
+                                    arrange['ID']].calculateComponentHeightArray(raiseLevel=2)
+                            if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
+                                    screenedArrangements[arrange['ID']].componentHeightArray2
+                                    [p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                    p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
+                                deletedIndices.append(i)
 
                 placement[1] -= len(deletedIndices) * screenedArrangements[arrange['ID']].component.power
                 allDeletedIndices.append(deletedIndices)
@@ -474,7 +488,7 @@ class Roof:
         allMatrix = []
         UNIT = getUnit()
         if UNIT <= 25:
-            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 3, 3, 3, 3
+            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 3, 3, 4, 3
             magnification = 1  # 放大倍数
         elif 25 < UNIT <= 50:
             roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 2, 2, 2, 2
