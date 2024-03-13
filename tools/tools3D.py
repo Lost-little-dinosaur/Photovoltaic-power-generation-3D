@@ -253,9 +253,9 @@ def getOnePointShadow(point: List[int], latitude):  # x,y,z
     node_dict = {(node[0], node[1]): node[2] for node in merged_array}
     
     # 转化成字典查询，用字典替换一个for循环
-    final_list = [[0] * (max_x - min_x + 1) for _ in range(max_y - min_y + 1)]
-    for y in range(0, max_y - min_y + 1):
-        for x in range(0, max_x - min_x + 1):
+    final_list = [[0] * (max_x - min_x) for _ in range(max_y - min_y)]
+    for y in range(0, max_y - min_y):
+        for x in range(0, max_x - min_x):
             f = node_dict.get((x + min_x, y + min_y), -1)
             final_list[y][x] = f if f != -1 else 0
     # f = -1
