@@ -454,7 +454,7 @@ class Roof:
         #     self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
 
     def calculate_column(self, screenedArrangements):
-        nowMaxValue = -INF
+        nowMinValue = INF
         for placement in self.allPlacements:
             allArrangement = placement[0]
             allTempArray = []
@@ -474,14 +474,14 @@ class Roof:
                 arrangeI += 1
             placement.extend([allTempArray, allTxtArray])
 
-            if tempSum > nowMaxValue:
-                nowMaxValue = tempSum
+            if tempSum < nowMinValue:
+                nowMinValue = tempSum
 
         self.allPlacements = [placement for placement in self.allPlacements if
-                              sum([len(x) for x in placement[3]]) >= nowMaxValue]
+                              sum([len(x) for x in placement[3]]) >= nowMinValue]
         print(
             f"立柱排布计算完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，共有{len(self.allPlacements)}个较优排布方案\n")
-        return nowMaxValue
+        return nowMinValue
 
     def drawPlacement(self, screenedArrangements, maxDraw=5):  # todo: numpy优化
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
