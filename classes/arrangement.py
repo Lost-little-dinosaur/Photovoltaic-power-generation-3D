@@ -745,8 +745,6 @@ class Arrangement:
                              self.componentLayoutArray[i] < normal_vertical)
                 count2 = 1 if self.componentLayoutArray[-2] < normal_cross else 0
                 count3 = 1 if self.componentLayoutArray[-1] < normal_vertical else 0
-                if count1 == 1 and count3 == 1:
-                    print()
                 hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
         if raiseLevel == 1:
             hMin = hMin + 540
