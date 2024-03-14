@@ -1,4 +1,6 @@
+from os import getcwd
 import numpy as np
+from numpy.lib.shape_base import row_stack
 from classes.component import Component, getAllComponents
 import const.const
 from const.const import *
@@ -8,16 +10,29 @@ import time
 
 ID = 0.
 
+def getComponent(component):
+    for c in getAllComponents():
+        if component == c.specification:
+            return c  # 使用组件的类型
+    else:
+        raise Exception("组件'{}'不存在".format(component))
 
 class Arrangement:
-
     def __init__(self, componentLayoutArray, crossPosition, component, arrangeType, maxWindPressure, isRule):
-        for c in getAllComponents():
-            if component == c.specification:
-                self.component = c  # 使用组件的类型
-                break
-        else:
-            raise Exception("组件'{}'不存在".format(component))
+        # zzp: 预估不需要的方案，摆的太少了，等下会直接剔除
+        self.componentNum = sum(componentLayoutArray)
+        if self.componentNum < getMinComponent() or self.componentNum > getMaxComponent():
+            self.legal = False
+            return 
+        self.legal = True
+
+        self.component = getComponent(component)
+        # for c in getAllComponents():
+        #     if component == c.specification:
+        #         self.component = c  # 使用组件的类型
+        #         break
+        # else:
+        #     raise Exception("组件'{}'不存在".format(component))
         self.componentLayoutArray = componentLayoutArray  # 是未扣除光伏板的arrangement
         # relativePositionArray是arrangement中尽可能多的组成矩形的光伏板的startXY
         tempStart, tempEnd, self.relativePositionArray, nowBottom = 0, 0, [], 0
@@ -67,7 +82,7 @@ class Arrangement:
         self.componentPositionArray = []  # 组合排布中组件的详细信息
         self.arrangeType = arrangeType  # 排布的类型：基墩，膨胀常规，膨胀抬高
         self.maxWindPressure = maxWindPressure  # 风压
-        self.value = self.component.power * sum(componentLayoutArray)
+        self.value = self.component.power * self.componentNum
         self.crossPosition = crossPosition  # 横排组件的位置
         self.isRule = isRule  # 是否是规则排布
         self.startX = 0  # 排布左上角坐标x
@@ -707,10 +722,11 @@ class Arrangement:
 
     def calculateComponentHeightArray(self, raiseLevel=0):
         length = self.relativePositionArray[-1][1][1] - self.relativePositionArray[0][0][0] + 1
-        width = 0
-        for node in self.relativePositionArray:
-            if width < node[1][0]:
-                width = node[1][0]
+        width = max(node[1][0] for node in self.relativePositionArray)
+        # width = 0
+        # for node in self.relativePositionArray:
+        #     if width < node[1][0]:
+        #         width = node[1][0]
         componentStr = self.component.specification + self.arrangeType
         if len(self.relativePositionArray) == 1:
             hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray), 0, 0, 0, 0)]
@@ -775,9 +791,9 @@ class Arrangement:
             max_y = node[1][1]
             min_y = node[0][1]
 
-            y_range = range(min_y, max_y + 1)
-            x_range = range(min_x, max_x + 1)
-            return_list[np.ix_(y_range, x_range)] = hMin + temp * (length - np.array(y_range)[:, np.newaxis])
+            y_range = np.arange(min_y, max_y + 1)
+            x_range = np.arange(min_x, max_x + 1)
+            return_list[np.ix_(y_range, x_range)] = hMin + temp * (length - y_range[:, np.newaxis])
         return return_list
 
 
@@ -1031,7 +1047,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
     # 通过输入的屋顶宽度、屋顶长度、组件类型、排布类型和风压，筛选出合适的排布
     result = {}
     for k, arrangement in arrangementDict.items():
-        if arrangement.component.specification == componentSpecification and arrangement.arrangeType[0:2] == \
+        if arrangement.legal and arrangement.component.specification == componentSpecification and arrangement.arrangeType[0:2] == \
                 arrangeType[0:2] and arrangement.maxWindPressure == windPressure:
             for tempElement in arrangement.relativePositionArray:
                 if tempElement[1][0] >= roofWidth or tempElement[1][1] >= roofLength:
@@ -1040,6 +1056,16 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                 result[k] = arrangement
     return result
 
+
+def estimateComponentCount(roof, componentSpecification, minAlpha = 0.7):
+    roofArea = roof.realArea
+    for obstacle in roof.obstacles:
+        roofArea -= obstacle.realArea
+    component = getComponent(componentSpecification)
+    componentArea = component.realLength * component.realWidth
+    maxComponentCount = round(roofArea / componentArea)
+    return int(minAlpha * maxComponentCount),  maxComponentCount
+    
 
 # 组件排布的规格
 # component1 = Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35)  # 以米、瓦为单位

@@ -1,8 +1,13 @@
 # 规定一些常量
+from numpy import Inf
+
+
 UNIT = 500  # 以毫米为单位
 INF = 1000000  # 无穷大
 minComponent = 1  # 最小组件数
+maxComponent = Inf
 maxArrangeCount = 1  # 最大排布数量
+
 
 # if UNIT > 100:
 #     roofBoardLength = 1  # 打印屋顶示意图时，额外屋顶边缘的宽度（单位是单元格）
@@ -30,6 +35,15 @@ def changeMinComponent(count):
 
 def getMinComponent():
     return minComponent
+
+
+def changeMaxComponent(count):
+    global  maxComponent
+    maxComponent = count
+
+
+def getMaxComponent():
+    return maxComponent
 
 
 def changeMaxArrangeCount(count):

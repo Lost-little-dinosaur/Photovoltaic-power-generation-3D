@@ -5,7 +5,7 @@ from tools.mutiProcessing import *
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import classes.roof
-from classes.arrangement import screenArrangements
+from classes.arrangement import estimateComponentCount, screenArrangements
 from classes.component import assignComponentParameters
 import json
 import tkinter as tk
@@ -1276,6 +1276,21 @@ class UI:
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
         assignComponentParameters(jsonData["component"])
 
+
+        # 排布完光伏板后再添加障碍物并分析阴影
+        start_time = time.time()
+        roof.addObstacles(jsonData["scene"]["roof"]["obstacles"])
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"addObstacles 代码执行时间为：{execution_time} 秒")
+
+        # zzp: 基于屋顶有效面积，估计光伏板数量，参数0.7，参数范围0-1，参数越高预估光伏板数量越多
+        minComponentCount, maxComponentCount = estimateComponentCount(roof,jsonData["component"]["specification"], 0.7)
+        const.const.changeMinComponent(minComponentCount)
+        const.const.changeMaxComponent(maxComponentCount)
+        print(f"自动估计最小光伏板数量:{minComponentCount}，最大光伏板数量:{maxComponentCount}")
+        
+
         start_time = time.time()
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                                   jsonData["arrangeType"],
@@ -1297,13 +1312,6 @@ class UI:
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"screenArrangements + calculateArrangementShadow代码执行时间为：{execution_time} 秒")
-
-        # 排布完光伏板后再添加障碍物并分析阴影
-        start_time = time.time()
-        roof.addObstacles(jsonData["scene"]["roof"]["obstacles"])
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"addObstacles 代码执行时间为：{execution_time} 秒")
 
         start_time = time.time()
         panelValue = roof.getBestOptions(screenedArrangements)  # 计算铺设光伏板的最佳方案

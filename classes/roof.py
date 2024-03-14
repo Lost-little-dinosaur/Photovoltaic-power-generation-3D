@@ -44,6 +44,7 @@ class Roof:
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
+            self.realArea  = self.realLength * self.realWidth
         elif jsonRoof["isComplex"] and self.type == "正7形":
             self.edgeA = round(jsonRoof["A"] / UNIT)
             self.edgeB = round(jsonRoof["B"] / UNIT)
@@ -61,6 +62,7 @@ class Roof:
             self.obstacleArraySelf = []
             self.realWidth = jsonRoof["D"]
             self.realLength = jsonRoof["A"] + jsonRoof["C"]
+            self.realArea  = jsonRoof["C"] * jsonRoof["D"] + jsonRoof["A"] * jsonRoof["F"]
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
@@ -200,8 +202,7 @@ class Roof:
         maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
         nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
         # 全局变量就不要传参，节省内存
-        screenedArrangements = {k: v for k, v in screenedArrangements.items() if
-                                v.value / v.component.power >= minComponent}
+        screenedArrangements = {k: v for k, v in screenedArrangements.items() if v.legal}
         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         IDArray = list(screenedArrangements.keys())
 

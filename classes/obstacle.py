@@ -7,7 +7,7 @@ class Obstacle:
         UNIT = getUnit()
         self.type = obstacle["type"]
         self.ID = obstacle["id"]
-
+        self.realArea = 0
         if obstacle["type"] == "有烟烟囱" or obstacle["type"] == "无烟烟囱":
             self.height = obstacle["height"]
             if not obstacle["isRound"]:
@@ -34,6 +34,7 @@ class Obstacle:
                                          [self.upLeftPosition[0], self.upLeftPosition[1] + self.length,
                                           self.height + roofArray[self.upLeftPosition[1] + self.length][
                                               self.upLeftPosition[0]]]], False, latitude, True, obstacleArray)
+                self.realArea = self.realwidth * self.reallength 
             else:
                 self.isRound = True
                 self.diameter = obstacle["diameter"] / UNIT
