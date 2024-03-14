@@ -247,38 +247,40 @@ class Roof:
                     p01 = tempArray[i][0][1]
                     p10 = tempArray[i][1][0]
                     p11 = tempArray[i][1][1]
-                    totalComponent = tempObstacleSumArray[p11, p00]
-                    if p00 > 0:
-                        totalComponent -= tempObstacleSumArray[p11, p00 - 1]
-                    if p01 > 0:
-                        totalComponent -= tempObstacleSumArray[p01 - 1, p10]
-                    if p00 > 0 and p01 > 0:
-                        totalComponent += tempObstacleSumArray[p01 - 1, p00 - 1]
-                    if totalComponent == 0 or (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
-                                               screenedArrangements[arrange['ID']].componentHeightArray
-                                               [p01 - arrangeStartY:p11 - arrangeStartY + 1,
-                                               p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
-                        for additionalObstacle in obstacleAdditionalArray:  # 额外扣除范围
-                            if not (additionalObstacle[2] > p10 or p00 > additionalObstacle[0] or
-                                    additionalObstacle[3] > p11 or p01 > additionalObstacle[1]):
-                                deletedIndices.append(i)
-                                break
-                    else:  # 做抬高分析
-                        if not hasattr(screenedArrangements[arrange['ID']], "componentHeightArray1"):
-                            screenedArrangements[arrange['ID']].componentHeightArray1 = screenedArrangements[
-                                arrange['ID']].calculateComponentHeightArray(raiseLevel=1)
-                        if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
-                                screenedArrangements[arrange['ID']].componentHeightArray1[
-                                p01 - arrangeStartY:p11 - arrangeStartY + 1,
-                                p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
-                            if not hasattr(screenedArrangements[arrange['ID']], "componentHeightArray2"):
-                                screenedArrangements[arrange['ID']].componentHeightArray2 = screenedArrangements[
-                                    arrange['ID']].calculateComponentHeightArray(raiseLevel=2)
+                    for additionalObstacle in obstacleAdditionalArray:  # 额外扣除范围
+                        if not (additionalObstacle[2] > p10 or p00 > additionalObstacle[0] or
+                                additionalObstacle[3] > p11 or p01 > additionalObstacle[1]):
+                            deletedIndices.append(i)
+                            break
+                    else:  # 额外扣除范围没有遮挡
+                        totalComponent = tempObstacleSumArray[p11, p00]
+                        if p00 > 0:
+                            totalComponent -= tempObstacleSumArray[p11, p00 - 1]
+                        if p01 > 0:
+                            totalComponent -= tempObstacleSumArray[p01 - 1, p10]
+                        if p00 > 0 and p01 > 0:
+                            totalComponent += tempObstacleSumArray[p01 - 1, p00 - 1]
+                        if totalComponent == 0 or (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
+                                                   screenedArrangements[arrange['ID']].componentHeightArray
+                                                   [p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                                   p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
+                            continue
+                        else:  # 做抬高分析
+                            if not hasattr(screenedArrangements[arrange['ID']], "componentHeightArray1"):
+                                screenedArrangements[arrange['ID']].componentHeightArray1 = screenedArrangements[
+                                    arrange['ID']].calculateComponentHeightArray(raiseLevel=1)
                             if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
-                                    screenedArrangements[arrange['ID']].componentHeightArray2
-                                    [p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                    screenedArrangements[arrange['ID']].componentHeightArray1[
+                                    p01 - arrangeStartY:p11 - arrangeStartY + 1,
                                     p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
-                                deletedIndices.append(i)
+                                if not hasattr(screenedArrangements[arrange['ID']], "componentHeightArray2"):
+                                    screenedArrangements[arrange['ID']].componentHeightArray2 = screenedArrangements[
+                                        arrange['ID']].calculateComponentHeightArray(raiseLevel=2)
+                                if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
+                                        screenedArrangements[arrange['ID']].componentHeightArray2
+                                        [p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                        p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
+                                    deletedIndices.append(i)
 
                 placement[1] -= len(deletedIndices) * screenedArrangements[arrange['ID']].component.power
                 allDeletedIndices.append(deletedIndices)

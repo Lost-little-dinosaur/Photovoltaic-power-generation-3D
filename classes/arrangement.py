@@ -278,7 +278,11 @@ class Arrangement:
         else:  # 拼接情况
             length = self.componentPositionArray[-1][1][1] - self.componentPositionArray[0][0][1]
             length += 1
-            le = length - sum(array_yleft) - array_limitleft[0]
+
+            try:
+                le = length - sum(array_yleft) - array_limitleft[0]
+            except:
+                print()
             array_yleft.insert(0, array_limitleft[0])
             array_yleft.append(le)
             result_yleft = []
