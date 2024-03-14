@@ -1336,7 +1336,7 @@ class UI:
         end_time = time.time()
         execution_time = end_time - start_time
         print("drawPlacement 代码执行时间为：", execution_time, "秒\n")
-        print(f"一共排布了{panelValue}块光伏板，{columnValue}根支架柱")
+        print(f"一共排布了{panelValue}块光伏板，{columnValue}根立柱")
         print("总代码执行时间为：", time.time() - allTimeStart, "秒\n")
         return tempArray
 
