@@ -950,6 +950,31 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                 arrangementDict[ID] = Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规",
                                                   "高压", False)
                 ID += 1
+                arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
+                                                  "低压",
+                                                  False)
+                ID += 1
+                arrangementDict[ID] = Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
+                                                  "低压",
+                                                  False)
+                ID += 1
+
+                arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规",
+                                                  "低压",
+                                                  False)
+                ID += 1
+                arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
+                                                  "高压",
+                                                  False)
+                ID += 1
+                arrangementDict[ID] = Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
+                                                  "高压",
+                                                  False)
+                ID += 1
+                arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规",
+                                                  "高压",
+                                                  False)
+                ID += 1
             if crossCountDict["182-78"][j] != 0:
                 arrangementDict[ID] = Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
                                                   "低压", False)
@@ -973,25 +998,6 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                                                   False)
                 ID += 1
 
-            arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规", "低压",
-                                              False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规", "低压",
-                                              False)
-            ID += 1
-
-            arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规", "低压",
-                                              False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规", "高压",
-                                              False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规", "高压",
-                                              False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规", "高压",
-                                              False)
-            ID += 1
             arrangementDict[ID] = Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "低压", False)
             ID += 1
             arrangementDict[ID] = Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "低压", False)
