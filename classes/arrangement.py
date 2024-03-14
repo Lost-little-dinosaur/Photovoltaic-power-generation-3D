@@ -204,12 +204,9 @@ class Arrangement:
             array_limit = limit_column[(str_ar, 0, 1, 0, 0, 0)]
         else:  # 拼接类型和竖+横
             if self.crossPosition == INF:  # 只有竖排
-                first_element = self.componentLayoutArray[0]
-                count = 0
-                for num in self.componentLayoutArray:
-                    if num == first_element:
-                        count += 1
                 if self.componentLayoutArray[0] < self.componentLayoutArray[-1]:  # 从上面扣除
+                    first_element = self.componentLayoutArray[0]
+                    count = self.componentLayoutArray.count(first_element)
                     leftNum = self.componentLayoutArray[0]
                     rightNum = self.componentLayoutArray[-1] - leftNum
                     array_yleft = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0)].copy()
@@ -217,6 +214,8 @@ class Arrangement:
                     array_yright = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0, 1)].copy()
                     array_limitright = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0, 1)]
                 else:
+                    last_element = self.componentLayoutArray[-1]
+                    count = self.componentLayoutArray.count(last_element)
                     leftNum = self.componentLayoutArray[-1]
                     rightNum = self.componentLayoutArray[0] - leftNum
                     array_yleft = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 0)].copy()  # 从下面扣除
@@ -664,14 +663,13 @@ class Arrangement:
             self.shadowRelativePosition = [-minX, -minY]
         else:
             if self.crossPosition == INF:  # 只有竖排
-                first_element = self.componentLayoutArray[0]
-                count = 0
-                for num in self.componentLayoutArray:
-                    if num == first_element:
-                        count += 1
                 if self.componentLayoutArray[0] < self.componentLayoutArray[-1]:
+                    first_element = self.componentLayoutArray[0]
+                    count = self.componentLayoutArray.count(first_element)
                     hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray), 0, count, 0, 0)]
                 else:
+                    last_element = self.componentLayoutArray[-1]
+                    count = self.componentLayoutArray.count(last_element)
                     hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray), 0, 0, 0, count)]
 
             elif len(self.componentLayoutArray) == 2 and (
@@ -715,14 +713,16 @@ class Arrangement:
             # hMin = arrangement_height[("182-78膨胀常规", 2, 1, 0)]
         else:
             if self.crossPosition == INF:  # 只有竖排
-                first_element = self.componentLayoutArray[0]
-                count = self.componentLayoutArray.count(first_element)
                 # for num in self.componentLayoutArray:
                 #     if num == first_element:
                 #         count += 1
                 if self.componentLayoutArray[0] < self.componentLayoutArray[-1]:
+                    first_element = self.componentLayoutArray[0]
+                    count = self.componentLayoutArray.count(first_element)
                     hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray), 0, count, 0, 0)]
                 else:
+                    last_element = self.componentLayoutArray[-1]
+                    count = self.componentLayoutArray.count(last_element)
                     hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray), 0, 0, 0, count)]
             elif len(self.componentLayoutArray) == 2 and (
                     self.componentLayoutArray[0] != self.componentLayoutArray[1]):  # 竖一横一
@@ -745,6 +745,8 @@ class Arrangement:
                              self.componentLayoutArray[i] < normal_vertical)
                 count2 = 1 if self.componentLayoutArray[-2] < normal_cross else 0
                 count3 = 1 if self.componentLayoutArray[-1] < normal_vertical else 0
+                if count1 == 1 and count3 == 1:
+                    print()
                 hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
         if raiseLevel == 1:
             hMin = hMin + 540
