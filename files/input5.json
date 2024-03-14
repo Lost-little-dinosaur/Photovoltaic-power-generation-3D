@@ -1,0 +1,72 @@
+{
+  "guest": {
+    "name": "1234",
+    "phone": ""
+  },
+  "scene": {
+    "location": {
+      "province": "河北",
+      "city": "沧州",
+      "region": "新华",
+      "longitude": 113.4,
+      "latitude": 33.5,
+      "heavySnow": false,
+      "windPressure": "低压",
+      "snowPressure": "低压",
+      "windAndSnowPressure": "低压",
+      "voltageLevel": 3,
+      "distanceToGridConnection": 2000
+    },
+    "roof": {
+      "isComplex": true,
+      "category": "平屋顶",
+      "roofSurfaceCategory": "反7形",
+      "A": 12800,
+      "B": 16400,
+      "C": 7800,
+      "D": 4300,
+      "height": 5000,
+      "roofDirection": 0,
+      "roofAngle": 0,
+      "extensibleDistance": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "maintenanceChannel": false,
+      "haveParapetWall": false,
+      "haveOverhangingEave": false,
+      "obstacles": [
+        {
+          "id": "有烟烟囱1",
+          "type": "有烟烟囱",
+          "isRound": false,
+          "length": 1000,
+          "width": 1000,
+          "height": 500,
+          "upLeftPosition": [
+            8300,
+            2800
+          ],
+          "adjustedHeight": 0,
+          "removable": 0
+        }
+      ]
+    },
+    "obstacles": [
+    ]
+  },
+  "arrangeType": "膨胀螺栓",
+  "component": {
+    "specification": "182-78",
+    "power": 595,
+    "thickness": 350
+  },
+  "algorithm": {
+    "precision": 100,
+    "maxArrangeCount": 1,
+    "minComponent": 21
+  }
+}
+
