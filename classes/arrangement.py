@@ -295,10 +295,7 @@ class Arrangement:
             length = self.componentPositionArray[-1][1][1] - self.componentPositionArray[0][0][1]
             length += 1
 
-            try:
-                le = length - sum(array_yleft) - array_limitleft[0]
-            except:
-                print()
+            le = length - sum(array_yleft) - array_limitleft[0]
             array_yleft.insert(0, array_limitleft[0])
             array_yleft.append(le)
             result_yleft = []
@@ -336,7 +333,7 @@ class Arrangement:
             column_max = 1000
             for column_n in range(column_min, column_max):
                 final_list = generate_columns(column_n, startY, startX, roof_Width, width, length, max_spacing,
-                                              result_y, obstacles, array_yleft, array_yright, leftNum, rightNum)
+                                              result_y, obstacles, result_yleft, result_yright, leftNum, rightNum)
                 if len(final_list) == 0:
                     continue
                 else:
@@ -457,20 +454,20 @@ class Arrangement:
                                 self.edgeColumn.append([startX + x, startY + y])
             else:
                 for x in column_positions:
-                    for y in array_yleft:
+                    for y in result_yleft:
                         if 0 <= x < bound and 0 <= y < length:
                             if obstacles[x + startX][y + startY] != 1:
                                 result.append([startX + x, startY + y])
                         if x == column_positions[0]:
-                            if y == array_yleft[0] or y == array_yleft[-1]:
+                            if y == result_yleft[0] or y == result_yleft[-1]:
                                 self.edgeColumn.append([startX + x, startY + y])
                 for x in column_positions:
-                    for y in array_yright:
+                    for y in result_yright:
                         if bound <= x < width and 0 <= y < length:
                             if obstacles[x + startX][y + startY] != 1:
                                 result.append([startX + x, startY + y])
                         if x == column_positions[-1]:
-                            if y == array_yright[0] or y == array_yright[-1]:
+                            if y == result_yright[0] or y == result_yright[-1]:
                                 self.edgeColumn.append([startX + x, startY + y])
             final_list = []
             for node in result:

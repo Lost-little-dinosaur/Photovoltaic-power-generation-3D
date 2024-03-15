@@ -602,11 +602,11 @@ class Roof:
                     # top_left[0] + PhotovoltaicPanelBoardLength:bottom_right[0]] = PhotovoltaicPanelColor
 
                 # 接下去画立柱
-    #            for column in placement[3][j]:  # column形式：[centerX,centerY]
-    #                matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
-    #                       round(column[1] * magnification / UNIT) + standColumnPadding + 1,
-    #                round(column[0] * magnification / UNIT) - standColumnPadding:
-    #                round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
+                for column in placement[3][j]:  # column形式：[centerX,centerY]
+                    matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
+                           round(column[1] * magnification / UNIT) + standColumnPadding + 1,
+                    round(column[0] * magnification / UNIT) - standColumnPadding:
+                    round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
 
             # 绘制图像
             plt.imshow(matrix.astype("uint8"))

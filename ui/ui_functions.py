@@ -1332,7 +1332,7 @@ class UI:
         print(f"calculateObstacleSelf 代码执行时间为：{execution_time} 秒")
 
         start_time = time.time()
-#        columnValue = roof.calculate_column(screenedArrangements)
+        columnValue = roof.calculate_column(screenedArrangements)
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"calculate_column 代码执行时间为：{execution_time} 秒")
