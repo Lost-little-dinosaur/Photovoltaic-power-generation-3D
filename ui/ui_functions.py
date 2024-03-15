@@ -288,7 +288,7 @@ class UI:
     def get_location_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.location_info[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
+            self.location_info[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.location_info[chn2eng[text]] = entry.get()
@@ -389,7 +389,7 @@ class UI:
     def get_roof_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.roof_info[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
+            self.roof_info[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.roof_info[chn2eng[text]] = entry.get()
@@ -446,7 +446,7 @@ class UI:
         new_obstacle = {}
         for text, entry in str_entries.items():
             input_str = entry.get()
-            new_obstacle[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
+            new_obstacle[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             new_obstacle[chn2eng[text]] = entry.get()
@@ -504,7 +504,7 @@ class UI:
         new_obstacle = {}
         for text, entry in str_entries.items():
             input_str = entry.get()
-            new_obstacle[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
+            new_obstacle[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             new_obstacle[chn2eng[text]] = entry.get()
@@ -560,7 +560,7 @@ class UI:
     def get_panel_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.panel_info[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
+            self.panel_info[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.panel_info[chn2eng[text]] = entry.get()
@@ -615,7 +615,7 @@ class UI:
     def get_algorithm_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.algorithm_info[chn2eng[text]] =  int(input_str) if input_str.isdigit() else input_str
+            self.algorithm_info[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.algorithm_info[chn2eng[text]] = entry.get()
@@ -763,7 +763,7 @@ class UI:
             self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
                                               text=f"{self.roof_info['D']}",
                                               font=("Arial", 12),
-                                              fill=text_color)    
+                                              fill=text_color)
         elif roofSurfaceCategory == "左凸形":
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] - self.roof_info['B'] + self.roof_info['F']
@@ -815,7 +815,7 @@ class UI:
             self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
                                               text=f"{self.roof_info['D']}",
                                               font=("Arial", 12),
-                                              fill=text_color)  
+                                              fill=text_color)
         elif roofSurfaceCategory == "右凸形":
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] + self.roof_info['B'] - self.roof_info['F']
@@ -867,7 +867,7 @@ class UI:
             self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
                                               text=f"{self.roof_info['B']}",
                                               font=("Arial", 12),
-                                              fill=text_color)   
+                                              fill=text_color)
         elif roofSurfaceCategory == "上凹形":
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] + self.roof_info['B'] + self.roof_info['F']
@@ -918,7 +918,7 @@ class UI:
             self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
                                               text=f"{self.roof_info['B']}",
                                               font=("Arial", 12),
-                                              fill=text_color)   
+                                              fill=text_color)
         elif roofSurfaceCategory == "下凹形":
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] - self.roof_info['F']
@@ -969,7 +969,7 @@ class UI:
             self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
                                               text=f"{self.roof_info['B']}",
                                               font=("Arial", 12),
-                                              fill=text_color)   
+                                              fill=text_color)
         elif roofSurfaceCategory == "左凹形":
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] + self.roof_info['F']
@@ -1020,7 +1020,7 @@ class UI:
             self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
                                               text=f"{self.roof_info['B']}",
                                               font=("Arial", 12),
-                                              fill=text_color)   
+                                              fill=text_color)
         elif roofSurfaceCategory == "右凹形":
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] + self.roof_info['F']
@@ -1071,7 +1071,7 @@ class UI:
             self.roofscene_canvas.create_text(half_int(p0[0], p7[0]), p0[1],
                                               text=f"{self.roof_info['B']}",
                                               font=("Arial", 12),
-                                              fill=text_color)   
+                                              fill=text_color)
         elif roofSurfaceCategory == "正7形":
             self.roof_info['E'] = self.roof_info['A'] - self.roof_info['C']
             self.roof_info['F'] = self.roof_info['B'] - self.roof_info['D']
@@ -1115,7 +1115,7 @@ class UI:
                                               fill=text_color)
         elif roofSurfaceCategory == "反7形":
             self.roof_info['E'] = self.roof_info['A'] - self.roof_info['C']
-            self.roof_info['F'] = self.roof_info['B'] - self.roof_info['D'] 
+            self.roof_info['F'] = self.roof_info['B'] - self.roof_info['D']
             scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['A']))
 
             roof_left = (frame_width - self.roof_info['B'] * scale) / 2
@@ -1155,7 +1155,7 @@ class UI:
                                               fill=text_color)
         elif roofSurfaceCategory == "正L形":
             self.roof_info['E'] = self.roof_info['A'] - self.roof_info['C']
-            self.roof_info['F'] = self.roof_info['B'] + self.roof_info['D'] 
+            self.roof_info['F'] = self.roof_info['B'] + self.roof_info['D']
             scale = min(draw_width / float(self.roof_info['F']), draw_height / float(self.roof_info['A']))
 
             roof_left = (frame_width - self.roof_info['F'] * scale) / 2
@@ -1193,10 +1193,10 @@ class UI:
                                               text=f"{self.roof_info['F']}",
                                               font=("Arial", 12),
                                               fill=text_color)
-            
+
         elif roofSurfaceCategory == "反L形":
             self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C']
-            self.roof_info['F'] = self.roof_info['B'] + self.roof_info['D'] 
+            self.roof_info['F'] = self.roof_info['B'] + self.roof_info['D']
             scale = min(draw_width / float(self.roof_info['F']), draw_height / float(self.roof_info['E']))
 
             roof_left = (frame_width - self.roof_info['F'] * scale) / 2
@@ -1276,7 +1276,6 @@ class UI:
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
         assignComponentParameters(jsonData["component"])
 
-
         # 排布完光伏板后再添加障碍物并分析阴影
         start_time = time.time()
         roof.addObstacles(jsonData["scene"]["roof"]["obstacles"])
@@ -1285,11 +1284,10 @@ class UI:
         print(f"addObstacles 代码执行时间为：{execution_time} 秒")
 
         # zzp: 基于屋顶有效面积，估计光伏板数量，参数0.7，参数范围0-1，参数越高预估光伏板数量越多
-        minComponentCount, maxComponentCount = estimateComponentCount(roof,jsonData["component"]["specification"], 0.7)
+        minComponentCount, maxComponentCount = estimateComponentCount(roof, jsonData["component"]["specification"], 0.7)
         const.const.changeMinComponent(minComponentCount)
         const.const.changeMaxComponent(maxComponentCount)
         print(f"自动估计最小光伏板数量:{minComponentCount}，最大光伏板数量:{maxComponentCount}")
-        
 
         start_time = time.time()
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],

@@ -44,7 +44,7 @@ class Roof:
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
-            self.realArea  = self.realLength * self.realWidth
+            self.realArea = self.realLength * self.realWidth
         elif jsonRoof["isComplex"] and self.type == "正7形":
             self.edgeA = round(jsonRoof["A"] / UNIT)
             self.edgeB = round(jsonRoof["B"] / UNIT)
@@ -74,13 +74,13 @@ class Roof:
             self.length = self.edgeA
             self.width = self.edgeB
             self.roofArray = np.zeros((self.length, self.width))
-            self.roofArray[self.edgeF:, self.edgeC:] = INF
+            self.roofArray[self.edgeC:, self.edgeF:] = INF
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
             self.realWidth = jsonRoof["B"]
             self.realLength = jsonRoof["A"]
-            self.realArea = jsonRoof["E"] * jsonRoof["F"] + jsonRoof["C"] * jsonRoof["D"]
+            self.realArea = jsonRoof["A"] * jsonRoof["F"] + jsonRoof["C"] * jsonRoof["D"]
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
@@ -216,11 +216,11 @@ class Roof:
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         # 输入限制条件
-        minComponent = getMinComponent()  # 最小光伏板个数
+        # minComponent = getMinComponent()  # 最小光伏板个数
         maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
         nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
         # 全局变量就不要传参，节省内存
-        screenedArrangements = {k: v for k, v in screenedArrangements.items() if v.legal}
+        # screenedArrangements = {k: v for k, v in screenedArrangements.items() if v.legal} # 在screenArrangements函数中已经过滤了
         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         IDArray = list(screenedArrangements.keys())
 
@@ -362,6 +362,8 @@ class Roof:
                                 if tempPlacementValue > nowMaxValue:
                                     nowMaxValue = tempPlacementValue
                                     self.allPlacements = [tempPlacement]
+                                    print(
+                                        f"更新当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
                                 elif tempPlacementValue == nowMaxValue:
                                     self.allPlacements.append(tempPlacement)
                         placements.pop()
@@ -571,7 +573,15 @@ class Roof:
             publicMatrix[MC + MA - roofBoardLength:, MB + roofBoardLength:, :] = RoofMarginColor  # F边界
             publicMatrix[:ME - roofBoardLength, MD - roofBoardLength:, :] = RoofMarginColor  # E边界
             publicMatrix[:roofBoardLength, roofBoardLength:MD - roofBoardLength, :] = RoofMarginColor  # D边界
-
+        elif self.type == "反7形":
+            MA, MB, MC = self.edgeA * magnification, self.edgeB * magnification, self.edgeC * magnification
+            MD, ME, MF = self.edgeD * magnification, self.edgeE * magnification, self.edgeF * magnification
+            publicMatrix[:roofBoardLength, :MB, :] = RoofMarginColor
+            publicMatrix[roofBoardLength:MC, MB - roofBoardLength:MB, :] = RoofMarginColor
+            publicMatrix[MC - roofBoardLength:MC, MF - roofBoardLength:MB - roofBoardLength, :] = RoofMarginColor
+            publicMatrix[MC:MA, MF - roofBoardLength:MF, :] = RoofMarginColor
+            publicMatrix[MA - roofBoardLength:MA, :MF - roofBoardLength, :] = RoofMarginColor
+            publicMatrix[roofBoardLength:MA - roofBoardLength, :roofBoardLength, :] = RoofMarginColor
         for placement in self.allPlacements[:maxDraw]:
             matrix = np.array(publicMatrix)
             for j in range(len(placement[0])):  # j表示第几个arrangement
