@@ -1073,8 +1073,8 @@ class UI:
                                               font=("Arial", 12),
                                               fill=text_color)   
         elif roofSurfaceCategory == "正7形":
-            self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C']
-            self.roof_info['F'] = self.roof_info['D'] - self.roof_info['B']
+            self.roof_info['E'] = self.roof_info['A'] - self.roof_info['C']
+            self.roof_info['F'] = self.roof_info['B'] - self.roof_info['D']
             scale = min(draw_width / float(self.roof_info['D']), draw_height / float(self.roof_info['E']))
 
             roof_left = (frame_width - self.roof_info['D'] * scale) / 2
@@ -1332,7 +1332,7 @@ class UI:
         print(f"calculateObstacleSelf 代码执行时间为：{execution_time} 秒")
 
         start_time = time.time()
-        columnValue = roof.calculate_column(screenedArrangements)
+#        columnValue = roof.calculate_column(screenedArrangements)
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"calculate_column 代码执行时间为：{execution_time} 秒")

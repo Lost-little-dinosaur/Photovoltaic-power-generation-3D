@@ -62,7 +62,25 @@ class Roof:
             self.obstacleArraySelf = []
             self.realWidth = jsonRoof["D"]
             self.realLength = jsonRoof["A"] + jsonRoof["C"]
-            self.realArea  = jsonRoof["C"] * jsonRoof["D"] + jsonRoof["A"] * jsonRoof["F"]
+            self.realArea = jsonRoof["C"] * jsonRoof["D"] + jsonRoof["A"] * jsonRoof["F"]
+        elif jsonRoof["isComplex"] and self.type == "反7形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = self.edgeA - self.edgeC
+            self.edgeF = self.edgeB - self.edgeD
+            self.height = jsonRoof["height"]
+            self.length = self.edgeA
+            self.width = self.edgeB
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[self.edgeF:, self.edgeC:] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.realWidth = jsonRoof["B"]
+            self.realLength = jsonRoof["A"]
+            self.realArea = jsonRoof["E"] * jsonRoof["F"] + jsonRoof["C"] * jsonRoof["D"]
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
@@ -584,11 +602,11 @@ class Roof:
                     # top_left[0] + PhotovoltaicPanelBoardLength:bottom_right[0]] = PhotovoltaicPanelColor
 
                 # 接下去画立柱
-                for column in placement[3][j]:  # column形式：[centerX,centerY]
-                    matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
-                           round(column[1] * magnification / UNIT) + standColumnPadding + 1,
-                    round(column[0] * magnification / UNIT) - standColumnPadding:
-                    round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
+    #            for column in placement[3][j]:  # column形式：[centerX,centerY]
+    #                matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
+    #                       round(column[1] * magnification / UNIT) + standColumnPadding + 1,
+    #                round(column[0] * magnification / UNIT) - standColumnPadding:
+    #                round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
 
             # 绘制图像
             plt.imshow(matrix.astype("uint8"))
