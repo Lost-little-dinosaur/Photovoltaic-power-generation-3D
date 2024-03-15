@@ -197,7 +197,8 @@ class Arrangement:
                 if flag == 1:
                     final_list.append(node)
             return final_list
-
+        up = 0
+        down = 0
         array_y = []
         array_limit = []
         array_yleft = []
@@ -208,6 +209,7 @@ class Arrangement:
         rightNum = 0  # 处理拼接类型，左边列数和右边列数
         bound = INF
         height = 0
+        lengthright = 0
         for node in self.relativePositionArray:
             if node[1][0] < bound:
                 bound = node[1][0]
@@ -231,6 +233,8 @@ class Arrangement:
                     array_limitleft = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0)]
                     array_yright = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 1)].copy()
                     array_limitright = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 1)]
+                    up = 1
+                    height = self.relativePositionArray[0][1][1] * UNIT
                 else:
                     last_element = self.componentLayoutArray[-1]
                     count = self.componentLayoutArray.count(last_element)
@@ -240,7 +244,8 @@ class Arrangement:
                     array_limitleft = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 0)]
                     array_yright = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 1)].copy()
                     array_limitright = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 1)]
-                    height = self.relativePositionArray[0][1][1]  # todo 测试一下
+                    height = self.relativePositionArray[0][1][1] * UNIT  # todo 测试一下
+                    down = 1
             elif len(self.componentLayoutArray) == 2 and (
                     self.componentLayoutArray[0] != self.componentLayoutArray[1]):  # 竖一横一
                 array_y = column[(str_ar, 1, 1, 0, 0, 0)].copy()
@@ -275,7 +280,11 @@ class Arrangement:
                     array_limitright = limit_column[
                         (str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3, 1)]
                     if count3 != 0:
-                        height = self.relativePositionArray[0][1][1]  # todo 测试一下
+                        height = self.relativePositionArray[0][1][1] * UNIT  # todo 测试一下
+                        down = 1
+                    else:
+                        up = 1
+                        height = self.relativePositionArray[0][1][1] * UNIT
         self.calculateComponentPositionArrayreal(startX, startY)
         result_y = []
         result_yleft = []
@@ -306,7 +315,12 @@ class Arrangement:
                 prefix_sum += array_yleft[i]
                 result_yleft.append(prefix_sum - 1)
             result_yleft.pop()
-            le = length - sum(array_yright) - array_limitright[0]
+            if up == 1:
+                length = length - height
+            elif down == 1:
+                lengthright = height
+                height = 0
+            le = lengthright - sum(array_yright) - array_limitright[0]
             array_yright.insert(0, array_limitright[0])
             array_yright.append(le)
             result_yright = []
