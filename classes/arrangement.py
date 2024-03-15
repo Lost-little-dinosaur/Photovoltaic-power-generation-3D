@@ -170,7 +170,7 @@ class Arrangement:
                             if obstacles[x + startX][y + startY] != 1:
                                 result.append([startX + x, startY + y])
                         if x == column_positions[0]:
-                            if y == array_iny[0] or y == array_iny[-1]:
+                            if y == array_left[0] or y == array_left[-1]:
                                 self.edgeColumn.append([startX + x, startY + y])
                 for x in column_positions:
                     for y in array_right:
@@ -178,7 +178,7 @@ class Arrangement:
                             if obstacles[x + startX][y + startY] != 1:
                                 result.append([startX + x, startY + y])
                         if x == column_positions[-1]:
-                            if y == array_iny[0] or y == array_iny[-1]:
+                            if y == array_right[0] or y == array_right[-1]:
                                 self.edgeColumn.append([startX + x, startY + y])
             final_list = []
             for node in result:
@@ -209,6 +209,7 @@ class Arrangement:
         for node in self.relativePositionArray:
             if node[1][0] < bound:
                 bound = node[1][0]
+        bound = bound * UNIT
         str_ar = self.component.specification + self.arrangeType
         if len(self.relativePositionArray) == 1 and self.crossPosition == INF:  # 规则且只包含竖排
             array_y = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, 0)].copy()
@@ -226,8 +227,8 @@ class Arrangement:
                     rightNum = self.componentLayoutArray[-1] - leftNum
                     array_yleft = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0)].copy()
                     array_limitleft = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0)]
-                    array_yright = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0, 1)].copy()
-                    array_limitright = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 0, 1)]
+                    array_yright = column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 1)].copy()
+                    array_limitright = limit_column[(str_ar, len(self.componentLayoutArray), 0, count, 0, 0, 1)]
                 else:
                     last_element = self.componentLayoutArray[-1]
                     count = self.componentLayoutArray.count(last_element)
