@@ -785,9 +785,9 @@ class Arrangement:
                 except KeyError:
                     print("KeyError: ", componentStr, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)
         if raiseLevel == 1:
-            hMin = hMin + 540
+            hMin = 540
         elif raiseLevel == 2:
-            hMin = hMin + 1000
+            hMin = 1000
         hMax = hMin + length * sin(radians(20))
         temp = (hMax - hMin) / length
         # return_list = [[0] * (width + 1) for _ in range(length + 1)]
