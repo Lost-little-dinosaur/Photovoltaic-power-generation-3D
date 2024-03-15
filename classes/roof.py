@@ -51,9 +51,9 @@ class Roof:
             self.edgeC = round(jsonRoof["C"] / UNIT)
             self.edgeD = round(jsonRoof["D"] / UNIT)
             self.edgeE = self.edgeA + self.edgeC
-            self.edgeF = self.edgeB + self.edgeD
+            self.edgeF = self.edgeD - self.edgeB
             self.height = jsonRoof["height"]
-            self.length = self.edgeA + self.edgeC
+            self.length = self.edgeE
             self.width = self.edgeD
             self.roofArray = np.zeros((self.length, self.width))
             self.roofArray[self.edgeC:, 0:self.edgeB] = INF
