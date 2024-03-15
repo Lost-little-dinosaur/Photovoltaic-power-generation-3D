@@ -10,6 +10,7 @@ import time
 
 ID = 0.
 
+
 def getComponent(component):
     for c in getAllComponents():
         if component == c.specification:
@@ -17,13 +18,14 @@ def getComponent(component):
     else:
         raise Exception("组件'{}'不存在".format(component))
 
+
 class Arrangement:
     def __init__(self, componentLayoutArray, crossPosition, component, arrangeType, maxWindPressure, isRule):
         # zzp: 预估不需要的方案，摆的太少了，等下会直接剔除
         self.componentNum = sum(componentLayoutArray)
         if self.componentNum < getMinComponent() or self.componentNum > getMaxComponent():
             self.legal = False
-            return 
+            return
         self.legal = True
 
         self.component = getComponent(component)
@@ -766,7 +768,11 @@ class Arrangement:
                              self.componentLayoutArray[i] < normal_vertical)
                 count2 = 1 if self.componentLayoutArray[-2] < normal_cross else 0
                 count3 = 1 if self.componentLayoutArray[-1] < normal_vertical else 0
-                hMin = arrangementHeight[(componentStr, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
+                try:
+                    hMin = arrangementHeight[
+                        (componentStr, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)]
+                except KeyError:
+                    print("KeyError: ", componentStr, len(self.componentLayoutArray) - 1, 1, count1, count2, count3)
         if raiseLevel == 1:
             hMin = hMin + 540
         elif raiseLevel == 2:
@@ -861,10 +867,19 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                         ]
 
     arrangementDict = {}
+    maxWidthCount = 0
+    minComponentWidth = INF
+    for c in getAllComponents():
+        if minComponentWidth > c.width:
+            minComponentWidth = c.width
+    while calculateVerticalWidth(maxWidthCount, minComponentWidth) <= roofWidth:
+        maxWidthCount += 1
+    # print("maxWidthCount: ", maxWidthCount)
+    maxWidthCount = min(31, maxWidthCount)
     global ID
     for tempElement in tempArrangements:
         if tempElement[1] == 0:  # 只有竖排
-            for j in range(2, 31):
+            for j in range(2, maxWidthCount):
                 arrangementDict[ID] = Arrangement(tempElement[0] * [j], INF, tempElement[2], tempElement[3],
                                                   tempElement[4], True)
                 ID += 1
@@ -884,7 +899,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
             while calculateVerticalWidth(minVerticalNum, tempComponent.width) < tempComponent.length:
                 minVerticalNum += 1
             if tempElement[0] != 1:  # 说明竖排不止一行，横排在倒数第二行
-                for j in range(minVerticalNum, 31):
+                for j in range(minVerticalNum, maxWidthCount):
                     maxCrossNum = 0
                     while calculateVerticalWidth(j, tempComponent.width) >= calculateCrossWidth(maxCrossNum,
                                                                                                 tempComponent.length):
@@ -895,7 +910,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                                                       tempElement[4], True)
                     ID += 1
             else:  # 说明竖排只有一行，横排在最后一行
-                for j in range(minVerticalNum, 31):
+                for j in range(minVerticalNum, maxWidthCount):
                     maxCrossNum = 0
                     while calculateVerticalWidth(j, tempComponent.width) >= calculateCrossWidth(maxCrossNum,
                                                                                                 tempComponent.length):
@@ -906,21 +921,22 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                     ID += 1
     # 添加拼接方案
     # 提前计算好i个竖排的宽度能放多少个横排组件 todo:把这个优化放到前面去
-    crossCountDict = {"182-78": [0] * 31, "210-60": [0] * 31, "182-72": [0] * 31, "210-66": [0] * 31}
+    crossCountDict = {"182-78": [0] * maxWidthCount, "210-60": [0] * maxWidthCount, "182-72": [0] * maxWidthCount,
+                      "210-66": [0] * maxWidthCount}
     # 目前只计算182-78的
     tempComponent = None
     for c in getAllComponents():
         if c.specification == "182-78":
             tempComponent = c
             break
-    for i in range(2, 31):
+    for i in range(2, maxWidthCount):
         crossCount = 0
         while calculateVerticalWidth(i, tempComponent.width) >= calculateCrossWidth(crossCount, tempComponent.length):
             crossCount += 1
         crossCount -= 1
         crossCountDict["182-78"][i] = crossCount
 
-    for i in range(2, 31):
+    for i in range(2, maxWidthCount):
         for j in range(1, i):
             arrangementDict[ID] = Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "低压", False)
             ID += 1
@@ -972,29 +988,23 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                                                   "高压", False)
                 ID += 1
                 arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
-                                                  "低压",
-                                                  False)
+                                                  "低压", False)
                 ID += 1
                 arrangementDict[ID] = Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
-                                                  "低压",
-                                                  False)
+                                                  "低压", False)
                 ID += 1
 
                 arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规",
-                                                  "低压",
-                                                  False)
+                                                  "低压", False)
                 ID += 1
                 arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
-                                                  "高压",
-                                                  False)
+                                                  "高压", False)
                 ID += 1
                 arrangementDict[ID] = Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
-                                                  "高压",
-                                                  False)
+                                                  "高压", False)
                 ID += 1
                 arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规",
-                                                  "高压",
-                                                  False)
+                                                  "高压", False)
                 ID += 1
             if crossCountDict["182-78"][j] != 0:
                 arrangementDict[ID] = Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
@@ -1011,12 +1021,10 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                                                   "高压", False)
                 ID += 1
                 arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规",
-                                                  "低压",
-                                                  False)
+                                                  "低压", False)
                 ID += 1
                 arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规",
-                                                  "高压",
-                                                  False)
+                                                  "高压", False)
                 ID += 1
 
             arrangementDict[ID] = Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "低压", False)
@@ -1047,8 +1055,9 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
 
     # 通过输入的屋顶宽度、屋顶长度、组件类型、排布类型和风压，筛选出合适的排布
     result = {}
+    arrangementDict = {k: v for k, v in arrangementDict.items() if v.legal}
     for k, arrangement in arrangementDict.items():
-        if arrangement.legal and arrangement.component.specification == componentSpecification and arrangement.arrangeType[0:2] == \
+        if arrangement.component.specification == componentSpecification and arrangement.arrangeType[0:2] == \
                 arrangeType[0:2] and arrangement.maxWindPressure == windPressure:
             for tempElement in arrangement.relativePositionArray:
                 if tempElement[1][0] >= roofWidth or tempElement[1][1] >= roofLength:
@@ -1058,15 +1067,15 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
     return result
 
 
-def estimateComponentCount(roof, componentSpecification, minAlpha = 0.7):
+def estimateComponentCount(roof, componentSpecification, minAlpha=0.7):
     roofArea = roof.realArea
     for obstacle in roof.obstacles:
         roofArea -= obstacle.realArea
     component = getComponent(componentSpecification)
     componentArea = component.realLength * component.realWidth
     maxComponentCount = round(roofArea / componentArea)
-    return int(minAlpha * maxComponentCount),  maxComponentCount
-    
+    return int(minAlpha * maxComponentCount), maxComponentCount
+
 
 # 组件排布的规格
 # component1 = Component("182-72", 1.134, 2.279, 535, 550, 0.30, 0.35)  # 以米、瓦为单位

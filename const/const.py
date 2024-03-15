@@ -1,7 +1,6 @@
 # 规定一些常量
 from numpy import Inf
 
-
 UNIT = 500  # 以毫米为单位
 INF = 1000000  # 无穷大
 minComponent = 1  # 最小组件数
@@ -38,7 +37,7 @@ def getMinComponent():
 
 
 def changeMaxComponent(count):
-    global  maxComponent
+    global maxComponent
     maxComponent = count
 
 
