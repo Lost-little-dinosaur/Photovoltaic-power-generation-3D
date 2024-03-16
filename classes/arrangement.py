@@ -115,7 +115,7 @@ class Arrangement:
         self.edgeColumn = []  # 边缘立柱
         self.shadowRelativePosition = []
 
-    def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices):
+    def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices, type):
         UNIT = const.const.getUnit()
         column, limit_column, arrangement_height = const.const.getColumnsInformation()
         startX = startXunit * UNIT
@@ -353,6 +353,9 @@ class Arrangement:
                 if len(final_list) == 0:
                     continue
                 else:
+                    if type == "正7形":
+                        for node in self.edgeColumn:
+                            node[0] = roof_Width - node[0]
                     txt = "边缘四个立柱的坐标为："
                     for node in self.edgeColumn:
                         txt += str(node) + "、"
@@ -499,6 +502,9 @@ class Arrangement:
                         flag = 0
                 if flag == 1:
                     final_list.append(node)
+            if type == "正7形":
+                for node in self.edgeColumn:
+                    node[0] = roof_Width - node[0]
             txt = "边缘四个立柱的坐标为："
             for node in self.edgeColumn:
                 txt += str(node) + "、"
