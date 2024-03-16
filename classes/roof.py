@@ -81,6 +81,28 @@ class Roof:
             self.realWidth = jsonRoof["B"]
             self.realLength = jsonRoof["A"]
             self.realArea = jsonRoof["A"] * jsonRoof["F"] + jsonRoof["C"] * jsonRoof["D"]
+        elif jsonRoof["isComplex"] and self.type == "上凸形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = round(jsonRoof["E"] / UNIT)
+            self.edgeF = round(jsonRoof["F"] / UNIT)
+            self.edgeH = self.edgeB + self.edgeD + self.edgeF
+            self.edgeG = self.edgeA + self.edgeC - self.edgeE
+            self.height = jsonRoof["height"]
+            self.length = self.edgeA + self.edgeC
+            self.width = self.edgeH
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[0:self.edgeC, 0:self.edgeB] = INF
+            self.roofArray[0:self.edgeE, self.edgeB + self.edgeD:] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.realWidth = jsonRoof["B"] + jsonRoof["D"] + jsonRoof["F"]
+            self.realLength = jsonRoof["A"] + jsonRoof["C"]
+            self.realArea = jsonRoof["A"] * jsonRoof["B"] + jsonRoof["G"] * jsonRoof["F"] +\
+                            (jsonRoof["A"] + jsonRoof["C"]) * jsonRoof["D"]
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
@@ -582,6 +604,11 @@ class Roof:
             publicMatrix[MC:MA, MF - roofBoardLength:MF, :] = RoofMarginColor
             publicMatrix[MA - roofBoardLength:MA, :MF - roofBoardLength, :] = RoofMarginColor
             publicMatrix[roofBoardLength:MA - roofBoardLength, :roofBoardLength, :] = RoofMarginColor
+        elif self.type == "上凸形":
+            MA, MB, MC = self.edgeA * magnification, self.edgeB * magnification, self.edgeC * magnification
+            MD, ME, MF = self.edgeD * magnification, self.edgeE * magnification, self.edgeF * magnification
+            MG, MH = self.edgeG * magnification, self.edgeH * magnification
+
         for placement in self.allPlacements[:maxDraw]:
             matrix = np.array(publicMatrix)
             for j in range(len(placement[0])):  # j表示第几个arrangement
