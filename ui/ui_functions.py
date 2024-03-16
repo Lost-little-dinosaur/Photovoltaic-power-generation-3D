@@ -288,7 +288,8 @@ class UI:
     def get_location_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.location_info[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
+            # self.location_info[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
+            self.location_info[chn2eng[text]] = float(input_str)
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.location_info[chn2eng[text]] = entry.get()

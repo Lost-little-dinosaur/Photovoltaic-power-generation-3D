@@ -227,9 +227,8 @@ def getOnePointShadow(point: List[int], latitude):  # x,y,z
             z = 0
             returnList.append([x, y, z])  # 这里先不取整
     else:
-        if latitude not in dataDict:
-            print("纬度 ", latitude, " 不在字典中")
-            return INF, INF, []
+        print("纬度 ", latitude, " 不在字典中")
+        return INF, INF, []
     max_y, max_x, min_y, min_x = -INF, -INF, INF, INF
 
     tempAllArray = []
