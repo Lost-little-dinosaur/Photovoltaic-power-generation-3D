@@ -83,6 +83,28 @@ class Roof:
             self.realWidth = jsonRoof["B"]
             self.realLength = jsonRoof["A"]
             self.realArea = jsonRoof["A"] * jsonRoof["F"] + jsonRoof["C"] * jsonRoof["D"]
+        elif jsonRoof["isComplex"] and self.type == "上凸形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = round(jsonRoof["E"] / UNIT)
+            self.edgeF = round(jsonRoof["F"] / UNIT)
+            self.edgeH = self.edgeB + self.edgeD + self.edgeF
+            self.edgeG = self.edgeA + self.edgeC - self.edgeE
+            self.height = jsonRoof["height"]
+            self.length = self.edgeA + self.edgeC
+            self.width = self.edgeH
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[0:self.edgeC, 0:self.edgeB] = INF
+            self.roofArray[0:self.edgeE, self.edgeB + self.edgeD:] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.realWidth = jsonRoof["B"] + jsonRoof["D"] + jsonRoof["F"]
+            self.realLength = jsonRoof["A"] + jsonRoof["C"]
+            self.realArea = jsonRoof["A"] * jsonRoof["B"] + jsonRoof["G"] * jsonRoof["F"] + \
+                            (jsonRoof["A"] + jsonRoof["C"]) * jsonRoof["D"]
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         self.roofAngle = jsonRoof["roofAngle"]
@@ -540,7 +562,6 @@ class Roof:
                     endX = round((obstacle.realUpLeftPosition[0] + obstacle.realwidth) / UNIT) * magnification
                     endY = round((obstacle.realUpLeftPosition[1] + obstacle.reallength) / UNIT) * magnification
 
-
                     # 处理障碍物的外轮廓
                     for pad in range(obstaclePadding + 1):  # +1是为了包括外轮廓本身和内部的padding
                         # 处理水平边
@@ -585,8 +606,19 @@ class Roof:
             publicMatrix[MC:MA, MF - roofBoardLength:MF, :] = RoofMarginColor
             publicMatrix[MA - roofBoardLength:MA, :MF - roofBoardLength, :] = RoofMarginColor
             publicMatrix[roofBoardLength:MA - roofBoardLength, :roofBoardLength, :] = RoofMarginColor
+        elif self.type == "上凸形":
+            MA, MB, MC, MD = self.edgeA * magnification, self.edgeB * magnification, self.edgeC * magnification, self.edgeD * magnification
+            ME, MF, MG, MH = self.edgeE * magnification, self.edgeF * magnification, self.edgeG * magnification, self.edgeH * magnification
+            publicMatrix[MC:, :roofBoardLength, :] = RoofMarginColor  # A边界
+            publicMatrix[MC:MC + roofBoardLength, roofBoardLength:MB, :] = RoofMarginColor  # B边界
+            publicMatrix[:MC + roofBoardLength, MB:MB + roofBoardLength, :] = RoofMarginColor  # C边界
+            publicMatrix[:roofBoardLength, MB + roofBoardLength:MB + MD, :] = RoofMarginColor  # D边界
+            publicMatrix[roofBoardLength:ME + roofBoardLength, MB + MD - roofBoardLength:MB + MD, :] = RoofMarginColor
+            publicMatrix[ME:ME + roofBoardLength, MB + MD:MB + MD + MF, :] = RoofMarginColor  # F边界
+            publicMatrix[ME + roofBoardLength:, MB + MD + MF - roofBoardLength:, :] = RoofMarginColor  # G边界
+            publicMatrix[-roofBoardLength:, roofBoardLength:MH - roofBoardLength, :] = RoofMarginColor  # H边界
 
-        # 画障碍物
+            # 画障碍物
         for point in obstaclePointArray:
             publicMatrix[point[1], point[0]] = ObstacleColor
 
