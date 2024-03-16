@@ -288,7 +288,7 @@ class UI:
     def get_location_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.location_info[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
+            self.location_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.location_info[chn2eng[text]] = entry.get()
@@ -389,7 +389,7 @@ class UI:
     def get_roof_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.roof_info[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
+            self.roof_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.roof_info[chn2eng[text]] = entry.get()
@@ -446,7 +446,7 @@ class UI:
         new_obstacle = {}
         for text, entry in str_entries.items():
             input_str = entry.get()
-            new_obstacle[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
+            new_obstacle[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             new_obstacle[chn2eng[text]] = entry.get()
@@ -504,7 +504,7 @@ class UI:
         new_obstacle = {}
         for text, entry in str_entries.items():
             input_str = entry.get()
-            new_obstacle[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
+            new_obstacle[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             new_obstacle[chn2eng[text]] = entry.get()
@@ -560,7 +560,7 @@ class UI:
     def get_panel_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.panel_info[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
+            self.panel_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.panel_info[chn2eng[text]] = entry.get()
@@ -615,7 +615,7 @@ class UI:
     def get_algorithm_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.algorithm_info[chn2eng[text]] = int(input_str) if input_str.isdigit() else input_str
+            self.algorithm_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.algorithm_info[chn2eng[text]] = entry.get()
