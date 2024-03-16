@@ -228,7 +228,7 @@ class UI:
 
         # 界面切换按钮
         self.roofscene_btns = []
-        for i in range(6):
+        for i in range(7):
             roofscene_btn = tk.Button(roofscene_frame, text=f"{i + 1}", command=partial(self.get_demo_input, i))
             roofscene_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
             if os.path.exists(os.path.join(file_dir, f"input{i}.json")):
