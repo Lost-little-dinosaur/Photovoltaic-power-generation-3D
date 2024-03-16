@@ -52,6 +52,7 @@
           "adjustedHeight": 0,
           "removable": 0
         }
+
       ]
     },
     "obstacles": [
@@ -64,7 +65,7 @@
     "thickness": 350
   },
   "algorithm": {
-    "precision": 100,
+    "precision": 50,
     "maxArrangeCount": 1,
     "minComponent": 21
   }

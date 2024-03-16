@@ -373,8 +373,8 @@ class Arrangement:
             self.columnArray_x = []
             fixedColumn = []  # 确定的立柱位置
             for i in deletedIndices:
-                left_x = self.componentPositionArray[i][0][0] - 400 - startX
-                right_x = self.componentPositionArray[i][1][0] + 400 - startX
+                left_x = self.componentPositionArray[i][0][0] - 500 - startX
+                right_x = self.componentPositionArray[i][1][0] + 500 - startX
                 # 防止越界
                 if left_x > 0:
                     fixedColumn.append([left_x, self.componentPositionArray[i][0][1]])
