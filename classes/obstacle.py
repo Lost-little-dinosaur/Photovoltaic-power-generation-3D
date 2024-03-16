@@ -3,7 +3,7 @@ from tools import tools3D
 
 
 class Obstacle:
-    def __init__(self, obstacle, obstacleArray, roofArray, latitude):
+    def __init__(self, obstacle, obstacleArray, roofArray, latitude, roofType, realRoofWidth):
         UNIT = getUnit()
         self.type = obstacle["type"]
         self.ID = obstacle["id"]
@@ -16,10 +16,16 @@ class Obstacle:
                 self.length = round(obstacle["length"] / UNIT)
                 self.realwidth = obstacle["width"]
                 self.reallength = obstacle["length"]
-                self.upLeftPosition = [round(obstacle["upLeftPosition"][0] / UNIT),
-                                       round(obstacle["upLeftPosition"][1] / UNIT)]
-                self.realupLeftPosition = [obstacle["upLeftPosition"][0],
-                                           obstacle["upLeftPosition"][1]]
+                if roofType == "正7形":
+                    self.upLeftPosition = [roofArray.shape[1] - round(obstacle["upLeftPosition"][0] / UNIT),
+                                           round(obstacle["upLeftPosition"][1] / UNIT)]
+                    self.realUpLeftPosition = [realRoofWidth - obstacle["upLeftPosition"][0],
+                                               obstacle["upLeftPosition"][1]]
+                else:
+                    self.upLeftPosition = [round(obstacle["upLeftPosition"][0] / UNIT),
+                                           round(obstacle["upLeftPosition"][1] / UNIT)]
+                    self.realUpLeftPosition = [obstacle["upLeftPosition"][0],
+                                               obstacle["upLeftPosition"][1]]
                 if roofArray.shape[0] < self.upLeftPosition[1] + self.width or roofArray.shape[1] < self.upLeftPosition[
                     0] + self.length:
                     raise Exception("障碍物位置超出屋面范围")  # todo: 先不考虑屋外障碍物
@@ -34,7 +40,7 @@ class Obstacle:
                                          [self.upLeftPosition[0], self.upLeftPosition[1] + self.length,
                                           self.height + roofArray[self.upLeftPosition[1] + self.length][
                                               self.upLeftPosition[0]]]], False, latitude, True, obstacleArray)
-                self.realArea = self.realwidth * self.reallength 
+                self.realArea = self.realwidth * self.reallength
             else:
                 self.isRound = True
                 self.diameter = obstacle["diameter"] / UNIT

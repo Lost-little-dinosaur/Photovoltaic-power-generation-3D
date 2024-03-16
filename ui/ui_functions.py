@@ -1277,7 +1277,6 @@ class UI:
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
         assignComponentParameters(jsonData["component"])
 
-        # 排布完光伏板后再添加障碍物并分析阴影
         start_time = time.time()
         roof.addObstacles(jsonData["scene"]["roof"]["obstacles"])
         end_time = time.time()

@@ -57,6 +57,8 @@ class Roof:
             self.width = self.edgeD
             self.roofArray = np.zeros((self.length, self.width))
             self.roofArray[self.edgeC:, 0:self.edgeB] = INF
+            # 对roofArray做左右镜像翻转
+            self.roofArray = np.fliplr(self.roofArray)
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
@@ -99,10 +101,10 @@ class Roof:
         # return_list = [[0] * ((self.realLength + 1000)) for _ in range((self.realWidth + 1000))]
         for obstacle in self.obstacles:
             if obstacle.type == '有烟烟囱':
-                x_min = max(0, obstacle.realupLeftPosition[0] - 100)
-                x_max = min(self.realWidth, obstacle.realupLeftPosition[0] + obstacle.realwidth + 100)
-                y_min = max(0, obstacle.realupLeftPosition[1] - 100)
-                y_max = min(self.realLength, obstacle.realupLeftPosition[1] + obstacle.reallength + 100)
+                x_min = max(0, obstacle.realUpLeftPosition[0] - 100)
+                x_max = min(self.realWidth, obstacle.realUpLeftPosition[0] + obstacle.realwidth + 100)
+                y_min = max(0, obstacle.realUpLeftPosition[1] - 100)
+                y_max = min(self.realLength, obstacle.realUpLeftPosition[1] + obstacle.reallength + 100)
                 return_list[x_min:x_max, y_min:y_max] = 1
                 # for x in range(x_min, x_max):
                 #     for y in range(y_min, y_max):
@@ -111,7 +113,7 @@ class Roof:
                 x_min = obstacle.upLeftPosition[0]
                 x_max = obstacle.upLeftPosition[0] + obstacle.width
                 y_min = obstacle.upLeftPosition[1]
-                y_max = obstacle.realupLeftPosition[1] + obstacle.length
+                y_max = obstacle.realUpLeftPosition[1] + obstacle.length
                 return_list[x_min:x_max, y_min:y_max] = 1
                 # for x in range(x_min, x_max):
                 #     for y in range(y_min, y_max):
@@ -468,7 +470,8 @@ class Roof:
 
     def addObstacles(self, obstacles):
         for obstacle in obstacles:  # todo: 待优化，可以多进程计算
-            self.obstacles.append(Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude))
+            self.obstacles.append(
+                Obstacle(obstacle, self.obstacleArray, self.roofArray, self.latitude, self.type, self.realWidth))
         self.obstacleSumArray = np.cumsum(np.cumsum(self.obstacleArray, axis=0), axis=1)
         # if self.type == "正7形":
         #     obstacle = {"id": "屋面扣除1", "type": "屋面扣除", "isRound": False, "length": self.edgeA,
@@ -526,15 +529,17 @@ class Roof:
             roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 1, 1, 1, 1
             magnification = 5
         publicMatrix = np.zeros((self.length * magnification, self.width * magnification, 3))
+
         # 画障碍物（只需要轮廓就行）
         obstaclePointArray = np.empty((0, 2), dtype=np.int32)
         for obstacle in self.obstacles:
             if obstacle.type == '无烟烟囱' or obstacle.type == '有烟烟囱':
                 if not obstacle.isRound:
-                    startX = round(obstacle.realupLeftPosition[0] / UNIT) * magnification
-                    startY = round(obstacle.realupLeftPosition[1] / UNIT) * magnification
-                    endX = round((obstacle.realupLeftPosition[0] + obstacle.realwidth) / UNIT) * magnification
-                    endY = round((obstacle.realupLeftPosition[1] + obstacle.reallength) / UNIT) * magnification
+                    startX = round(obstacle.realUpLeftPosition[0] / UNIT) * magnification
+                    startY = round(obstacle.realUpLeftPosition[1] / UNIT) * magnification
+                    endX = round((obstacle.realUpLeftPosition[0] + obstacle.realwidth) / UNIT) * magnification
+                    endY = round((obstacle.realUpLeftPosition[1] + obstacle.reallength) / UNIT) * magnification
+
 
                     # 处理障碍物的外轮廓
                     for pad in range(obstaclePadding + 1):  # +1是为了包括外轮廓本身和内部的padding
@@ -554,9 +559,6 @@ class Roof:
                                 (np.repeat(np.array(list(range(startX + pad, endX + 1 - pad))), 2), column))
                             obstaclePointArray = np.concatenate((obstaclePointArray, tempMatrix), axis=0)
 
-        # 先画障碍物
-        for point in obstaclePointArray:
-            publicMatrix[point[1], point[0]] = ObstacleColor
         if self.type == "矩形":
             # 首先填充上下边界
             publicMatrix[:roofBoardLength, :, :] = RoofMarginColor  # 上边界
@@ -573,6 +575,7 @@ class Roof:
             publicMatrix[MC + MA - roofBoardLength:, MB + roofBoardLength:, :] = RoofMarginColor  # F边界
             publicMatrix[:ME - roofBoardLength, MD - roofBoardLength:, :] = RoofMarginColor  # E边界
             publicMatrix[:roofBoardLength, roofBoardLength:MD - roofBoardLength, :] = RoofMarginColor  # D边界
+            publicMatrix = np.fliplr(publicMatrix)
         elif self.type == "反7形":
             MA, MB, MC = self.edgeA * magnification, self.edgeB * magnification, self.edgeC * magnification
             MD, ME, MF = self.edgeD * magnification, self.edgeE * magnification, self.edgeF * magnification
@@ -582,6 +585,11 @@ class Roof:
             publicMatrix[MC:MA, MF - roofBoardLength:MF, :] = RoofMarginColor
             publicMatrix[MA - roofBoardLength:MA, :MF - roofBoardLength, :] = RoofMarginColor
             publicMatrix[roofBoardLength:MA - roofBoardLength, :roofBoardLength, :] = RoofMarginColor
+
+        # 画障碍物
+        for point in obstaclePointArray:
+            publicMatrix[point[1], point[0]] = ObstacleColor
+
         for placement in self.allPlacements[:maxDraw]:
             matrix = np.array(publicMatrix)
             for j in range(len(placement[0])):  # j表示第几个arrangement
@@ -634,7 +642,10 @@ class Roof:
             image = Image.frombytes('RGB', fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
             # 将PIL Image对象转换为长x宽x3的矩阵变量
             image_array = np.array(image)
-            # allMatrix.append(matrix)
+            # 判断屋面类型，决定是否要左右镜像翻转
+            if self.type == "正7形":
+                image_array = np.fliplr(image_array)
+
             allMatrix.append(image_array)
         return allMatrix
 
