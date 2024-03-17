@@ -108,7 +108,7 @@ class UI:
         self.panel_info = {}
         self.algorithm_info = {}
         self.layout_imgs = []
-        self.panel_count = 0
+        self.layout_final_info = ""
         self.display_img = None
 
         self.root = tk.Tk()
@@ -289,7 +289,8 @@ class UI:
     def get_location_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.location_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            self.location_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '',
+                                                                                      1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.location_info[chn2eng[text]] = entry.get()
@@ -1337,20 +1338,29 @@ class UI:
 
         # return roof.drawPlacement(screenedArrangements)
         start_time = time.time()
-        tempArray = roof.drawPlacement(screenedArrangements), [placement[4] for placement in roof.allPlacements]
+        tempArray = [roof.drawPlacement(screenedArrangements), [placement[4] for placement in roof.allPlacements]]
         # tempArray = roof.drawPlacement(screenedArrangements), ["", "", "", "", ""]
         end_time = time.time()
         execution_time = end_time - start_time
         print("drawPlacement 代码执行时间为：", execution_time, "秒\n")
         print(f"一共排布了{panelValue}块光伏板，{columnValue}根立柱")
         print("总代码执行时间为：", time.time() - allTimeStart, "秒\n")
-        return tempArray, panelValue
+        tempArray.append({
+            "精度": f"{jsonData['algorithm']['precision']}mm",
+            "基于面积推算的最大光伏板数量": f"{maxComponentCount}块",
+            "最终排布的方案种类数": f"{len(roof.allPlacements)}种",
+            "最终排布的光伏板数量": f"{panelValue}块",
+            "最终排布的立柱数量": f"{columnValue}根",
+            "总耗时": "{:.2f}s".format(time.time() - allTimeStart) 
+        })
+        return tempArray
 
     def cal_and_display_layout(self):
         for i in range(5):
             self.arrangement_btns[i].config(state="disabled")
-        placement_result, self.panel_count = self.calculate_layout()
-        self.layout_imgs, self.placement_info = placement_result[0][:5], placement_result[1][:5]
+        placement_result = self.calculate_layout()
+        self.layout_imgs, self.placement_info, self.layout_final_info = \
+            placement_result[0][:5], placement_result[1][:5], "\n".join( [f"{k}:{v}" for k,v in placement_result[2].items()] )
         self.display_layout()
         for i in range(len(self.layout_imgs)):
             self.arrangement_btns[i].config(state="active")
@@ -1364,7 +1374,7 @@ class UI:
             # scaled_image.save(os.path.join(file_dir,f"scaled_image_{index}.png"))
             self.display_img = ImageTk.PhotoImage(scaled_image)
             self.arrangement_canvas.create_image(0, 0, anchor=tk.NW, image=self.display_img)
-            self.arrangement_info_text_var.set(self.placement_info[index])
+            self.arrangement_info_text_var.set(self.placement_info[index] + self.layout_final_info)
         except Exception as e:
             print("Exception", e)
 

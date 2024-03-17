@@ -1089,7 +1089,7 @@ def estimateComponentCount(roof, componentSpecification, minAlpha=0.7):
         roofArea -= obstacle.realArea
     component = getComponent(componentSpecification)
     componentArea = component.realLength * component.realWidth
-    maxComponentCount = round(roofArea / componentArea)
+    maxComponentCount = int(roofArea / componentArea)
     return int(minAlpha * maxComponentCount), maxComponentCount
 
 
