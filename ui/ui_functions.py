@@ -288,7 +288,8 @@ class UI:
     def get_location_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.location_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            self.location_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '',
+                                                                                      1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.location_info[chn2eng[text]] = entry.get()
@@ -615,7 +616,8 @@ class UI:
     def get_algorithm_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.algorithm_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            self.algorithm_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '',
+                                                                                       1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.algorithm_info[chn2eng[text]] = entry.get()
@@ -1336,13 +1338,21 @@ class UI:
 
         # return roof.drawPlacement(screenedArrangements)
         start_time = time.time()
-        tempArray = roof.drawPlacement(screenedArrangements), [placement[4] for placement in roof.allPlacements]
+        tempArray = list[roof.drawPlacement(screenedArrangements), [placement[4] for placement in roof.allPlacements]]
         # tempArray = roof.drawPlacement(screenedArrangements), ["", "", "", "", ""]
         end_time = time.time()
         execution_time = end_time - start_time
         print("drawPlacement 代码执行时间为：", execution_time, "秒\n")
         print(f"一共排布了{panelValue}块光伏板，{columnValue}根立柱")
         print("总代码执行时间为：", time.time() - allTimeStart, "秒\n")
+        tempArray.appand({
+            "精度": jsonData["algorithm"]["precision"],
+            "最大方案数量": jsonData["algorithm"]["maxArrangeCount"],
+            "最终方案数量": len(roof.allPlacements),
+            "最终排布的光伏板数量": panelValue,
+            "最终排布的立柱数量": columnValue,
+            "总耗时": time.time() - allTimeStart
+        })
         return tempArray
 
     def cal_and_display_layout(self):
