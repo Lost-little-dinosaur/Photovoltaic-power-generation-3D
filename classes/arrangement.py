@@ -118,8 +118,8 @@ class Arrangement:
     def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices, type):
         UNIT = const.const.getUnit()
         column, limit_column, arrangement_height = const.const.getColumnsInformation()
-        startX = startXunit * UNIT
-        startY = startYunit * UNIT
+        startX = int(startXunit * UNIT)
+        startY = int(startYunit * UNIT)
 
         def generate_columns(n_columns, startY, startX, roof_width, width, length, max_spacing,
                              array_iny, obstacles, array_left, array_right, leftNum, rightNum):

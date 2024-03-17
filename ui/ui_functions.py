@@ -108,6 +108,7 @@ class UI:
         self.panel_info = {}
         self.algorithm_info = {}
         self.layout_imgs = []
+        self.panel_count = 0
         self.display_img = None
 
         self.root = tk.Tk()
@@ -389,7 +390,7 @@ class UI:
     def get_roof_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.roof_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            self.roof_info[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.roof_info[chn2eng[text]] = entry.get()
@@ -446,7 +447,7 @@ class UI:
         new_obstacle = {}
         for text, entry in str_entries.items():
             input_str = entry.get()
-            new_obstacle[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            new_obstacle[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             new_obstacle[chn2eng[text]] = entry.get()
@@ -504,7 +505,7 @@ class UI:
         new_obstacle = {}
         for text, entry in str_entries.items():
             input_str = entry.get()
-            new_obstacle[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            new_obstacle[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             new_obstacle[chn2eng[text]] = entry.get()
@@ -560,7 +561,7 @@ class UI:
     def get_panel_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.panel_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            self.panel_info[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.panel_info[chn2eng[text]] = entry.get()
@@ -615,7 +616,7 @@ class UI:
     def get_algorithm_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.algorithm_info[chn2eng[text]] = float(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            self.algorithm_info[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.algorithm_info[chn2eng[text]] = entry.get()
@@ -1283,7 +1284,7 @@ class UI:
         print(f"addObstacles 代码执行时间为：{execution_time} 秒")
 
         # zzp: 基于屋顶有效面积，估计光伏板数量，参数0.7，参数范围0-1，参数越高预估光伏板数量越多
-        minComponentCount, maxComponentCount = estimateComponentCount(roof, jsonData["component"]["specification"], 0.7)
+        minComponentCount, maxComponentCount = estimateComponentCount(roof, jsonData["component"]["specification"], 0.7 / jsonData['algorithm']['maxArrangeCount'])
         const.const.changeMinComponent(minComponentCount)
         const.const.changeMaxComponent(maxComponentCount)
         print(f"自动估计最小光伏板数量:{minComponentCount}，最大光伏板数量:{maxComponentCount}")
@@ -1343,12 +1344,12 @@ class UI:
         print("drawPlacement 代码执行时间为：", execution_time, "秒\n")
         print(f"一共排布了{panelValue}块光伏板，{columnValue}根立柱")
         print("总代码执行时间为：", time.time() - allTimeStart, "秒\n")
-        return tempArray
+        return tempArray, panelValue
 
     def cal_and_display_layout(self):
         for i in range(5):
             self.arrangement_btns[i].config(state="disabled")
-        placement_result = self.calculate_layout()
+        placement_result, self.panel_count = self.calculate_layout()
         self.layout_imgs, self.placement_info = placement_result[0][:5], placement_result[1][:5]
         self.display_layout()
         for i in range(len(self.layout_imgs)):

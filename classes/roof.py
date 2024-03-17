@@ -9,21 +9,6 @@ from const.const import *
 from classes.obstacle import Obstacle
 import functools
 import collections
-
-
-def calculate_execution_time(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"{func.__name__} 函数执行时间为：{execution_time} 秒")
-        return result
-
-    return wrapper
-
-
 # 输入都是以毫米为单位的
 class Roof:
     def __init__(self, jsonRoof, latitude):
@@ -257,6 +242,7 @@ class Roof:
                                                 obstacle.upLeftPosition[1] + obstacle.length + (500 / UNIT),
                                                 max(obstacle.upLeftPosition[0] - (500 / UNIT), 0),
                                                 max(obstacle.upLeftPosition[1] - (500 / UNIT), 0)])
+        obstacleAdditionalArray = np.array(obstacleAdditionalArray)
 
         def addObstaclesConcern(placement):
             if len(placement[0]) == 1:
@@ -267,8 +253,9 @@ class Roof:
             else:
                 mergeObstacleArray = np.array(self.obstacleArray)
                 for arrange in placement[0]:
-                    sRPX, sRPY = screenedArrangements[arrange['ID']].shadowRelativePosition
-                    sizeY, sizeX = screenedArrangements[arrange['ID']].shadowArray.shape
+                    arrangement = screenedArrangements[arrange['ID']]
+                    sRPX, sRPY = arrangement.shadowRelativePosition
+                    sizeY, sizeX = arrangement.shadowArray.shape
                     sX, sY = arrange['start']
                     rsX, rsY = max(0, sX - sRPX), max(0, sY - sRPY)
                     eX, eY = min(self.width, sX - sRPX + sizeX), min(self.length, sY - sRPY + sizeY)
@@ -280,52 +267,51 @@ class Roof:
                 tempObstacleSumArray = np.cumsum(np.cumsum(mergeObstacleArray, axis=0), axis=1)
             allDeletedIndices = []
             for arrange in placement[0]:
+                arrangement = screenedArrangements[arrange['ID']]
                 arrangeStartX, arrangeStartY = arrange['start']
-                screenedArrangements[arrange['ID']].calculateComponentPositionArray(arrangeStartX, arrangeStartY)
-                tempArray = screenedArrangements[arrange['ID']].componentPositionArray
+                arrangement.calculateComponentPositionArray(arrangeStartX, arrangeStartY)
+                tempArray = arrangement.componentPositionArray
                 deletedIndices = []
-                for i in range(len(tempArray)):
+                for i, ((p00, p01), (p10, p11)) in enumerate(tempArray):
                     # zzp: 重复索引使用数量少还好，数量多了就很吃时间
-                    p00 = tempArray[i][0][0]
-                    p01 = tempArray[i][0][1]
-                    p10 = tempArray[i][1][0]
-                    p11 = tempArray[i][1][1]
-                    for additionalObstacle in obstacleAdditionalArray:  # 额外扣除范围
-                        if not (additionalObstacle[2] > p10 or p00 > additionalObstacle[0] or
-                                additionalObstacle[3] > p11 or p01 > additionalObstacle[1]):
-                            deletedIndices.append(i)
-                            break
-                    else:  # 额外扣除范围没有遮挡
-                        totalComponent = tempObstacleSumArray[p11, p00]
-                        if p00 > 0:
-                            totalComponent -= tempObstacleSumArray[p11, p00 - 1]
-                        if p01 > 0:
-                            totalComponent -= tempObstacleSumArray[p01 - 1, p10]
-                        if p00 > 0 and p01 > 0:
-                            totalComponent += tempObstacleSumArray[p01 - 1, p00 - 1]
-                        if totalComponent == 0 or (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
-                                                   screenedArrangements[arrange['ID']].componentHeightArray
-                                                   [p01 - arrangeStartY:p11 - arrangeStartY + 1,
-                                                   p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
-                            continue
-                        else:  # 做抬高分析
-                            if not hasattr(screenedArrangements[arrange['ID']], "componentHeightArray1"):
-                                screenedArrangements[arrange['ID']].componentHeightArray1 = screenedArrangements[
-                                    arrange['ID']].calculateComponentHeightArray(raiseLevel=1)
+                    obstacleIntersected = any(
+                        additionalObstacle[2] > p10 and p00 > additionalObstacle[0] and
+                        additionalObstacle[3] > p11 and p01 > additionalObstacle[1]
+                        for additionalObstacle in obstacleAdditionalArray
+                    )
+                    if obstacleIntersected:
+                        deletedIndices.append(i)
+                        continue
+                    totalComponent = tempObstacleSumArray[p11, p00]
+                    if p00 > 0:
+                        totalComponent -= tempObstacleSumArray[p11, p00 - 1]
+                    if p01 > 0:
+                        totalComponent -= tempObstacleSumArray[p01 - 1, p10]
+                    if p00 > 0 and p01 > 0:
+                        totalComponent += tempObstacleSumArray[p01 - 1, p00 - 1]
+                    if totalComponent == 0:
+                        continue
+                    if (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
+                                                arrangement.componentHeightArray
+                                                [p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                                p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
+                        continue
+                    else:  # 做抬高分析
+                        if not hasattr(arrangement, "componentHeightArray1"):
+                            arrangement.componentHeightArray1 = arrangement.calculateComponentHeightArray(raiseLevel=1)
+                        if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
+                                arrangement.componentHeightArray1[
+                                p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
+                            if not hasattr(arrangement, "componentHeightArray2"):
+                                arrangement.componentHeightArray2 = arrangement.calculateComponentHeightArray(raiseLevel=2)
                             if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
-                                    screenedArrangements[arrange['ID']].componentHeightArray1[
-                                    p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                    arrangement.componentHeightArray2
+                                    [p01 - arrangeStartY:p11 - arrangeStartY + 1,
                                     p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
-                                if not hasattr(screenedArrangements[arrange['ID']], "componentHeightArray2"):
-                                    screenedArrangements[arrange['ID']].componentHeightArray2 = screenedArrangements[
-                                        arrange['ID']].calculateComponentHeightArray(raiseLevel=2)
-                                if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
-                                        screenedArrangements[arrange['ID']].componentHeightArray2
-                                        [p01 - arrangeStartY:p11 - arrangeStartY + 1,
-                                        p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
-                                    deletedIndices.append(i)
+                                deletedIndices.append(i)
 
-                placement[1] -= len(deletedIndices) * screenedArrangements[arrange['ID']].component.power
+                placement[1] -= len(deletedIndices) * arrangement.component.power
                 allDeletedIndices.append(deletedIndices)
             placement.append(allDeletedIndices)
 
@@ -506,7 +492,8 @@ class Roof:
         for placement in self.allPlacements:
             allArrangement = placement[0]
             allTempArray = []
-            allTxtArray = []
+            # allTxtArray = []
+            allTxt = ""
             arrangeI = 0
             tempSum = 0
             for arrange in allArrangement:
@@ -519,9 +506,10 @@ class Roof:
                 tempTxt = f"第{arrangeI + 1}个阵列的立柱排布：\n" + tempTxt + "\n"
                 tempSum += len(tempArray)
                 allTempArray.append(tempArray)
-                allTxtArray.append(tempTxt)
+                # allTxtArray.append(tempTxt)
+                allTxt += tempTxt
                 arrangeI += 1
-            placement.extend([allTempArray, allTxtArray])
+            placement.extend([allTempArray, allTxt])
 
             if tempSum < nowMinValue:
                 nowMinValue = tempSum
