@@ -1339,15 +1339,15 @@ class UI:
                                     range(cut_index, original_length)}
 
             # zzp:剪枝过小的方案
-            IDArray = list(screenedArrangements.keys())
-            maxArrangementValue = sum([screenedArrangements[IDArray[j]].componentNum for j in range(i)])
-            cut_index = len(IDArray)
-            for j in range(i, cut_index):
-                if screenedArrangements[IDArray[j]].componentNum + maxArrangementValue < maxValue:
-                    cut_index = j
-                    break
-            screenedArrangements = {IDArray[j]: screenedArrangements[IDArray[j]] for j in range(cut_index)}
-            print(f"计算{i}阵列对方案进行剪枝，剪枝前方案数量：{original_length}，剪枝后方案数量：{cut_index}")
+            # IDArray = list(screenedArrangements.keys())
+            # maxArrangementValue = sum([screenedArrangements[IDArray[j]].componentNum for j in range(i)])
+            # cut_index = len(IDArray)
+            # for j in range(i, cut_index):
+            #     if screenedArrangements[IDArray[j]].componentNum + maxArrangementValue < maxValue:
+            #         cut_index = j
+            #         break
+            # screenedArrangements = {IDArray[j]: screenedArrangements[IDArray[j]] for j in range(cut_index)}
+            print(f"计算{i}阵列对方案进行剪枝，剪枝前方案数量：{original_length}，剪枝后方案数量：{len(list(screenedArrangements.keys()))}")
 
         end_time = time.time()
         execution_time = end_time - start_time
