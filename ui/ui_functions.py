@@ -617,7 +617,8 @@ class UI:
     def get_algorithm_data(self, window, str_entries, option_entries, bool_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.algorithm_info[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            self.algorithm_info[chn2eng[text]] = int(input_str) if input_str.replace('.', '',
+                                                                                     1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.algorithm_info[chn2eng[text]] = entry.get()
@@ -1285,7 +1286,8 @@ class UI:
         print(f"addObstacles 代码执行时间为：{execution_time} 秒")
 
         # zzp: 基于屋顶有效面积，估计光伏板数量，参数0.7，参数范围0-1，参数越高预估光伏板数量越多
-        minComponentCount, maxComponentCount = estimateComponentCount(roof, jsonData["component"]["specification"], 0.7 / jsonData['algorithm']['maxArrangeCount'])
+        minComponentCount, maxComponentCount = estimateComponentCount(roof, jsonData["component"]["specification"],
+                                                                      0.7 / jsonData['algorithm']['maxArrangeCount'])
         const.const.changeMinComponent(minComponentCount)
         const.const.changeMaxComponent(maxComponentCount)
         print(f"自动估计最小光伏板数量:{minComponentCount}，最大光伏板数量:{maxComponentCount}")
@@ -1347,11 +1349,12 @@ class UI:
         print("总代码执行时间为：", time.time() - allTimeStart, "秒\n")
         tempArray.append({
             "精度": f"{jsonData['algorithm']['precision']}mm",
+            "最大阵列数量": f"{jsonData['algorithm']['maxArrangeCount']}种",
             "基于面积推算的最大光伏板数量": f"{maxComponentCount}块",
             "最终排布的方案种类数": f"{len(roof.allPlacements)}种",
             "最终排布的光伏板数量": f"{panelValue}块",
             "最终排布的立柱数量": f"{columnValue}根",
-            "总耗时": "{:.2f}s".format(time.time() - allTimeStart) 
+            "总耗时": "{:.2f}s".format(time.time() - allTimeStart)
         })
         return tempArray
 
@@ -1360,7 +1363,8 @@ class UI:
             self.arrangement_btns[i].config(state="disabled")
         placement_result = self.calculate_layout()
         self.layout_imgs, self.placement_info, self.layout_final_info = \
-            placement_result[0][:5], placement_result[1][:5], "\n".join( [f"{k}:{v}" for k,v in placement_result[2].items()] )
+            placement_result[0][:5], placement_result[1][:5], "\n".join(
+                [f"{k}:{v}" for k, v in placement_result[2].items()])
         self.display_layout()
         for i in range(len(self.layout_imgs)):
             self.arrangement_btns[i].config(state="active")

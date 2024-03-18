@@ -1,12 +1,12 @@
-class c:
-    def __init__(self):
-        self.a = 1
+import numpy as np
 
-
-# 判断c是否有属性a
-c1 = c()
-print(hasattr(c1, "a"))  # True
-print(hasattr(c1, "b"))  # False
+boolArray = np.array([[True, False, True, False, True, False, True, False, True, False],
+                         [True, False, True, True, True, False, True, False, False, False],
+                         [True, False, True, False, True, False, True, False, True, False],
+                         [True, False, True, False, True, False, True, False, True, False]])
+# 按列表输出为false的点
+print(np.argwhere(~boolArray))
+# print(numpy.logical_not(boolArray))
 
 # d1 = {"id": ["123", {1: 2, 3: 4}]}
 # placement = []
