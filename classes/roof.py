@@ -9,7 +9,7 @@ from const.const import *
 from classes.obstacle import Obstacle
 import functools
 import collections
-
+# import numexpr as ne
 
 # 输入都是以毫米为单位的
 class Roof:
@@ -223,16 +223,14 @@ class Roof:
     #         f"分析阴影并选出最佳方案完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒，共有{len(self.allPlacements)}个较优排布方案\n")
     #     return int(nowMaxValue / screenedArrangements[self.allPlacements[0][0][0]['ID']].component.power)
 
-    def getBestOptions(self, screenedArrangements):
+    def getBestOptions(self, screenedArrangements, maxArrangeCount=-1, maxValue=0):
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
-        # 输入限制条件
-        # minComponent = getMinComponent()  # 最小光伏板个数
-        maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
-        nowMaxValue = -INF  # todo: 待优化，不需要遍历所有arrangement
+        if maxArrangeCount < 0:
+            maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
+        nowMaxValue = maxValue  # todo: 待优化，不需要遍历所有arrangement
         # 全局变量就不要传参，节省内存
         # screenedArrangements = {k: v for k, v in screenedArrangements.items() if v.legal} # 在screenArrangements函数中已经过滤了
-        screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         IDArray = list(screenedArrangements.keys())
 
         # 计算obstacle的额外扣除范围
@@ -293,9 +291,11 @@ class Roof:
                         totalComponent += tempObstacleSumArray[p01 - 1, p00 - 1]
                     if totalComponent == 0:
                         continue
-                    boolArray = mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <= arrangement.componentHeightArray[
-                                                                                p01 - arrangeStartY:p11 - arrangeStartY + 1,
-                                                                                p00 - arrangeStartX:p10 - arrangeStartX + 1]
+                    mergeArraySlice = mergeObstacleArray[p01:p11 + 1, p00:p10 + 1]
+                    heightArraySlice = arrangement.componentHeightArray[p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                                                        p00 - arrangeStartX:p10 - arrangeStartX + 1]
+                    # boolArray = ne.evaluate("mergeArraySlice <= heightArraySlice")
+                    boolArray = mergeArraySlice <= heightArraySlice
                     if boolArray.all():
                         continue
                     else:  # 做抬高分析
@@ -347,12 +347,14 @@ class Roof:
                                                                rsY1:rsY1 + eY - rsY, rsX1:rsX1 + eX - rsX])
                 tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
+            finishFlag = False
             for y in range(startY, self.length):
                 for x in range(startX, self.width):
                     for i, ID in enumerate(IDArray[startI:]):
                         # zzp：摆了也不如nowMax，那就直接跳过
                         if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
-                            continue
+                            finishFlag = True
+                            break
                         if layer > 0 and overlaps(x, y, screenedArrangements[ID], placements):
                             continue
                         if not canPlaceArrangementRoof(x, y, screenedArrangements[ID]):
@@ -390,6 +392,8 @@ class Roof:
                                     self.allPlacements.append(tempPlacement)
                         placements.pop()
                         currentValue -= screenedArrangements[ID].value
+                if finishFlag:
+                    break
                 startX = 0
             return betterFlag, nowMaxValue
 
