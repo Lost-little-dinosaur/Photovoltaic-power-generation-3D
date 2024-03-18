@@ -106,7 +106,7 @@ class Roof:
 
     def calculateObstacleSelf(self):
         # zzp: numpy加速
-        return_list = np.zeros((self.realWidth + 1000, self.realLength + 1000), dtype=np.int32)
+        return_list = np.zeros((self.realWidth + 3000, self.realLength + 3000), dtype=np.int32)
         # return_list = [[0] * ((self.realLength + 1000)) for _ in range((self.realWidth + 1000))]
         for obstacle in self.obstacles:
             if obstacle.type == '有烟烟囱':
