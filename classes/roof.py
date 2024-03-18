@@ -9,6 +9,8 @@ from const.const import *
 from classes.obstacle import Obstacle
 import functools
 import collections
+
+
 # 输入都是以毫米为单位的
 class Roof:
     def __init__(self, jsonRoof, latitude):
@@ -291,25 +293,35 @@ class Roof:
                         totalComponent += tempObstacleSumArray[p01 - 1, p00 - 1]
                     if totalComponent == 0:
                         continue
-                    if (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
-                                                arrangement.componentHeightArray
-                                                [p01 - arrangeStartY:p11 - arrangeStartY + 1,
-                                                p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
+                    boolArray = mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <= arrangement.componentHeightArray[
+                                                                                p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                                                                                p00 - arrangeStartX:p10 - arrangeStartX + 1]
+                    if boolArray.all():
                         continue
                     else:  # 做抬高分析
-                        if not hasattr(arrangement, "componentHeightArray1"):
-                            arrangement.componentHeightArray1 = arrangement.calculateComponentHeightArray(raiseLevel=1)
-                        if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
-                                arrangement.componentHeightArray1[
-                                p01 - arrangeStartY:p11 - arrangeStartY + 1,
-                                p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
-                            if not hasattr(arrangement, "componentHeightArray2"):
-                                arrangement.componentHeightArray2 = arrangement.calculateComponentHeightArray(raiseLevel=2)
-                            if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
-                                    arrangement.componentHeightArray2
-                                    [p01 - arrangeStartY:p11 - arrangeStartY + 1,
-                                    p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
-                                deletedIndices.append(i)
+                        # if not hasattr(arrangement, "componentHeightArray1"):
+                        #     arrangement.componentHeightArray1 = arrangement.calculateComponentHeightArray(raiseLevel=1)
+                        # if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
+                        #         arrangement.componentHeightArray1[
+                        #         p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                        #         p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
+                        #     if not hasattr(arrangement, "componentHeightArray2"):
+                        #         arrangement.componentHeightArray2 = arrangement.calculateComponentHeightArray(
+                        #             raiseLevel=2)
+                        #     if not (mergeObstacleArray[p01:p11 + 1, p00:p10 + 1] <=
+                        #             arrangement.componentHeightArray2
+                        #             [p01 - arrangeStartY:p11 - arrangeStartY + 1,
+                        #             p00 - arrangeStartX:p10 - arrangeStartX + 1]).all():
+                        #         deletedIndices.append(i)
+                        # 优化代码：只比较boolArray中为false的点加上540和1000的抬高后是否满足条件（不要再计算一遍calculateComponentHeightArray）
+                        falsePosition = np.argwhere(~boolArray)
+                        for x, y in falsePosition:
+                            if mergeObstacleArray[p01 + y, p00 + x] > arrangement.componentHeightArray[
+                                p01 - arrangeStartY + y, p00 - arrangeStartX + x] + 540:
+                                if mergeObstacleArray[p01 + y, p00 + x] > arrangement.componentHeightArray[
+                                    p01 - arrangeStartY + y, p00 - arrangeStartX + x] + 1000:
+                                    deletedIndices.append(i)
+                                    break
 
                 placement[1] -= len(deletedIndices) * arrangement.component.power
                 allDeletedIndices.append(deletedIndices)
@@ -606,7 +618,6 @@ class Roof:
             publicMatrix[ME:ME + roofBoardLength, MB + MD:MB + MD + MF, :] = RoofMarginColor  # F边界
             publicMatrix[ME + roofBoardLength:, MB + MD + MF - roofBoardLength:, :] = RoofMarginColor  # G边界
             publicMatrix[-roofBoardLength:, roofBoardLength:MH - roofBoardLength, :] = RoofMarginColor  # H边界
-
 
         for point in obstaclePointArray:
             publicMatrix[point[1], point[0]] = ObstacleColor
