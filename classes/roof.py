@@ -239,9 +239,9 @@ class Roof:
         for obstacle in self.obstacles:
             if obstacle.type == '有烟烟囱':
                 obstacleAdditionalArray.append([obstacle.upLeftPosition[0] + obstacle.width + (500 / UNIT),
-                                                obstacle.upLeftPosition[1] + obstacle.length + (500 / UNIT),
-                                                max(obstacle.upLeftPosition[0] - (500 / UNIT), 0),
-                                                max(obstacle.upLeftPosition[1] - (500 / UNIT), 0)])
+                                                    obstacle.upLeftPosition[1] + obstacle.length + (500 / UNIT),
+                                                    max(obstacle.upLeftPosition[0] - (500 / UNIT), 0),
+                                                    max(obstacle.upLeftPosition[1] - (500 / UNIT), 0)])
         obstacleAdditionalArray = np.array(obstacleAdditionalArray)
 
         def addObstaclesConcern(placement):
@@ -275,8 +275,8 @@ class Roof:
                 for i, ((p00, p01), (p10, p11)) in enumerate(tempArray):
                     # zzp: 重复索引使用数量少还好，数量多了就很吃时间
                     obstacleIntersected = any(
-                        additionalObstacle[2] > p10 and p00 > additionalObstacle[0] and
-                        additionalObstacle[3] > p11 and p01 > additionalObstacle[1]
+                        not (additionalObstacle[2] > p10 or p00 > additionalObstacle[0] or
+                        additionalObstacle[3] > p11 or p01 > additionalObstacle[1])
                         for additionalObstacle in obstacleAdditionalArray
                     )
                     if obstacleIntersected:
