@@ -1088,10 +1088,10 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
     return result
 
 
-def estimateComponentCount(roof, componentSpecification, minAlpha=0.7):
-    roofArea = roof.realArea
-    for obstacle in roof.obstacles:
-        roofArea -= obstacle.realArea
+def estimateComponentCount(roofArea, componentSpecification, minAlpha=0.7):
+    # roofArea = roof.realArea
+    # for obstacle in roof.obstacles:
+    #     roofArea -= obstacle.realArea
     component = getComponent(componentSpecification)
     componentArea = component.realLength * component.realWidth
     maxComponentCount = int(roofArea / componentArea)

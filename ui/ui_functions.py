@@ -1286,7 +1286,7 @@ class UI:
         print(f"addObstacles 代码执行时间为：{execution_time} 秒")
 
         # zzp: 基于屋顶有效面积，估计光伏板数量，参数0.7，参数范围0-1，参数越高预估光伏板数量越多
-        minComponentCount, maxComponentCount = estimateComponentCount(roof, jsonData["component"]["specification"],
+        minComponentCount, maxComponentCount = estimateComponentCount(roof.realArea, jsonData["component"]["specification"],
                                                                       0.7 / jsonData['algorithm']['maxArrangeCount'])
         const.const.changeMinComponent(minComponentCount)
         const.const.changeMaxComponent(maxComponentCount)
@@ -1318,14 +1318,15 @@ class UI:
 
         start_time = time.time()
         maxValue = 0
-        for i in range(1, jsonData['algorithm']['maxArrangeCount']+1):
-            panelValue = roof.getBestOptions(screenedArrangements, i, maxValue)  # 计算铺设光伏板的最佳方案
+        panelValue = -1
+        for i in range(1, jsonData['algorithm']['maxArrangeCount'] + 1):
+            panelValue = roof.getBestOptions(screenedArrangements, i, maxValue, maxComponentCount)  # 计算铺设光伏板的最佳方案
             print(f"{i}阵列下得到的最大光伏板:{panelValue}")
-            if i  == jsonData['algorithm']['maxArrangeCount']:
+            if i == jsonData['algorithm']['maxArrangeCount']:
                 break
             if maxValue < panelValue:
                 maxValue = panelValue
-                
+
             # zzp:剪枝过大的方案
             IDArray = list(screenedArrangements.keys())
             original_length = len(IDArray)
@@ -1334,11 +1335,12 @@ class UI:
                 if screenedArrangements[IDArray[j]].componentNum <= maxValue:
                     cut_index = j
                     break
-            screenedArrangements = {IDArray[j]: screenedArrangements[IDArray[j]] for j in range(cut_index, original_length)}
+            screenedArrangements = {IDArray[j]: screenedArrangements[IDArray[j]] for j in
+                                    range(cut_index, original_length)}
 
             # zzp:剪枝过小的方案
             IDArray = list(screenedArrangements.keys())
-            maxArrangementValue =  sum([screenedArrangements[IDArray[j]].componentNum for j in range(i)])
+            maxArrangementValue = sum([screenedArrangements[IDArray[j]].componentNum for j in range(i)])
             cut_index = len(IDArray)
             for j in range(i, cut_index):
                 if screenedArrangements[IDArray[j]].componentNum + maxArrangementValue < maxValue:
@@ -1346,7 +1348,7 @@ class UI:
                     break
             screenedArrangements = {IDArray[j]: screenedArrangements[IDArray[j]] for j in range(cut_index)}
             print(f"计算{i}阵列对方案进行剪枝，剪枝前方案数量：{original_length}，剪枝后方案数量：{cut_index}")
-                
+
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"getBestOptions 代码执行时间为：{execution_time} 秒")

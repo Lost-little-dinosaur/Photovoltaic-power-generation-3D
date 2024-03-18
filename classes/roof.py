@@ -9,6 +9,8 @@ from const.const import *
 from classes.obstacle import Obstacle
 import functools
 import collections
+
+
 # import numexpr as ne
 
 # 输入都是以毫米为单位的
@@ -223,7 +225,7 @@ class Roof:
     #         f"分析阴影并选出最佳方案完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒，共有{len(self.allPlacements)}个较优排布方案\n")
     #     return int(nowMaxValue / screenedArrangements[self.allPlacements[0][0][0]['ID']].component.power)
 
-    def getBestOptions(self, screenedArrangements, maxArrangeCount=-1, maxValue=0):
+    def getBestOptions(self, screenedArrangements, maxArrangeCount=-1, maxValue=0, maxComponentCount=INF):
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
         if maxArrangeCount < 0:
@@ -239,9 +241,9 @@ class Roof:
         for obstacle in self.obstacles:
             if obstacle.type == '有烟烟囱':
                 obstacleAdditionalArray.append([obstacle.upLeftPosition[0] + obstacle.width + (500 / UNIT),
-                                                    obstacle.upLeftPosition[1] + obstacle.length + (500 / UNIT),
-                                                    max(obstacle.upLeftPosition[0] - (500 / UNIT), 0),
-                                                    max(obstacle.upLeftPosition[1] - (500 / UNIT), 0)])
+                                                obstacle.upLeftPosition[1] + obstacle.length + (500 / UNIT),
+                                                max(obstacle.upLeftPosition[0] - (500 / UNIT), 0),
+                                                max(obstacle.upLeftPosition[1] - (500 / UNIT), 0)])
         obstacleAdditionalArray = np.array(obstacleAdditionalArray)
 
         def addObstaclesConcern(placement):
@@ -276,7 +278,7 @@ class Roof:
                     # zzp: 重复索引使用数量少还好，数量多了就很吃时间
                     obstacleIntersected = any(
                         not (additionalObstacle[2] > p10 or p00 > additionalObstacle[0] or
-                        additionalObstacle[3] > p11 or p01 > additionalObstacle[1])
+                             additionalObstacle[3] > p11 or p01 > additionalObstacle[1])
                         for additionalObstacle in obstacleAdditionalArray
                     )
                     if obstacleIntersected:
@@ -293,7 +295,7 @@ class Roof:
                         continue
                     mergeArraySlice = mergeObstacleArray[p01:p11 + 1, p00:p10 + 1]
                     heightArraySlice = arrangement.componentHeightArray[p01 - arrangeStartY:p11 - arrangeStartY + 1,
-                                                                        p00 - arrangeStartX:p10 - arrangeStartX + 1]
+                                       p00 - arrangeStartX:p10 - arrangeStartX + 1]
                     # boolArray = ne.evaluate("mergeArraySlice <= heightArraySlice")
                     boolArray = mergeArraySlice <= heightArraySlice
                     if boolArray.all():
@@ -355,6 +357,9 @@ class Roof:
                         if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
                             finishFlag = True
                             break
+                        if maxComponentCount < sum([screenedArrangements[ii['ID']].componentNum for ii in placements]) + \
+                                screenedArrangements[ID].componentNum:
+                            continue
                         if layer > 0 and overlaps(x, y, screenedArrangements[ID], placements):
                             continue
                         if not canPlaceArrangementRoof(x, y, screenedArrangements[ID]):
