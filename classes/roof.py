@@ -353,6 +353,7 @@ class Roof:
                 tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
             finishFlag = False
+            currentPanelCount = sum([screenedArrangements[ii['ID']].componentNum for ii in placements])
             for y in range(startY, self.length):
                 for x in range(startX, self.width):
                     for i, ID in enumerate(IDArray[startI:]):
@@ -360,8 +361,7 @@ class Roof:
                         if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
                             finishFlag = True
                             break
-                        if maxComponentCount <= sum([screenedArrangements[ii['ID']].componentNum for ii in placements]) + \
-                                screenedArrangements[ID].componentNum:
+                        if maxComponentCount < currentPanelCount + screenedArrangements[ID].componentNum:
                             continue
                         if layer > 0 and overlaps(x, y, screenedArrangements[ID], placements):
                             continue

@@ -32,6 +32,6 @@ if __name__ == "__main__":
 
     stream = open('output.txt', 'w')
     stats = pstats.Stats('output.prof', stream=stream)
-    stats.sort_stats('cumtime')
+    stats.sort_stats('tottime')
     stats.print_stats()
     # main()
