@@ -230,8 +230,6 @@ class Roof:
         panelValue = -1
         nowPlacements = []
         for i in range(1, maxArrangeCount + 1):
-            if i > 1:
-                break
             panelValue, nowPlacements = self.getBestOptions(screenedArrangements, maxValue, maxArrangeCount, maxComponentCount, nowPlacements)  # 计算铺设光伏板的最佳方案
             print(f"{i}阵列下得到的最大光伏板:{panelValue}")
             if i == maxArrangeCount:
@@ -358,6 +356,7 @@ class Roof:
             return placement[1]
 
         def dfs(startX, startY, startI, placements, layer, nowMaxValue, ):
+            allPlacements = []
             betterFlag = False
             obstacleArray = []
             tempObstacleSumArray = []
@@ -395,23 +394,24 @@ class Roof:
                             continue
                         newPlacement = {'ID': ID, 'start': (x, y)}
                         placements.append(newPlacement)
-                        nextPlacements.append(placements.copy())
+                        if layer < maxArrangeCount:
+                            nextPlacements.append(placements.copy())
                         currentPanelCount += screenedArrangements[ID].componentNum
                         if currentPanelCount >= nowMaxValue:
                             tempPlacement = [placements.copy(), currentPanelCount]
                             tempPlacementValue = addObstaclesConcern(tempPlacement)
                             if tempPlacementValue > nowMaxValue:
                                 nowMaxValue = tempPlacementValue
-                                self.allPlacements = [tempPlacement]
+                                allPlacements = [tempPlacement]
                                 print(f"更新当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
                             elif tempPlacementValue == nowMaxValue:
-                                self.allPlacements.append(tempPlacement)
+                                allPlacements.append(tempPlacement)
                         placements.pop()
                         currentPanelCount -= screenedArrangements[ID].componentNum
                 if finishFlag:
                     break
                 startX = 0
-            return betterFlag, nowMaxValue
+            return betterFlag, nowMaxValue, allPlacements
 
         def canPlaceArrangementRoof(x, y, arrange):
             # zzp: 提前判断，提前退出
@@ -501,15 +501,24 @@ class Roof:
 
         # zzp: 多阵列计算，减少重复计算
         nextPlacements = []
+        bestPlacements = []
         if len(nowPlacements) > 0:
+            # zzp: 这个for循环应该可以改并行
             for tempPlacement in nowPlacements:
                 lastPlacement = tempPlacement[-1]
                 i = IDArray.index(lastPlacement['ID'])
-                flag, nowMaxValue = dfs(lastPlacement['start'][0] + screenedArrangements[lastPlacement["ID"]].relativePositionArray[0][1][0], lastPlacement['start'][1], 
+                flag, newMaxValue, newPlacements = dfs(lastPlacement['start'][0] + screenedArrangements[lastPlacement["ID"]].relativePositionArray[0][1][0], lastPlacement['start'][1], 
                                         i, tempPlacement, len(tempPlacement) + 1, nowMaxValue)
+                if newMaxValue > nowMaxValue:
+                    nowMaxValue = newMaxValue
+                    self.allPlacements = newPlacements
+                elif newMaxValue == nowMaxValue:
+                    self.allPlacements.extend(newPlacements)
+                
         # zzp: 单阵列计算
         else:
-            flag, nowMaxValue = dfs(0, 0, 0, nowPlacements, 1, nowMaxValue)
+            flag, nowMaxValue, bestPlacements = dfs(0, 0, 0, nowPlacements, 1, nowMaxValue)
+            self.allPlacements = bestPlacements
 
         # tempTest = []
         # for placement in self.allPlacements:
