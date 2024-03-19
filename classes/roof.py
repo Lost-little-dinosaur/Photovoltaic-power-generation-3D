@@ -1,3 +1,4 @@
+from classes.arrangement import screenArrangements
 import multiprocessing
 from PIL import Image
 import numpy as np
@@ -224,17 +225,37 @@ class Roof:
     #     print(
     #         f"分析阴影并选出最佳方案完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒，共有{len(self.allPlacements)}个较优排布方案\n")
     #     return int(nowMaxValue / screenedArrangements[self.allPlacements[0][0][0]['ID']].component.power)
+    def getBestOptionsOuter(self, screenedArrangements, maxArrangeCount, maxComponentCount):
+        maxValue = 0
+        panelValue = -1
+        nowPlacements = []
+        for i in range(1, maxArrangeCount + 1):
+            panelValue, nowPlacements = self.getBestOptions(screenedArrangements, maxValue, maxComponentCount, nowPlacements)  # 计算铺设光伏板的最佳方案
+            print(f"{i}阵列下得到的最大光伏板:{panelValue}")
+            if i == maxArrangeCount:
+                break
+            if maxValue < panelValue:
+                maxValue = panelValue
 
-    def getBestOptions(self, screenedArrangements, maxArrangeCount=-1, maxValue=0, maxComponentCount=INF):
+            # zzp:剪枝过大的方案
+            IDArray = list(screenedArrangements.keys())
+            original_length = len(IDArray)
+            cut_index = len(IDArray)
+            for j in range(cut_index):
+                if screenedArrangements[IDArray[j]].componentNum <= maxValue:
+                    cut_index = j
+                    break
+            screenedArrangements = {IDArray[j]: screenedArrangements[IDArray[j]] for j in
+                                    range(cut_index, original_length)}
+
+            print(f"计算{i}阵列对方案进行剪枝，剪枝前方案数量：{original_length}，剪枝后方案数量：{len(list(screenedArrangements.keys()))}")
+        return panelValue
+
+    def getBestOptions(self, screenedArrangements, maxValue=0, maxComponentCount=INF, nowPlacements=[]):
         time1 = time.time()
         print("开始计算排布方案，当前时间为", time.strftime('%m-%d %H:%M:%S', time.localtime()))
-        if maxArrangeCount < 0:
-            maxArrangeCount = getMaxArrangeCount()  # 最大排布数量
         nowMaxValue = maxValue  # todo: 待优化，不需要遍历所有arrangement
-        # 全局变量就不要传参，节省内存
-        # screenedArrangements = {k: v for k, v in screenedArrangements.items() if v.legal} # 在screenArrangements函数中已经过滤了
         IDArray = list(screenedArrangements.keys())
-
         # 计算obstacle的额外扣除范围
         UNIT = const.getUnit()
         obstacleAdditionalArray = []
@@ -358,7 +379,7 @@ class Roof:
                 for x in range(startX, self.width):
                     for i, ID in enumerate(IDArray[startI:]):
                         # zzp：摆了也不如nowMax，那就直接跳过
-                        if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
+                        if currentValue + screenedArrangements[ID].value < nowMaxValue:
                             finishFlag = True
                             break
                         if maxComponentCount < currentPanelCount + screenedArrangements[ID].componentNum:
@@ -372,32 +393,18 @@ class Roof:
                             continue
                         newPlacement = {'ID': ID, 'start': (x, y)}
                         placements.append(newPlacement)
+                        nextPlacements.append(placements.copy())
                         currentValue += screenedArrangements[ID].value
-                        if layer < maxArrangeCount:
-                            temp, nowMaxValue = dfs(x + screenedArrangements[ID].relativePositionArray[0][1][0], y, i,
-                                                    currentValue, placements, layer + 1, nowMaxValue)
-                            if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
-                                betterFlag = True
-                            else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
-                                if currentValue >= nowMaxValue:
-                                    tempPlacement = [placements.copy(), currentValue]
-                                    tempPlacementValue = addObstaclesConcern(tempPlacement)
-                                    if tempPlacementValue > nowMaxValue:
-                                        nowMaxValue = tempPlacementValue
-                                        self.allPlacements = [tempPlacement]
-                                    elif tempPlacementValue == nowMaxValue:
-                                        self.allPlacements.append(tempPlacement)
-                        else:
-                            if currentValue >= nowMaxValue:
-                                tempPlacement = [placements.copy(), currentValue]
-                                tempPlacementValue = addObstaclesConcern(tempPlacement)
-                                if tempPlacementValue > nowMaxValue:
-                                    nowMaxValue = tempPlacementValue
-                                    self.allPlacements = [tempPlacement]
-                                    print(
-                                        f"更新当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-                                elif tempPlacementValue == nowMaxValue:
-                                    self.allPlacements.append(tempPlacement)
+                        if currentValue >= nowMaxValue:
+                            tempPlacement = [placements.copy(), currentValue]
+                            tempPlacementValue = addObstaclesConcern(tempPlacement)
+                            if tempPlacementValue > nowMaxValue:
+                                nowMaxValue = tempPlacementValue
+                                self.allPlacements = [tempPlacement]
+                                print(
+                                    f"更新当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                            elif tempPlacementValue == nowMaxValue:
+                                self.allPlacements.append(tempPlacement)
                         placements.pop()
                         currentValue -= screenedArrangements[ID].value
                 if finishFlag:
@@ -491,14 +498,26 @@ class Roof:
                             return True
             return False
 
-        flag, nowMaxValue = dfs(0, 0, 0, 0, [], 1, nowMaxValue)
+        # zzp: 多阵列计算，减少重复计算
+        nextPlacements = []
+        if len(nowPlacements) > 0:
+            for tempPlacement in nowPlacements:
+                lastPlacement = tempPlacement[-1]
+                i = IDArray.index(lastPlacement['ID'])
+                currentValue = sum([screenedArrangements[ii['ID']].value for ii in tempPlacement])
+                flag, nowMaxValue = dfs(lastPlacement['start'][0] + screenedArrangements[lastPlacement["ID"]].relativePositionArray[0][1][0], lastPlacement['start'][1], 
+                                        i, currentValue, tempPlacement, len(tempPlacement) + 1, nowMaxValue)
+        # zzp: 单阵列计算
+        else:
+            flag, nowMaxValue = dfs(0, 0, 0, 0, nowPlacements, 1, nowMaxValue)
+
         # tempTest = []
         # for placement in self.allPlacements:
         #     if len(placement[0]) == 2 and placement[0][1]["start"][1] >= 10:
         #         tempTest.append(placement)
         print(
             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
-        return int(nowMaxValue / screenedArrangements[list(screenedArrangements.keys())[0]].component.power)
+        return int(nowMaxValue / screenedArrangements[list(screenedArrangements.keys())[0]].component.power), nextPlacements
 
     def addObstacles(self, obstacles):
         for obstacle in obstacles:  # todo: 待优化，可以多进程计算
