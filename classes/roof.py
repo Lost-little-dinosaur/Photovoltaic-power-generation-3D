@@ -317,13 +317,16 @@ class Roof:
                         #         deletedIndices.append(i)
                         # 优化代码：只比较boolArray中为false的点加上540和1000的抬高后是否满足条件（不要再计算一遍calculateComponentHeightArray）
                         falsePosition = np.argwhere(~boolArray)
-                        for x, y in falsePosition:
+                        for y, x in falsePosition:
+                            # try:
                             if mergeObstacleArray[p01 + y, p00 + x] > arrangement.componentHeightArray[
                                 p01 - arrangeStartY + y, p00 - arrangeStartX + x] + 540:
                                 if mergeObstacleArray[p01 + y, p00 + x] > arrangement.componentHeightArray[
                                     p01 - arrangeStartY + y, p00 - arrangeStartX + x] + 1000:
                                     deletedIndices.append(i)
                                     break
+                            # except:
+                            #     print("debug")
 
                 placement[1] -= len(deletedIndices) * arrangement.component.power
                 allDeletedIndices.append(deletedIndices)

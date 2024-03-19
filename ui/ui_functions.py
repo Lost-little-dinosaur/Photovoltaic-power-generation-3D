@@ -1287,7 +1287,7 @@ class UI:
 
         # zzp: 基于屋顶有效面积，估计光伏板数量，参数0.7，参数范围0-1，参数越高预估光伏板数量越多
         minComponentCount, maxComponentCount = estimateComponentCount(roof.realArea, jsonData["component"]["specification"],
-                                                                      0.7 / jsonData['algorithm']['maxArrangeCount'])
+                                                                      0.44)
         const.const.changeMinComponent(minComponentCount)
         const.const.changeMaxComponent(maxComponentCount)
         print(f"自动估计最小光伏板数量:{minComponentCount}，最大光伏板数量:{maxComponentCount}")
