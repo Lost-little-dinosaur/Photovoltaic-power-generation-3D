@@ -93,7 +93,7 @@ class Arrangement:
         self.crossCount = 0
         self.verticalCount = 0
         self.verticalNum = 0
-        self.componentHeightArray = np.array(self.calculateComponentHeightArray())  # 每个光伏板具体高度（大小是这个arrangement的最小包络矩形）
+        self.componentHeightArray = np.array(self.calculateComponentHeightArray(),dtype=np.float32)  # 每个光伏板具体高度（大小是这个arrangement的最小包络矩形）
 
         self.maxLength, self.maxWidth = -INF, -INF
         # zzp: 将 self.relativePositionArray 转换为 NumPy 数组，但效率没有提高，后面面对大数据可能才有用
@@ -108,7 +108,7 @@ class Arrangement:
                 self.maxWidth = tempElement[1][0]
             if tempElement[1][1] >= self.maxLength:
                 self.maxLength = tempElement[1][1]
-        self.shadowArray = np.zeros((self.maxWidth + 1, self.maxLength + 1))  # 阴影数组
+        self.shadowArray = np.zeros((self.maxWidth + 1, self.maxLength + 1), dtype=np.float32)  # 阴影数组
 
         self.columnArray_y = []  # 立柱南北间距
         self.columnArray_x = []  # 立柱东西间距
@@ -813,7 +813,6 @@ class Arrangement:
         #             return_list[y][x] = hMin + temp * (length - y)
 
         # 换numpy
-        # return_list = np.zeros((length + 1, width + 1), dytpe=np.float32)
         return_list = np.zeros((length + 1, width + 1), dtype=np.float32)
         for node in self.relativePositionArray:
             max_x = node[1][0]
@@ -1091,9 +1090,6 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
 
 
 def estimateComponentCount(roofArea, componentSpecification, minAlpha=0.7):
-    # roofArea = roof.realArea
-    # for obstacle in roof.obstacles:
-    #     roofArea -= obstacle.realArea
     component = getComponent(componentSpecification)
     componentArea = component.realLength * component.realWidth
     maxComponentCount = int(roofArea / componentArea)

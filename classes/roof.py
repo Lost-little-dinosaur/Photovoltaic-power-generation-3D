@@ -360,7 +360,7 @@ class Roof:
                         if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
                             finishFlag = True
                             break
-                        if maxComponentCount < sum([screenedArrangements[ii['ID']].componentNum for ii in placements]) + \
+                        if maxComponentCount <= sum([screenedArrangements[ii['ID']].componentNum for ii in placements]) + \
                                 screenedArrangements[ID].componentNum:
                             continue
                         if layer > 0 and overlaps(x, y, screenedArrangements[ID], placements):
