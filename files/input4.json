@@ -24,7 +24,7 @@
       "A": 5000,
       "B": 4300,
       "C": 7800,
-      "D": 16400,
+      "D": 26400,
       "height": 5000,
       "roofDirection": 0,
       "roofAngle": 0,
@@ -62,7 +62,7 @@
     "thickness": 350
   },
   "algorithm": {
-    "precision": 50,
+    "precision": 20,
     "maxArrangeCount": 1,
     "minComponent": 21
   }

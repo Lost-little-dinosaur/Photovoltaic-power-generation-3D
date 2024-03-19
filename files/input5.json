@@ -39,12 +39,12 @@
       "haveOverhangingEave": false,
       "obstacles": [
         {
-          "id": "有烟烟囱1",
-          "type": "有烟烟囱",
+          "id": "无烟烟囱1",
+          "type": "无烟烟囱",
           "isRound": false,
           "length": 1000,
           "width": 1000,
-          "height": 500,
+          "height": 900,
           "upLeftPosition": [
             8300,
             2800
@@ -52,7 +52,6 @@
           "adjustedHeight": 0,
           "removable": 0
         }
-
       ]
     },
     "obstacles": [
@@ -65,7 +64,7 @@
     "thickness": 350
   },
   "algorithm": {
-    "precision": 50,
+    "precision": 10,
     "maxArrangeCount": 1,
     "minComponent": 21
   }

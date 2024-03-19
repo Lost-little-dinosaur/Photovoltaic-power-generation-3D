@@ -56,8 +56,8 @@
           "adjustedHeight": 0
         },
         {
-          "id": "有烟烟囱2",
-          "type": "有烟烟囱",
+          "id": "无烟烟囱2",
+          "type": "无烟烟囱",
           "isRound": false,
           "length": 500,
           "width": 500,
@@ -220,7 +220,7 @@
     "thickness": 350
   },
   "algorithm": {
-    "precision": 50,
+    "precision": 10,
     "maxArrangeCount": 1,
     "minComponent": 1
   }

@@ -185,19 +185,20 @@ class Arrangement:
             final_list = []
             for node in result:
                 flag = 1
-    # 立柱扣除
-    #            for component in self.componentPositionArray:
-    #                if (component[0][0] <= node[0] <= component[1][0]
-    #                        and component[0][1] <= node[1] <= component[1][1]):
-    #                    flag = 1
-    #            for i in deletedIndices:
-    #                component = self.componentPositionArray[i]
-    #                if (component[0][0] < node[0] < component[1][0]
-    #                        and component[0][1] < node[1] < component[1][1]):
-    #                    flag = 0
+                # 立柱扣除
+                #            for component in self.componentPositionArray:
+                #                if (component[0][0] <= node[0] <= component[1][0]
+                #                        and component[0][1] <= node[1] <= component[1][1]):
+                #                    flag = 1
+                #            for i in deletedIndices:
+                #                component = self.componentPositionArray[i]
+                #                if (component[0][0] < node[0] < component[1][0]
+                #                        and component[0][1] < node[1] < component[1][1]):
+                #                    flag = 0
                 if flag == 1:
                     final_list.append(node)
             return final_list
+
         up = 0
         down = 0
         array_y = []
@@ -245,7 +246,7 @@ class Arrangement:
                     array_limitleft = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 0)]
                     array_yright = column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 1)].copy()
                     array_limitright = limit_column[(str_ar, len(self.componentLayoutArray), 0, 0, 0, count, 1)]
-                    height = self.relativePositionArray[0][1][1] * UNIT + UNIT # todo 测试一下
+                    height = self.relativePositionArray[0][1][1] * UNIT + UNIT  # todo 测试一下
                     down = 1
             elif len(self.componentLayoutArray) == 2 and (
                     self.componentLayoutArray[0] != self.componentLayoutArray[1]):  # 竖一横一
@@ -282,7 +283,7 @@ class Arrangement:
                         (str_ar, len(self.componentLayoutArray) - 1, 1, count1, count2, count3, 1)]
                     if count3 != 0:
                         if count2 == 0:
-                            height = self.relativePositionArray[1][1][1] * UNIT + UNIT # todo 测试一下
+                            height = self.relativePositionArray[1][1][1] * UNIT + UNIT  # todo 测试一下
                         else:
                             height = self.relativePositionArray[0][1][1] * UNIT + UNIT
                         down = 1
@@ -494,16 +495,16 @@ class Arrangement:
             final_list = []
             for node in result:
                 flag = 1
-# 立柱扣除
-#                for component in self.componentPositionArray:
-#                    if (component[0][0] <= node[0] <= component[1][0]
-#                            and component[0][1] <= node[1] <= component[1][1]):
-#                        flag = 1
-#                for i in deletedIndices:
-#                    component = self.componentPositionArray[i]
-#                    if (component[0][0] <= node[0] <= component[1][0]
-#                            and component[0][1] < node[1] < component[1][1]):
-#                        flag = 0
+                # 立柱扣除
+                #                for component in self.componentPositionArray:
+                #                    if (component[0][0] <= node[0] <= component[1][0]
+                #                            and component[0][1] <= node[1] <= component[1][1]):
+                #                        flag = 1
+                #                for i in deletedIndices:
+                #                    component = self.componentPositionArray[i]
+                #                    if (component[0][0] <= node[0] <= component[1][0]
+                #                            and component[0][1] < node[1] < component[1][1]):
+                #                        flag = 0
                 if flag == 1:
                     final_list.append(node)
             if type == "正7形":

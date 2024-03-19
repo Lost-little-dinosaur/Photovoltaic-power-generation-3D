@@ -22,7 +22,7 @@
       "category": "平屋顶",
       "roofSurfaceCategory": "矩形",
       "A": 9700,
-      "B": 20200,
+      "B": 15200,
       "height": 3000,
       "roofDirection": 0,
       "roofAngle": 0,
@@ -60,7 +60,7 @@
     "thickness": 350
   },
   "algorithm": {
-    "precision": 50,
+    "precision": 10,
     "maxArrangeCount": 1,
     "minComponent": 1
   }
