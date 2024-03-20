@@ -446,20 +446,25 @@ class Arrangement:
                 column_positions.append(x1)
                 spanWidth = x2 - x1
                 column_min = int(spanWidth / max_spacing)
-                column_min = max(1, column_min)
-                column_max = 1000
-                le = len(column_positions)
-                for n_columns in range(column_min, column_max):
-                    ideal_spacing = int(spanWidth / (n_columns)) + 1  # 计算理想间距
-                    if ideal_spacing > max_spacing:
-                        continue
-                    ideal_spacing = min(max_spacing, ideal_spacing)
-                    for i in range(1, n_columns):
-                        x = int(i * ideal_spacing + x1)
-                        column_positions.append(x)
-                    if len(column_positions) != le:
-                        break
-                column_positions.append(x2)
+                if column_min == 0:
+                    column_positions.append(x2)
+                else:
+                    column_min = max(1, column_min)
+                    column_max = 1000
+                    le = len(column_positions)
+                    for n_columns in range(column_min, column_max):
+                        ideal_spacing = int(spanWidth / (n_columns)) + 1  # 计算理想间距
+                        if ideal_spacing > max_spacing:
+                            continue
+                        ideal_spacing = min(max_spacing, ideal_spacing)
+                        for i in range(1, n_columns):
+                            x = int(i * ideal_spacing + x1)
+                            column_positions.append(x)
+                        if len(column_positions) != le:
+                            break
+                    column_positions.append(x2)
+
+
             self.columnArray_x.append(column_positions[0])
             for i in range(len(column_positions) - 1):
                 self.columnArray_x.append(column_positions[i + 1] - column_positions[i])
