@@ -121,7 +121,7 @@ class Roof:
                 y_min = max(0, obstacle.realUpLeftPosition[1] - 100)
                 y_max = min(self.realLength, obstacle.realUpLeftPosition[1] + obstacle.reallength + 100)
                 return_list[x_min:x_max, y_min:y_max] = 1
-                self.obstaclerange.append((x_min, x_max))
+                self.obstaclerange.append([x_min, x_max])
                 # for x in range(x_min, x_max):
                 #     for y in range(y_min, y_max):
                 #         return_list[x][y] = 1

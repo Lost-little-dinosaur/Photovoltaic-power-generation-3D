@@ -121,12 +121,22 @@ class Arrangement:
         column, limit_column, arrangement_height = const.const.getColumnsInformation()
         startX = int(startXunit * UNIT)
         startY = int(startYunit * UNIT)
-        def dfsColumn_position(x, n_columns, width, answer, obstaclerange, max_spacing):
+        temp = []
+        for node in obstaclerange:
+            temp.append([node[0] - startX, node[1] - startX])
+        obstaclerange = temp
+        sys.setrecursionlimit(10000)
+        def dfsColumn_position(x, n_columns, width, answer, obstaclerange, max_spacing, type, k = 0):
+            # type == 1表示常规情况，2表示有扣除
             result = []
-            if n_columns == 0:
+            if n_columns <= 0 and type == 1:
                 if 250 <= (width - x) <= 700:
                     return answer
-            num = answer[-1] + max_spacing
+            if n_columns <= 0 and type == 2:
+                if (width - x) <= max_spacing + k:
+                    return answer
+            num = answer[-1] + max_spacing + k
+            k = 0
             while num >= answer[-1] + max_spacing / 2:
                 answer.append(num)  # 将当前数加入组合
                 found_match = False
@@ -135,11 +145,12 @@ class Arrangement:
                         found_match = True
                         break
                 if not found_match:
-                    result = dfsColumn_position(num, n_columns - 1, width, answer, obstaclerange, max_spacing)  # 递归搜索下一个数
+                    result = dfsColumn_position(num, n_columns - 1, width, answer, obstaclerange, max_spacing, type, k)  # 递归搜索下一个数
                     if len(result) != 0:  # 如果找到满足条件的答案，立即返回
                         break
                 answer.pop()  # 回溯，移除当前数
                 num -= 50
+                k += 50
                 if len(result) != 0:  # 如果找到满足条件的答案，立即返回
                     break
             return result
@@ -174,6 +185,7 @@ class Arrangement:
             # if column_positions[-1] <= round(width - 700 / UNIT):
             #     column_positions[-1] = round(width - (700 / UNIT))
             for num in range(250, 700, 50):
+
                 column_positions.append(num)  # 将当前数加入组合
                 found_match = False
                 for node in obstaclerange:
@@ -181,11 +193,13 @@ class Arrangement:
                         found_match = True
                         break
                 if not found_match:
-                    column_positions = dfsColumn_position(num, n_columns - 1, width, column_positions, obstaclerange, ideal_spacing)  # 递归搜索下一个数
+                    column_positions = dfsColumn_position(num, n_columns - 1, width, column_positions,
+                                                          obstaclerange, ideal_spacing, 1)  # 递归搜索下一个数
                 if len(column_positions) == n_columns:
                     break
                 column_positions.pop()  # 回溯，移除当前数
-            self.columnArray_x.append(column_positions[0])
+                self.columnArray_x.append(column_positions[0])
+
             for i in range(len(column_positions) - 1):
                 self.columnArray_x.append(column_positions[i + 1] - column_positions[i])
             self.columnArray_x.append(width - column_positions[-1])
@@ -371,7 +385,7 @@ class Arrangement:
             self.columnArray_y = array_yleft + array_yright
             for i in range(len(result_yright)):
                 result_yright[i] = result_yright[i] + height
-        #  计算column_position
+        ##################   计算column_position
         #    deletedEdgecomponent = []
         #    for i in deletedIndices:
         #        if i in self.edgeComponents:
@@ -383,7 +397,7 @@ class Arrangement:
                 width = component[1][0]
         width += 1
         width = width - self.componentPositionArray[0][0][0]  # 绝对宽度
-        if len(deletedIndices) == 0:
+        if len(deletedIndices) == 0:  # 没有扣除情况
             column_min = int(width / max_spacing) + 1
             if width - (column_min * max_spacing) < 1400:
                 column_min += 1
@@ -446,6 +460,7 @@ class Arrangement:
                     fixedColumn.pop(i + 1)
                 else:
                     i = i + 1
+            # 计算得到需要固定的位置fixedColumn
             if fixedColumn[0][0] < 700:
                 x1 = fixedColumn[0][0]
                 x2 = fixedColumn[1][0]
@@ -453,25 +468,44 @@ class Arrangement:
                 k = 2
             else:
                 x1 = 500
+                for num in range(250, 700, 50):
+                    found_match = False
+                    for node in obstaclerange:
+                        if node[0] < num < node[1]:
+                            found_match = True
+                            break
+                    if not found_match:
+                        x1 = num
+                        break
                 x2 = fixedColumn[0][0]
                 spanNums = len(fixedColumn) + 1
                 k = 1
-
             for i in range(spanNums - 1):
                 column_positions.append(x1)
                 spanWidth = x2 - x1
                 column_min = int(spanWidth / max_spacing)
-                column_min = max(1, column_min)
-                column_max = 1000
-                for n_columns in range(column_min, column_max):
-                    ideal_spacing = int(spanWidth / n_columns) + 1  # 计算理想间距
-                    if ideal_spacing > max_spacing:
-                        continue
-                    for i in range(1, n_columns):
-                        x = int(i * ideal_spacing + x1)
-                        column_positions.append(x)
-                    if len(column_positions) != 0:
-                        break
+                if column_min != 0:
+                    column_min = max(1, column_min)
+                    column_max = 1000
+                    for n_columns in range(column_min, column_max):
+                        ideal_spacing = int(spanWidth / n_columns) + 1  # 计算理想间距
+                        if ideal_spacing > max_spacing:
+                            continue
+                        for i in range(1, n_columns):
+                            x = int(i * ideal_spacing + x1)
+                            column_positions.append(x)
+                        if len(column_positions) != 0:
+                            break
+    #                    templist = []
+    #                    templist = dfsColumn_position(x1, n_columns - 1, x2, column_positions,
+    #                                                        obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
+    #                    if (x2 - templist[-1]) <= ideal_spacing:
+    #                        column_positions += templist
+    #                        break
+
+
+    #            column_positions = list(set(column_positions))
+    #            column_positions = sorted(column_positions)
                 x1 = x2
                 if k < len(fixedColumn):
                     x2 = fixedColumn[k][0]
@@ -492,7 +526,7 @@ class Arrangement:
                     column_max = 1000
                     le = len(column_positions)
                     for n_columns in range(column_min, column_max):
-                        ideal_spacing = int(spanWidth / (n_columns)) + 1  # 计算理想间距
+                        ideal_spacing = int(spanWidth / (n_columns + 1))  # 计算理想间距
                         if ideal_spacing > max_spacing:
                             continue
                         ideal_spacing = min(max_spacing, ideal_spacing)
@@ -501,8 +535,15 @@ class Arrangement:
                             column_positions.append(x)
                         if len(column_positions) != le:
                             break
+        #                templist = []
+        #                templist = dfsColumn_position(x1, n_columns - 1, x2, column_positions,
+        #                                              obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
+        #                if (x2 - templist[-1]) <= ideal_spacing:
+        #                    column_positions += templist
+        #                    break
+        #            column_positions = list(set(column_positions))
+        #            column_positions = sorted(column_positions)
                     column_positions.append(x2)
-
 
             self.columnArray_x.append(column_positions[0])
             for i in range(len(column_positions) - 1):
