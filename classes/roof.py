@@ -535,7 +535,7 @@ class Roof:
                                                                                               self.realWidth,
                                                                                               self.obstacleArraySelf,
                                                                                               placement[2][arrangeI],
-                                                                                              self.type)
+                                                                                              self.type, self.obstaclerange)
                 tempTxt = f"第{arrangeI + 1}个阵列的立柱排布：\n" + tempTxt + "\n"
                 tempSum += len(tempArray)
                 allTempArray.append(tempArray)

@@ -1,3 +1,4 @@
+import sys
 from os import getcwd
 import numpy as np
 from numpy.lib.shape_base import row_stack
@@ -115,14 +116,36 @@ class Arrangement:
         self.edgeColumn = []  # 边缘立柱
         self.shadowRelativePosition = []
 
-    def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices, type):
+    def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices, type, obstaclerange):
         UNIT = const.const.getUnit()
         column, limit_column, arrangement_height = const.const.getColumnsInformation()
         startX = int(startXunit * UNIT)
         startY = int(startYunit * UNIT)
+        def dfsColumn_position(x, n_columns, width, answer, obstaclerange, max_spacing):
+            result = []
+            if n_columns == 0:
+                if 250 <= (width - x) <= 700:
+                    return answer
+            num = answer[-1] + max_spacing
+            while num >= answer[-1] + max_spacing / 2:
+                answer.append(num)  # 将当前数加入组合
+                found_match = False
+                for node in obstaclerange:
+                    if node[0] < num < node[1]:
+                        found_match = True
+                        break
+                if not found_match:
+                    result = dfsColumn_position(num, n_columns - 1, width, answer, obstaclerange, max_spacing)  # 递归搜索下一个数
+                    if len(result) != 0:  # 如果找到满足条件的答案，立即返回
+                        break
+                answer.pop()  # 回溯，移除当前数
+                num -= 50
+                if len(result) != 0:  # 如果找到满足条件的答案，立即返回
+                    break
+            return result
 
         def generate_columns(n_columns, startY, startX, roof_width, width, length, max_spacing,
-                             array_iny, obstacles, array_left, array_right, leftNum, rightNum):
+                             array_iny, obstacles, array_left, array_right, leftNum, rightNum, obstaclerange):
             column_positions = []
             self.columnArray_x = []
             ideal_spacing_min = int((width - 1400) / (n_columns - 1)) + 1  # 计算最小理想间距
@@ -130,10 +153,10 @@ class Arrangement:
                 return []
             ideal_spacing_max = int((width - 500) / (n_columns - 1))  # 计算最大理想间距
             ideal_spacing = min(max_spacing, ideal_spacing_max)
-            column_positions.append(int((width - ideal_spacing * (n_columns - 1)) / 2))
-            for i in range(1, n_columns):
-                x = int(i * ideal_spacing + column_positions[0])
-                column_positions.append(x)
+            #column_positions.append(int((width - ideal_spacing * (n_columns - 1)) / 2))
+            #for i in range(1, n_columns):
+            #    x = int(i * ideal_spacing + column_positions[0])
+            #    column_positions.append(x)
                 # todo 50整数修正需要修改
             #    precision = 50
             #    for i in range(len(column_positions)):
@@ -150,7 +173,18 @@ class Arrangement:
             #     column_positions[0] = round(700 / UNIT)
             # if column_positions[-1] <= round(width - 700 / UNIT):
             #     column_positions[-1] = round(width - (700 / UNIT))
-
+            for num in range(250, 700, 50):
+                column_positions.append(num)  # 将当前数加入组合
+                found_match = False
+                for node in obstaclerange:
+                    if node[0] < num < node[1]:
+                        found_match = True
+                        break
+                if not found_match:
+                    column_positions = dfsColumn_position(num, n_columns - 1, width, column_positions, obstaclerange, ideal_spacing)  # 递归搜索下一个数
+                if len(column_positions) == n_columns:
+                    break
+                column_positions.pop()  # 回溯，移除当前数
             self.columnArray_x.append(column_positions[0])
             for i in range(len(column_positions) - 1):
                 self.columnArray_x.append(column_positions[i + 1] - column_positions[i])
@@ -351,11 +385,14 @@ class Arrangement:
         width = width - self.componentPositionArray[0][0][0]  # 绝对宽度
         if len(deletedIndices) == 0:
             column_min = int(width / max_spacing) + 1
+            if width - (column_min * max_spacing) < 1400:
+                column_min += 1
             column_min = max(2, column_min)
             column_max = 1000
             for column_n in range(column_min, column_max):
                 final_list = generate_columns(column_n, startY, startX, roof_Width, width, length, max_spacing,
-                                              result_y, obstacles, result_yleft, result_yright, leftNum, rightNum)
+                                              result_y, obstacles, result_yleft, result_yright,
+                                              leftNum, rightNum, obstaclerange)
                 if len(final_list) == 0:
                     continue
                 else:

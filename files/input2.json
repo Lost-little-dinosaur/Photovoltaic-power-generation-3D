@@ -44,24 +44,12 @@
       },
       "obstacles": [
         {
-          "id": "无烟烟囱1",
-          "type": "无烟烟囱",
-          "isRound": true,
-          "diameter": 20,
-          "height": 20,
-          "centerPosition": [
-            100,
-            200
-          ],
-          "adjustedHeight": 0
-        },
-        {
           "id": "无烟烟囱2",
           "type": "无烟烟囱",
           "isRound": false,
           "length": 500,
           "width": 500,
-          "height": 2000,
+          "height": 500,
           "upLeftPosition": [
             5000,
             1000
