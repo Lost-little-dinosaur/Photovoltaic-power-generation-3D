@@ -42,8 +42,8 @@
           "id": "无烟烟囱1",
           "type": "无烟烟囱",
           "isRound": false,
-          "length": 1000,
-          "width": 1000,
+          "length": 500,
+          "width": 500,
           "height": 700,
           "upLeftPosition": [
             8300,
@@ -64,7 +64,7 @@
     "thickness": 350
   },
   "algorithm": {
-    "precision": 50,
+    "precision": 10,
     "maxArrangeCount": 1,
     "minComponent": 20
   }

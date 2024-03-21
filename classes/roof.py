@@ -33,6 +33,7 @@ class Roof:
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
+            self.obstaclerange = []
             self.realArea = self.realLength * self.realWidth
         elif jsonRoof["isComplex"] and self.type == "正7形":
             self.edgeA = round(jsonRoof["A"] / UNIT)
@@ -51,6 +52,7 @@ class Roof:
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
+            self.obstaclerange = []
             self.realWidth = jsonRoof["D"]
             self.realLength = jsonRoof["A"] + jsonRoof["C"]
             self.realArea = jsonRoof["C"] * jsonRoof["D"] + jsonRoof["A"] * jsonRoof["F"]
@@ -69,6 +71,7 @@ class Roof:
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
+            self.obstaclerange = []
             self.realWidth = jsonRoof["B"]
             self.realLength = jsonRoof["A"]
             self.realArea = jsonRoof["A"] * jsonRoof["F"] + jsonRoof["C"] * jsonRoof["D"]
@@ -90,6 +93,7 @@ class Roof:
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
+            self.obstaclerange = []
             self.realWidth = jsonRoof["B"] + jsonRoof["D"] + jsonRoof["F"]
             self.realLength = jsonRoof["A"] + jsonRoof["C"]
             self.realArea = jsonRoof["A"] * jsonRoof["B"] + jsonRoof["G"] * jsonRoof["F"] + \
@@ -117,6 +121,7 @@ class Roof:
                 y_min = max(0, obstacle.realUpLeftPosition[1] - 100)
                 y_max = min(self.realLength, obstacle.realUpLeftPosition[1] + obstacle.reallength + 100)
                 return_list[x_min:x_max, y_min:y_max] = 1
+                self.obstaclerange.append((x_min, x_max))
                 # for x in range(x_min, x_max):
                 #     for y in range(y_min, y_max):
                 #         return_list[x][y] = 1
@@ -129,6 +134,10 @@ class Roof:
                 # for x in range(x_min, x_max):
                 #     for y in range(y_min, y_max):
                 #         return_list[x][y] = 1
+            if obstacle.type == "无烟烟囱":
+                x_min = max(0, obstacle.realUpLeftPosition[0] - 100)
+                x_max = min(self.realWidth, obstacle.realUpLeftPosition[0] + obstacle.realwidth + 100)
+                self.obstaclerange.append((x_min, x_max))
         return return_list
 
     # def addObstaclesConcern(self, screenedArrangements):

@@ -150,6 +150,7 @@ class Arrangement:
             #     column_positions[0] = round(700 / UNIT)
             # if column_positions[-1] <= round(width - 700 / UNIT):
             #     column_positions[-1] = round(width - (700 / UNIT))
+
             self.columnArray_x.append(column_positions[0])
             for i in range(len(column_positions) - 1):
                 self.columnArray_x.append(column_positions[i + 1] - column_positions[i])
@@ -198,7 +199,7 @@ class Arrangement:
                 if flag == 1:
                     final_list.append(node)
             return final_list
-
+        # 计算array_y
         up = 0
         down = 0
         array_y = []
@@ -336,6 +337,7 @@ class Arrangement:
             self.columnArray_y = array_yleft + array_yright
             for i in range(len(result_yright)):
                 result_yright[i] = result_yright[i] + height
+        #  计算column_position
         #    deletedEdgecomponent = []
         #    for i in deletedIndices:
         #        if i in self.edgeComponents:
@@ -751,7 +753,8 @@ class Arrangement:
                 self.shadowRelativePosition = [-minX, -minY]
 
     def calculateComponentHeightArray(self, raiseLevel=0):
-        length = self.relativePositionArray[-1][1][1] - self.relativePositionArray[0][0][0] + 1
+        UNIT = const.const.getUnit()
+        length = (self.relativePositionArray[-1][1][1] - self.relativePositionArray[0][0][0] + 1) * UNIT
         width = max(node[1][0] for node in self.relativePositionArray)
         # width = 0
         # for node in self.relativePositionArray:
