@@ -821,7 +821,8 @@ class Arrangement:
         #             return_list[y][x] = hMin + temp * (length - y)
 
         # 换numpy
-        return_list = np.zeros((length + 1, width + 1), dtype=np.float32)
+        length = int(length / UNIT)
+        return_list = np.zeros((length + 1, width + 1), dtype=np.float64)
         for node in self.relativePositionArray:
             max_x = node[1][0]
             min_x = node[0][0]
