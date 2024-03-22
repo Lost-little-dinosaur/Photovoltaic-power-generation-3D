@@ -1,4 +1,3 @@
-import multiprocessing
 from PIL import Image
 import numpy as np
 import time
@@ -283,6 +282,7 @@ class Roof:
                 arrangement.calculateComponentPositionArray(arrangeStartX, arrangeStartY)
                 tempArray = arrangement.componentPositionArray
                 deletedIndices = []
+                raiseLevel = 0
                 for i, ((p00, p01), (p10, p11)) in enumerate(tempArray):
                     # zzp: 重复索引使用数量少还好，数量多了就很吃时间
                     obstacleIntersected = any(
@@ -327,15 +327,17 @@ class Roof:
                         # 优化代码：只比较boolArray中为false的点加上540和1000的抬高后是否满足条件（不要再计算一遍calculateComponentHeightArray）
                         falsePosition = np.argwhere(~boolArray)
                         for y, x in falsePosition:
-                            # try:
                             if mergeObstacleArray[p01 + y, p00 + x] > arrangement.componentHeightArray[
                                 p01 - arrangeStartY + y, p00 - arrangeStartX + x] + 540:
                                 if mergeObstacleArray[p01 + y, p00 + x] > arrangement.componentHeightArray[
                                     p01 - arrangeStartY + y, p00 - arrangeStartX + x] + 1000:
                                     deletedIndices.append(i)
                                     break
-                            # except:
-                            #     print("debug")
+                                else:
+                                    raiseLevel = 2
+                            else:
+                                raiseLevel = 1
+                arrange["raiseLevel"] = raiseLevel
 
                 placement[1] -= len(deletedIndices) * arrangement.component.power
                 allDeletedIndices.append(deletedIndices)
@@ -553,7 +555,7 @@ class Roof:
             f"立柱排布计算完成，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，共有{len(self.allPlacements)}个较优排布方案\n")
         return nowMinValue
 
-    def drawPlacement(self, screenedArrangements, maxDraw=5):  # todo: numpy优化
+    def drawPlacement(self, screenedArrangements):  # todo: numpy优化
         # 初始化一个全白色的三通道矩阵，用于支持彩色（RGB）
         allMatrix = []
         UNIT = getUnit()
@@ -643,7 +645,7 @@ class Roof:
         for point in obstaclePointArray:
             publicMatrix[point[1], point[0]] = ObstacleColor
 
-        for placement in self.allPlacements[:maxDraw]:
+        for placement in self.allPlacements[:outputPlacementCount]:
             matrix = np.array(publicMatrix)
             for j in range(len(placement[0])):  # j表示第几个arrangement
                 arrange = placement[0][j]

@@ -207,7 +207,7 @@ class UI:
 
         # 界面切换按钮
         self.arrangement_btns = []
-        for i in range(5):
+        for i in range(const.const.outputPlacementCount):
             arrangement_btn = tk.Button(arrangement_frame, text=f"{i + 1}", command=partial(self.display_layout, i))
             arrangement_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
             arrangement_btn.config(state="disabled")
@@ -1286,7 +1286,8 @@ class UI:
         print(f"addObstacles 代码执行时间为：{execution_time} 秒")
 
         # zzp: 基于屋顶有效面积，估计光伏板数量，参数0.7，参数范围0-1，参数越高预估光伏板数量越多
-        minComponentCount, maxComponentCount = estimateComponentCount(roof.realArea, jsonData["component"]["specification"],
+        minComponentCount, maxComponentCount = estimateComponentCount(roof.realArea,
+                                                                      jsonData["component"]["specification"],
                                                                       0.44)
         const.const.changeMinComponent(minComponentCount)
         const.const.changeMaxComponent(maxComponentCount)
@@ -1347,7 +1348,8 @@ class UI:
             #         cut_index = j
             #         break
             # screenedArrangements = {IDArray[j]: screenedArrangements[IDArray[j]] for j in range(cut_index)}
-            print(f"计算{i}阵列对方案进行剪枝，剪枝前方案数量：{original_length}，剪枝后方案数量：{len(list(screenedArrangements.keys()))}")
+            print(
+                f"计算{i}阵列对方案进行剪枝，剪枝前方案数量：{original_length}，剪枝后方案数量：{len(list(screenedArrangements.keys()))}")
 
         end_time = time.time()
         execution_time = end_time - start_time
@@ -1371,9 +1373,19 @@ class UI:
         execution_time = end_time - start_time
         print(f"calculate_column 代码执行时间为：{execution_time} 秒")
 
+        # 按是否抬高筛选出更优的排布方案
+        # minRaiseLevel = const.const.INF
+        for placement in roof.allPlacements:
+            raiseText = ""
+            for i, arrangement in enumerate(placement[0]):
+                if arrangement["raiseLevel"] > 0:
+                    raiseText += f"第{i + 1}阵列抬高{540 if arrangement['raiseLevel'] == 1 else 1000}mm\n"
+            placement[4] += raiseText+"\n\n"
+
         # return roof.drawPlacement(screenedArrangements)
         start_time = time.time()
-        tempArray = [roof.drawPlacement(screenedArrangements), [placement[4] for placement in roof.allPlacements]]
+        tempArray = [roof.drawPlacement(screenedArrangements),
+                     [placement[4] for placement in roof.allPlacements[:const.const.outputPlacementCount]]]
         # tempArray = roof.drawPlacement(screenedArrangements), ["", "", "", "", ""]
         end_time = time.time()
         execution_time = end_time - start_time
@@ -1392,11 +1404,12 @@ class UI:
         return tempArray
 
     def cal_and_display_layout(self):
-        for i in range(5):
+        for i in range(const.const.outputPlacementCount):
             self.arrangement_btns[i].config(state="disabled")
         placement_result = self.calculate_layout()
         self.layout_imgs, self.placement_info, self.layout_final_info = \
-            placement_result[0][:5], placement_result[1][:5], "\n".join(
+            placement_result[0][:const.const.outputPlacementCount], \
+            placement_result[1][:const.const.outputPlacementCount], "\n".join(
                 [f"{k}:{v}" for k, v in placement_result[2].items()])
         self.display_layout()
         for i in range(len(self.layout_imgs)):

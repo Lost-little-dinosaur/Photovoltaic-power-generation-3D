@@ -6,7 +6,7 @@ INF = 1000000  # 无穷大
 minComponent = 1  # 最小组件数
 maxComponent = Inf
 maxArrangeCount = 1  # 最大排布数量
-
+outputPlacementCount = 5  # 输出排布数量
 
 # if UNIT > 100:
 #     roofBoardLength = 1  # 打印屋顶示意图时，额外屋顶边缘的宽度（单位是单元格）

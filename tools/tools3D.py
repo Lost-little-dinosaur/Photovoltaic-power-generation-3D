@@ -7,15 +7,15 @@ import numpy as np
 from tools.getData import dataDict
 from typing import List
 from copy import deepcopy
-import multiprocessing
-
-def multiprocess_func(func, iter):
-    processes = multiprocessing.cpu_count()
-    pool = multiprocessing.Pool(processes=processes)
-    results = pool.map(func=func,iterable=iter)
-    pool.close()
-    pool.join()
-    return results
+# import multiprocessing
+#
+# def multiprocess_func(func, iter):
+#     processes = multiprocessing.cpu_count()
+#     pool = multiprocessing.Pool(processes=processes)
+#     results = pool.map(func=func,iterable=iter)
+#     pool.close()
+#     pool.join()
+#     return results
 
 
 def draw3dModel(model3DArray):
