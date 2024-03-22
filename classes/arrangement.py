@@ -135,9 +135,12 @@ class Arrangement:
             if n_columns <= 0 and type == 2:
                 if (width - x) <= max_spacing + k:
                     return answer
-            num = answer[-1] + max_spacing + k
-            k = 0
-            while num >= answer[-1] + max_spacing / 2:
+            num = min(answer[-1] + max_spacing + k, answer[-1] + 2000)
+            if max_spacing + k > 2000:
+                k = max_spacing + k - 2000
+            else:
+                k = 0
+            while num >= answer[-1]:
                 answer.append(num)  # 将当前数加入组合
                 found_match = False
                 for node in obstaclerange:
@@ -197,7 +200,10 @@ class Arrangement:
                                                           obstaclerange, ideal_spacing, 1)  # 递归搜索下一个数
                 if len(column_positions) == n_columns:
                     break
-                column_positions.pop()  # 回溯，移除当前数
+                try:
+                    column_positions.pop()  # 回溯，移除当前数
+                except:
+                    print()
                 self.columnArray_x.append(column_positions[0])
 
             for i in range(len(column_positions) - 1):
