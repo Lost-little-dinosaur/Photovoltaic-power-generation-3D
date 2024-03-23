@@ -12,8 +12,8 @@ from tools.tools3D import calculateShadow
 ID = 0.
 
 
-def getComponent(component):
-    for c in getAllComponents():
+def getComponent(component, unit):
+    for c in getAllComponents(unit):
         if component == c.specification:
             return c  # 使用组件的类型
     else:
@@ -21,15 +21,17 @@ def getComponent(component):
 
 
 class Arrangement:
-    def __init__(self, componentLayoutArray, crossPosition, component, arrangeType, maxWindPressure, isRule):
+    def __init__(self, componentLayoutArray, crossPosition, component, arrangeType, maxWindPressure, isRule, unit=UNIT):
         # zzp: 预估不需要的方案，摆的太少了，等下会直接剔除
         self.componentNum = sum(componentLayoutArray)
         if self.componentNum < getMinComponent() or self.componentNum > getMaxComponent():
             self.legal = False
             return
         self.legal = True
+        # if componentLayoutArray == [11, 11, 11, 11, 6]:
+        #     print("debug")
 
-        self.component = getComponent(component)
+        self.component = getComponent(component, unit)
         # for c in getAllComponents():
         #     if component == c.specification:
         #         self.component = c  # 使用组件的类型
@@ -82,6 +84,7 @@ class Arrangement:
                                                                     nowBottom + self.component.width + PhotovoltaicPanelVerticalDiffMargin - 1]])
             # else:  # 横排在中间
             #     raise Exception("横排在中间的情况还没有写")
+
         self.componentPositionArray = []  # 组合排布中组件的详细信息
         self.arrangeType = arrangeType  # 排布的类型：基墩，膨胀常规，膨胀抬高
         self.maxWindPressure = maxWindPressure  # 风压
@@ -982,7 +985,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
     arrangementDict = {}
     maxWidthCount = 0
     minComponentWidth = INF
-    for c in getAllComponents():
+    for c in getAllComponents(getUnit()):
         if minComponentWidth > c.width:
             minComponentWidth = c.width
     while calculateVerticalWidth(maxWidthCount, minComponentWidth) <= roofWidth:
@@ -1003,7 +1006,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                 ID += 1
         else:  # 横竖都有
             minVerticalNum = 2
-            for c in getAllComponents():
+            for c in getAllComponents(getUnit()):
                 if c.specification == tempElement[2]:
                     tempComponent = c
                     break
@@ -1038,7 +1041,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                       "210-66": [0] * maxWidthCount}
     # 目前只计算182-78的
     tempComponent = None
-    for c in getAllComponents():
+    for c in getAllComponents(getUnit()):
         if c.specification == "182-78":
             tempComponent = c
             break
@@ -1056,7 +1059,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
             tempArray.append((i, j))
     chunks = chunk_it(tempArray, cpuCount)
     with multiprocessing.Pool(processes=cpuCount) as pool:
-        results = pool.map(calculateMixedArrangement, [(chunk, crossCountDict) for chunk in chunks])
+        results = pool.map(calculateMixedArrangement, [(chunk, crossCountDict, getUnit()) for chunk in chunks])
     for result in results:
         for v in result:
             arrangementDict[ID] = v
@@ -1077,70 +1080,74 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
 
 
 def calculateMixedArrangement(params):
-    chunk, crossCountDict = params
+    chunk, crossCountDict, unit = params
     result = []
     for i, j in chunk:
-        result.append(Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "低压", False))
-        result.append(Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "低压", False))
-        result.append(Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "低压", False))
-        result.append(Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "低压", False))
-        result.append(Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "低压", False))
-        result.append(Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "低压", False))
-        # result.append(Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "高压", False))
-        # result.append(Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "高压", False))
-        # result.append(Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "高压", False))
-        # result.append(Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "高压", False))
-        # result.append(Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "高压", False))
-        # result.append(Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "高压", False))
+        result.append(Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "低压", False, unit))
+        result.append(Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "低压", False, unit))
+        result.append(Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "低压", False, unit))
+        result.append(Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "低压", False, unit))
+        result.append(Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "低压", False, unit))
+        result.append(Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "低压", False, unit))
+        # result.append(Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "高压", False,unit))
+        # result.append(Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "高压", False,unit))
+        # result.append(Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "高压", False,unit))
+        # result.append(Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "高压", False,unit))
+        # result.append(Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "高压", False,unit))
+        # result.append(Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "高压", False,unit))
         if crossCountDict["182-78"][i] != 0:
             result.append(
-                Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规", "低压", False))
+                Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规", "低压", False, unit))
             result.append(
-                Arrangement([j, j, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规", "低压", False))
+                Arrangement([j, j, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规", "低压", False, unit))
             result.append(
-                Arrangement([j, i, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规", "低压", False))
+                Arrangement([j, i, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规", "低压", False, unit))
             result.append(
-                Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规", "低压", False))
-            # result.append(Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规","高压", False))
-            # result.append(Arrangement([j, j, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规","高压", False))
-            # result.append(Arrangement([j, i, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规","高压", False))
-            # result.append(Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规","高压", False))
-            result.append(Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规", "低压", False))
-            result.append(Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规", "低压", False))
+                Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规", "低压", False, unit))
+            # result.append(Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规","高压", False,unit))
+            # result.append(Arrangement([j, j, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规","高压", False,unit))
+            # result.append(Arrangement([j, i, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规","高压", False,unit))
+            # result.append(Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规","高压", False,unit))
+            result.append(
+                Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规", "低压", False, unit))
+            result.append(
+                Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规", "低压", False, unit))
 
-            result.append(Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规", "低压", False))
-            # result.append(Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规","高压", False))
-            # result.append(Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规","高压", False))
-            # result.append(Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规","高压", False))
+            result.append(
+                Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规", "低压", False, unit))
+            # result.append(Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规","高压", False,unit))
+            # result.append(Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规","高压", False,unit))
+            # result.append(Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规","高压", False,unit))
         if crossCountDict["182-78"][j] != 0:
             result.append(
-                Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规", "低压", False))
+                Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规", "低压", False, unit))
             result.append(
-                Arrangement([i, i, i, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规", "低压", False))
+                Arrangement([i, i, i, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规", "低压", False, unit))
 
-            # result.append(Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规","高压", False))
-            # result.append(Arrangement([i, i, i, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规","高压", False))
-            result.append(Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规", "低压", False))
-            # result.append(Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规","高压", False))
+            # result.append(Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规","高压", False,unit))
+            # result.append(Arrangement([i, i, i, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规","高压", False,unit))
+            result.append(
+                Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规", "低压", False, unit))
+            # result.append(Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规","高压", False,unit))
 
-        result.append(Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "低压", False))
-        result.append(Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "低压", False))
-        result.append(Arrangement([i, i, j, j], INF, "182-78", "膨胀常规", "低压", False))
-        result.append(Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "低压", False))
-        # result.append(Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "高压", False))
-        # result.append(Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "高压", False))
-        # result.append(Arrangement([i, i, j, j], INF, "182-78", "膨胀常规", "高压", False))
-        # result.append(Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "高压", False))
+        result.append(Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "低压", False, unit))
+        result.append(Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "低压", False, unit))
+        result.append(Arrangement([i, i, j, j], INF, "182-78", "膨胀常规", "低压", False, unit))
+        result.append(Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "低压", False, unit))
+        # result.append(Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "高压", False,unit))
+        # result.append(Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "高压", False,unit))
+        # result.append(Arrangement([i, i, j, j], INF, "182-78", "膨胀常规", "高压", False,unit))
+        # result.append(Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "高压", False,unit))
 
-        result.append(Arrangement([j, i, i], INF, "182-78", "膨胀常规", "低压", False))
-        result.append(Arrangement([i, i, j], INF, "182-78", "膨胀常规", "低压", False))
-        # result.append(Arrangement([j, i, i], INF, "182-78", "膨胀常规", "高压", False))
-        # result.append(Arrangement([i, i, j], INF, "182-78", "膨胀常规", "高压", False))
+        result.append(Arrangement([j, i, i], INF, "182-78", "膨胀常规", "低压", False, unit))
+        result.append(Arrangement([i, i, j], INF, "182-78", "膨胀常规", "低压", False, unit))
+        # result.append(Arrangement([j, i, i], INF, "182-78", "膨胀常规", "高压", False,unit))
+        # result.append(Arrangement([i, i, j], INF, "182-78", "膨胀常规", "高压", False,unit))
     return result
 
 
 def estimateComponentCount(roofArea, componentSpecification, minAlpha=0.7):
-    component = getComponent(componentSpecification)
+    component = getComponent(componentSpecification, getUnit())
     componentArea = component.realLength * component.realWidth
     maxComponentCount = int(roofArea / componentArea)
     return int(minAlpha * maxComponentCount), maxComponentCount
