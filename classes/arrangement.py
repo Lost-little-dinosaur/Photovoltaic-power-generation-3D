@@ -1,13 +1,13 @@
+from tools.mutiProcessing import *
 import sys
-from os import getcwd
+
 import numpy as np
-from numpy.lib.shape_base import row_stack
-from classes.component import Component, getAllComponents
+
+from classes.component import getAllComponents
 import const.const
 from const.const import *
 from math import radians, sin
 from tools.tools3D import calculateShadow
-import time
 
 ID = 0.
 
@@ -94,7 +94,8 @@ class Arrangement:
         self.crossCount = 0
         self.verticalCount = 0
         self.verticalNum = 0
-        self.componentHeightArray = np.array(self.calculateComponentHeightArray(),dtype=np.float32)  # 每个光伏板具体高度（大小是这个arrangement的最小包络矩形）
+        self.componentHeightArray = np.array(self.calculateComponentHeightArray(),
+                                             dtype=np.float32)  # 每个光伏板具体高度（大小是这个arrangement的最小包络矩形）
 
         self.maxLength, self.maxWidth = -INF, -INF
         # zzp: 将 self.relativePositionArray 转换为 NumPy 数组，但效率没有提高，后面面对大数据可能才有用
@@ -126,7 +127,8 @@ class Arrangement:
             temp.append([node[0] - startX, node[1] - startX])
         obstaclerange = temp
         sys.setrecursionlimit(10000)
-        def dfsColumn_position(x, n_columns, width, answer, obstaclerange, max_spacing, type, k = 0):
+
+        def dfsColumn_position(x, n_columns, width, answer, obstaclerange, max_spacing, type, k=0):
             # type == 1表示常规情况，2表示有扣除
             result = []
             if n_columns <= 0 and type == 1:
@@ -145,7 +147,8 @@ class Arrangement:
                         found_match = True
                         break
                 if not found_match:
-                    result = dfsColumn_position(num, n_columns - 1, width, answer, obstaclerange, max_spacing, type, k)  # 递归搜索下一个数
+                    result = dfsColumn_position(num, n_columns - 1, width, answer, obstaclerange, max_spacing, type,
+                                                k)  # 递归搜索下一个数
                     if len(result) != 0:  # 如果找到满足条件的答案，立即返回
                         break
                 answer.pop()  # 回溯，移除当前数
@@ -164,11 +167,11 @@ class Arrangement:
                 return []
             ideal_spacing_max = int((width - 500) / (n_columns - 1))  # 计算最大理想间距
             ideal_spacing = min(max_spacing, ideal_spacing_max)
-            #column_positions.append(int((width - ideal_spacing * (n_columns - 1)) / 2))
-            #for i in range(1, n_columns):
+            # column_positions.append(int((width - ideal_spacing * (n_columns - 1)) / 2))
+            # for i in range(1, n_columns):
             #    x = int(i * ideal_spacing + column_positions[0])
             #    column_positions.append(x)
-                # todo 50整数修正需要修改
+            # todo 50整数修正需要修改
             #    precision = 50
             #    for i in range(len(column_positions)):
             #        if ((column_positions[i] % precision) != 0):
@@ -247,6 +250,7 @@ class Arrangement:
                 if flag == 1:
                     final_list.append(node)
             return final_list
+
         # 计算array_y
         up = 0
         down = 0
@@ -496,16 +500,15 @@ class Arrangement:
                             column_positions.append(x)
                         if len(column_positions) != 0:
                             break
-    #                    templist = []
-    #                    templist = dfsColumn_position(x1, n_columns - 1, x2, column_positions,
-    #                                                        obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
-    #                    if (x2 - templist[-1]) <= ideal_spacing:
-    #                        column_positions += templist
-    #                        break
+                #                    templist = []
+                #                    templist = dfsColumn_position(x1, n_columns - 1, x2, column_positions,
+                #                                                        obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
+                #                    if (x2 - templist[-1]) <= ideal_spacing:
+                #                        column_positions += templist
+                #                        break
 
-
-    #            column_positions = list(set(column_positions))
-    #            column_positions = sorted(column_positions)
+                #            column_positions = list(set(column_positions))
+                #            column_positions = sorted(column_positions)
                 x1 = x2
                 if k < len(fixedColumn):
                     x2 = fixedColumn[k][0]
@@ -535,14 +538,14 @@ class Arrangement:
                             column_positions.append(x)
                         if len(column_positions) != le:
                             break
-        #                templist = []
-        #                templist = dfsColumn_position(x1, n_columns - 1, x2, column_positions,
-        #                                              obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
-        #                if (x2 - templist[-1]) <= ideal_spacing:
-        #                    column_positions += templist
-        #                    break
-        #            column_positions = list(set(column_positions))
-        #            column_positions = sorted(column_positions)
+                    #                templist = []
+                    #                templist = dfsColumn_position(x1, n_columns - 1, x2, column_positions,
+                    #                                              obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
+                    #                if (x2 - templist[-1]) <= ideal_spacing:
+                    #                    column_positions += templist
+                    #                    break
+                    #            column_positions = list(set(column_positions))
+                    #            column_positions = sorted(column_positions)
                     column_positions.append(x2)
 
             self.columnArray_x.append(column_positions[0])
@@ -922,58 +925,59 @@ def calculateCrossWidth(crossNum, componentLength):
 
 
 def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeType, windPressure):
-    tempArrangements = [[1, 0, "182-78", "膨胀常规", "高压"], [1, 1, "182-78", "膨胀常规", "高压"],
-                        [2, 0, "182-78", "膨胀常规", "高压"], [2, 1, "182-78", "膨胀常规", "高压"],
-                        [3, 0, "182-78", "膨胀常规", "高压"], [3, 1, "182-78", "膨胀常规", "高压"],
-                        [4, 0, "182-78", "膨胀常规", "高压"], [4, 1, "182-78", "膨胀常规", "高压"],
-                        [5, 0, "182-78", "膨胀常规", "高压"],
-                        [0, 1, "182-78", "膨胀常规", "高压"],
+    tempArrangements = [
+        # [1, 0, "182-78", "膨胀常规", "高压"], [1, 1, "182-78", "膨胀常规", "高压"],
+        #                 [2, 0, "182-78", "膨胀常规", "高压"], [2, 1, "182-78", "膨胀常规", "高压"],
+        #                 [3, 0, "182-78", "膨胀常规", "高压"], [3, 1, "182-78", "膨胀常规", "高压"],
+        #                 [4, 0, "182-78", "膨胀常规", "高压"], [4, 1, "182-78", "膨胀常规", "高压"],
+        #                 [5, 0, "182-78", "膨胀常规", "高压"],
+        #                 [0, 1, "182-78", "膨胀常规", "高压"],
 
-                        # [1, 0, "210-60", "膨胀常规", "低压"], [1, 1, "210-60", "膨胀常规", "低压"],
-                        # [0, 1, "210-60", "膨胀常规", "低压"], [2, 0, "210-60", "膨胀常规", "低压"],
-                        # [2, 1, "210-60", "膨胀常规", "低压"], [3, 0, "210-60", "膨胀常规", "低压"],
-                        # [3, 1, "210-60", "膨胀常规", "低压"], [4, 0, "210-60", "膨胀常规", "低压"],
-                        # [4, 1, "210-60", "膨胀常规", "低压"], [5, 0, "210-60", "膨胀常规", "低压"],
+        # [1, 0, "210-60", "膨胀常规", "低压"], [1, 1, "210-60", "膨胀常规", "低压"],
+        # [0, 1, "210-60", "膨胀常规", "低压"], [2, 0, "210-60", "膨胀常规", "低压"],
+        # [2, 1, "210-60", "膨胀常规", "低压"], [3, 0, "210-60", "膨胀常规", "低压"],
+        # [3, 1, "210-60", "膨胀常规", "低压"], [4, 0, "210-60", "膨胀常规", "低压"],
+        # [4, 1, "210-60", "膨胀常规", "低压"], [5, 0, "210-60", "膨胀常规", "低压"],
 
-                        # [0, 1, "210-60", "基墩", "低压"], [2, 0, "210-60", "基墩", "低压"],
-                        # [3, 0, "210-60", "基墩", "低压"], [4, 0, "210-60", "基墩", "低压"],
-                        # [1, 0, "210-60", "基墩", "低压"],
+        # [0, 1, "210-60", "基墩", "低压"], [2, 0, "210-60", "基墩", "低压"],
+        # [3, 0, "210-60", "基墩", "低压"], [4, 0, "210-60", "基墩", "低压"],
+        # [1, 0, "210-60", "基墩", "低压"],
 
-                        # [2, 0, "210-60", "膨胀抬高", "低压"], [2, 1, "210-60", "膨胀抬高", "低压"],
-                        # [3, 0, "210-60", "膨胀抬高", "低压"], [3, 1, "210-60", "膨胀抬高", "低压"],
-                        # [4, 0, "210-60", "膨胀抬高", "低压"], [4, 1, "210-60", "膨胀抬高", "低压"],
-                        # [5, 0, "210-60", "膨胀抬高", "低压"],
+        # [2, 0, "210-60", "膨胀抬高", "低压"], [2, 1, "210-60", "膨胀抬高", "低压"],
+        # [3, 0, "210-60", "膨胀抬高", "低压"], [3, 1, "210-60", "膨胀抬高", "低压"],
+        # [4, 0, "210-60", "膨胀抬高", "低压"], [4, 1, "210-60", "膨胀抬高", "低压"],
+        # [5, 0, "210-60", "膨胀抬高", "低压"],
 
-                        # [0, 1, "182-72", "基墩", "低压"], [2, 0, "182-72", "基墩", "低压"],
-                        # [3, 0, "182-72", "基墩", "低压"], [4, 0, "182-72", "基墩", "低压"],
-                        # [1, 0, "182-72", "基墩", "低压"],
+        # [0, 1, "182-72", "基墩", "低压"], [2, 0, "182-72", "基墩", "低压"],
+        # [3, 0, "182-72", "基墩", "低压"], [4, 0, "182-72", "基墩", "低压"],
+        # [1, 0, "182-72", "基墩", "低压"],
 
-                        # [1, 0, "182-72", "膨胀常规", "低压"], [1, 1, "182-72", "膨胀常规", "低压"],
-                        # [0, 1, "182-72", "膨胀常规", "低压"], [2, 0, "182-72", "膨胀常规", "低压"],
-                        # [2, 1, "182-72", "膨胀常规", "低压"], [3, 0, "182-72", "膨胀常规", "低压"],
-                        # [3, 1, "182-72", "膨胀常规", "低压"], [4, 0, "182-72", "膨胀常规", "低压"],
-                        # [4, 1, "182-72", "膨胀常规", "低压"], [5, 0, "182-72", "膨胀常规", "低压"],
+        # [1, 0, "182-72", "膨胀常规", "低压"], [1, 1, "182-72", "膨胀常规", "低压"],
+        # [0, 1, "182-72", "膨胀常规", "低压"], [2, 0, "182-72", "膨胀常规", "低压"],
+        # [2, 1, "182-72", "膨胀常规", "低压"], [3, 0, "182-72", "膨胀常规", "低压"],
+        # [3, 1, "182-72", "膨胀常规", "低压"], [4, 0, "182-72", "膨胀常规", "低压"],
+        # [4, 1, "182-72", "膨胀常规", "低压"], [5, 0, "182-72", "膨胀常规", "低压"],
 
-                        # [2, 0, "182-72", "膨胀抬高", "低压"], [2, 1, "182-72", "膨胀抬高", "低压"],
-                        # [3, 0, "182-72", "膨胀抬高", "低压"], [3, 1, "182-72", "膨胀抬高", "低压"],
-                        # [4, 0, "182-72", "膨胀抬高", "低压"], [4, 1, "182-72", "膨胀抬高", "低压"],
-                        # [5, 0, "182-72", "膨胀抬高", "低压"],
+        # [2, 0, "182-72", "膨胀抬高", "低压"], [2, 1, "182-72", "膨胀抬高", "低压"],
+        # [3, 0, "182-72", "膨胀抬高", "低压"], [3, 1, "182-72", "膨胀抬高", "低压"],
+        # [4, 0, "182-72", "膨胀抬高", "低压"], [4, 1, "182-72", "膨胀抬高", "低压"],
+        # [5, 0, "182-72", "膨胀抬高", "低压"],
 
-                        [1, 0, "182-78", "膨胀常规", "低压"], [1, 1, "182-78", "膨胀常规", "低压"],
-                        [0, 1, "182-78", "膨胀常规", "低压"], [2, 0, "182-78", "膨胀常规", "低压"],
-                        [2, 1, "182-78", "膨胀常规", "低压"], [3, 0, "182-78", "膨胀常规", "低压"],
-                        [3, 1, "182-78", "膨胀常规", "低压"], [4, 0, "182-78", "膨胀常规", "低压"],
-                        [4, 1, "182-78", "膨胀常规", "低压"], [5, 0, "182-78", "膨胀常规", "低压"],
+        [1, 0, "182-78", "膨胀常规", "低压"], [1, 1, "182-78", "膨胀常规", "低压"],
+        [0, 1, "182-78", "膨胀常规", "低压"], [2, 0, "182-78", "膨胀常规", "低压"],
+        [2, 1, "182-78", "膨胀常规", "低压"], [3, 0, "182-78", "膨胀常规", "低压"],
+        [3, 1, "182-78", "膨胀常规", "低压"], [4, 0, "182-78", "膨胀常规", "低压"],
+        [4, 1, "182-78", "膨胀常规", "低压"], [5, 0, "182-78", "膨胀常规", "低压"],
 
-                        # [0, 1, "182-78", "基墩", "低压"], [2, 0, "182-78", "基墩", "低压"],
-                        # [3, 0, "182-78", "基墩", "低压"], [4, 0, "182-78", "基墩", "低压"],
-                        # [1, 0, "182-78", "基墩", "低压"],
+        # [0, 1, "182-78", "基墩", "低压"], [2, 0, "182-78", "基墩", "低压"],
+        # [3, 0, "182-78", "基墩", "低压"], [4, 0, "182-78", "基墩", "低压"],
+        # [1, 0, "182-78", "基墩", "低压"],
 
-                        # [2, 0, "182-78", "膨胀抬高", "低压"], [2, 1, "182-78", "膨胀抬高", "低压"],
-                        # [3, 0, "182-78", "膨胀抬高", "低压"], [3, 1, "182-78", "膨胀抬高", "低压"],
-                        # [4, 0, "182-78", "膨胀抬高", "低压"], [4, 1, "182-78", "膨胀抬高", "低压"],
-                        # [5, 0, "182-78", "膨胀抬高", "低压"]
-                        ]
+        # [2, 0, "182-78", "膨胀抬高", "低压"], [2, 1, "182-78", "膨胀抬高", "低压"],
+        # [3, 0, "182-78", "膨胀抬高", "低压"], [3, 1, "182-78", "膨胀抬高", "低压"],
+        # [4, 0, "182-78", "膨胀抬高", "低压"], [4, 1, "182-78", "膨胀抬高", "低压"],
+        # [5, 0, "182-78", "膨胀抬高", "低压"]
+    ]
 
     arrangementDict = {}
     maxWidthCount = 0
@@ -1045,121 +1049,17 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
         crossCount -= 1
         crossCountDict["182-78"][i] = crossCount
 
+    # 多进程计算拼接方案
+    tempArray = []
     for i in range(2, maxWidthCount):
         for j in range(1, i):
-            arrangementDict[ID] = Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-            if crossCountDict["182-78"][i] != 0:
-                arrangementDict[ID] = Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
-                                                  "低压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([j, j, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
-                                                  "低压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([j, i, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
-                                                  "低压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规",
-                                                  "低压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
-                                                  "高压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([j, j, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
-                                                  "高压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([j, i, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
-                                                  "高压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规",
-                                                  "高压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
-                                                  "低压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
-                                                  "低压", False)
-                ID += 1
-
-                arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规",
-                                                  "低压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
-                                                  "高压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
-                                                  "高压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规",
-                                                  "高压", False)
-                ID += 1
-            if crossCountDict["182-78"][j] != 0:
-                arrangementDict[ID] = Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
-                                                  "低压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([i, i, i, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
-                                                  "低压", False)
-                ID += 1
-
-                arrangementDict[ID] = Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
-                                                  "高压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([i, i, i, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
-                                                  "高压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规",
-                                                  "低压", False)
-                ID += 1
-                arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规",
-                                                  "高压", False)
-                ID += 1
-
-            arrangementDict[ID] = Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, j, j], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, j, j], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-
-            arrangementDict[ID] = Arrangement([j, i, i], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, j], INF, "182-78", "膨胀常规", "低压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([j, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            ID += 1
-            arrangementDict[ID] = Arrangement([i, i, j], INF, "182-78", "膨胀常规", "高压", False)
+            tempArray.append((i, j))
+    chunks = chunk_it(tempArray, cpuCount)
+    with multiprocessing.Pool(processes=cpuCount) as pool:
+        results = pool.map(calculateMixedArrangement, [(chunk, crossCountDict) for chunk in chunks])
+    for result in results:
+        for v in result:
+            arrangementDict[ID] = v
             ID += 1
 
     # 通过输入的屋顶宽度、屋顶长度、组件类型、排布类型和风压，筛选出合适的排布
@@ -1173,6 +1073,69 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                     break
             else:
                 result[k] = arrangement
+    return result
+
+
+def calculateMixedArrangement(params):
+    chunk, crossCountDict = params
+    result = []
+    for i, j in chunk:
+        result.append(Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "低压", False))
+        result.append(Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "低压", False))
+        result.append(Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "低压", False))
+        result.append(Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "低压", False))
+        result.append(Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "低压", False))
+        result.append(Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "低压", False))
+        # result.append(Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "高压", False))
+        # result.append(Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "高压", False))
+        # result.append(Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "高压", False))
+        # result.append(Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "高压", False))
+        # result.append(Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "高压", False))
+        # result.append(Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "高压", False))
+        if crossCountDict["182-78"][i] != 0:
+            result.append(
+                Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规", "低压", False))
+            result.append(
+                Arrangement([j, j, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规", "低压", False))
+            result.append(
+                Arrangement([j, i, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规", "低压", False))
+            result.append(
+                Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规", "低压", False))
+            # result.append(Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规","高压", False))
+            # result.append(Arrangement([j, j, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规","高压", False))
+            # result.append(Arrangement([j, i, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规","高压", False))
+            # result.append(Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规","高压", False))
+            result.append(Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规", "低压", False))
+            result.append(Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规", "低压", False))
+
+            result.append(Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规", "低压", False))
+            # result.append(Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规","高压", False))
+            # result.append(Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规","高压", False))
+            # result.append(Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规","高压", False))
+        if crossCountDict["182-78"][j] != 0:
+            result.append(
+                Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规", "低压", False))
+            result.append(
+                Arrangement([i, i, i, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规", "低压", False))
+
+            # result.append(Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规","高压", False))
+            # result.append(Arrangement([i, i, i, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规","高压", False))
+            result.append(Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规", "低压", False))
+            # result.append(Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规","高压", False))
+
+        result.append(Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "低压", False))
+        result.append(Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "低压", False))
+        result.append(Arrangement([i, i, j, j], INF, "182-78", "膨胀常规", "低压", False))
+        result.append(Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "低压", False))
+        # result.append(Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "高压", False))
+        # result.append(Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "高压", False))
+        # result.append(Arrangement([i, i, j, j], INF, "182-78", "膨胀常规", "高压", False))
+        # result.append(Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "高压", False))
+
+        result.append(Arrangement([j, i, i], INF, "182-78", "膨胀常规", "低压", False))
+        result.append(Arrangement([i, i, j], INF, "182-78", "膨胀常规", "低压", False))
+        # result.append(Arrangement([j, i, i], INF, "182-78", "膨胀常规", "高压", False))
+        # result.append(Arrangement([i, i, j], INF, "182-78", "膨胀常规", "高压", False))
     return result
 
 
