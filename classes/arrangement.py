@@ -545,20 +545,20 @@ class Arrangement:
                         if ideal_spacing > max_spacing:
                             continue
                         ideal_spacing = min(max_spacing, ideal_spacing)
-                        for i in range(1, n_columns + 1):
-                            x = int(i * ideal_spacing + x1)
-                            column_positions.append(x)
-                        if len(column_positions) != le:
-                            break
-                            # todo
-        #                templist = []
-        #                templist = dfsColumn_position(x1, n_columns - 1, x2, column_positions,
-        #                                              obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
-        #                if (x2 - templist[-1]) <= ideal_spacing:
-        #                    column_positions += templist
+        #                for i in range(1, n_columns + 1):
+        #                    x = int(i * ideal_spacing + x1)
+        #                    column_positions.append(x)
+        #                if len(column_positions) != le:
         #                    break
-        #            column_positions = list(set(column_positions))
-        #            column_positions = sorted(column_positions)
+                            # todo
+                        templist = []
+                        templist, span_k = dfsColumn_position(x1, n_columns - 1, x2, column_positions,
+                                                      obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
+                        if (x2 - templist[-1]) <= ideal_spacing + span_k:
+                            column_positions += templist
+                            break
+                    column_positions = list(set(column_positions))
+                    column_positions = sorted(column_positions)
 
                     column_positions.append(x2)
 

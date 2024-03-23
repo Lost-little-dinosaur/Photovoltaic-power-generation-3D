@@ -40,7 +40,7 @@ pvPanelInclination = 20  # todo：之后再加倾角
 
 def getComponent(componentSpecification, unit=getUnit()):
     if componentSpecification == "182-78":
-        return Component("182-78", 1134, 2279, 1400, 439, 1108, 13, unit)
+        return Component("182-78", 1134, 2465, 1400, 439, 1108, 13, unit)
     else:
         raise Exception("暂时不支持该型号的光伏板")
 

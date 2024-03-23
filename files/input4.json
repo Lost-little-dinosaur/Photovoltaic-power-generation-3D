@@ -39,8 +39,8 @@
       "haveOverhangingEave": false,
       "obstacles": [
         {
-          "id": "有烟烟囱1",
-          "type": "有烟烟囱",
+          "id": "无烟烟囱1",
+          "type": "无烟烟囱",
           "isRound": false,
           "length": 1000,
           "width": 1000,
