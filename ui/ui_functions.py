@@ -1298,6 +1298,11 @@ class UI:
                                                   jsonData["arrangeType"],
                                                   jsonData["scene"]["location"]["windPressure"])
 
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"screenArrangements 代码执行时间为：{execution_time} 秒")
+
+        start_time = time.time()
         # 多进程计算阴影
         if jsonData["algorithm"]["maxArrangeCount"] > 1:
             chunks = chunk_it(list(screenedArrangements.keys()), cpuCount)
@@ -1315,7 +1320,7 @@ class UI:
         screenedArrangements = dict(sorted(screenedArrangements.items(), key=lambda x: x[1].value, reverse=True))
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"screenArrangements + calculateArrangementShadow代码执行时间为：{execution_time} 秒")
+        print(f"calculateArrangementShadow代码执行时间为：{execution_time} 秒")
 
         start_time = time.time()
         maxValue = 0
