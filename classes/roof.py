@@ -363,61 +363,115 @@ class Roof:
                                                                rsY1:rsY1 + eY - rsY, rsX1:rsX1 + eX - rsX])
                 tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
-            # finishFlag = False
+            finishFlag = False
             currentPanelCount = sum([screenedArrangements[ii['ID']].componentNum for ii in placements])
-            for i, ID in enumerate(IDArray[startI:]):
-                # zzp：摆了也不如nowMax，那就直接跳过
-                if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
-                    # finishFlag = True
-                    break
+            if self.type != "上凸形":
                 for y in range(startY, self.length):
                     for x in range(startX, self.width):
-                        # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
-                        #     print("debug1")
-                        if maxComponentCount < currentPanelCount + screenedArrangements[ID].componentNum:
-                            continue
-                        if layer > 0 and overlaps(x, y, screenedArrangements[ID], placements):
-                            continue
-                        if not canPlaceArrangementRoof(x, y, screenedArrangements[ID]):
-                            continue
-                        if len(placements) >= 1 and not canPlaceArrangementObstacle(
-                                x, y, screenedArrangements[ID], obstacleArray, tempObstacleSumArray):
-                            continue
-                        # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
-                        #     print("debug2")
-                        newPlacement = {'ID': ID, 'start': (x, y)}
-                        placements.append(newPlacement)
-                        currentValue += screenedArrangements[ID].value
-                        if layer < maxArrangeCount:
-                            temp, nowMaxValue = dfs(x + screenedArrangements[ID].relativePositionArray[0][1][0], y, i,
-                                                    currentValue, placements, layer + 1, nowMaxValue)
-                            if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
-                                betterFlag = True
-                            else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
+                        for i, ID in enumerate(IDArray[startI:]):
+                            # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
+                            #     print("debug1")
+                            # zzp：摆了也不如nowMax，那就直接跳过
+                            if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
+                                finishFlag = True
+                                break
+                            if maxComponentCount < currentPanelCount + screenedArrangements[ID].componentNum:
+                                continue
+                            if layer > 0 and overlaps(x, y, screenedArrangements[ID], placements):
+                                continue
+                            if not canPlaceArrangementRoof(x, y, screenedArrangements[ID]):
+                                continue
+                            if len(placements) >= 1 and not canPlaceArrangementObstacle(
+                                    x, y, screenedArrangements[ID], obstacleArray, tempObstacleSumArray):
+                                continue
+                            # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
+                            #     print("debug2")
+                            newPlacement = {'ID': ID, 'start': (x, y)}
+                            placements.append(newPlacement)
+                            currentValue += screenedArrangements[ID].value
+                            if layer < maxArrangeCount:
+                                temp, nowMaxValue = dfs(x + screenedArrangements[ID].relativePositionArray[0][1][0], y,
+                                                        i,
+                                                        currentValue, placements, layer + 1, nowMaxValue)
+                                if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
+                                    betterFlag = True
+                                else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
+                                    if currentValue >= nowMaxValue:
+                                        tempPlacement = [placements.copy(), currentValue]
+                                        tempPlacementValue = addObstaclesConcern(tempPlacement)
+                                        if tempPlacementValue > nowMaxValue:
+                                            nowMaxValue = tempPlacementValue
+                                            self.allPlacements = [tempPlacement]
+                                        elif tempPlacementValue == nowMaxValue:
+                                            self.allPlacements.append(tempPlacement)
+                            else:
                                 if currentValue >= nowMaxValue:
                                     tempPlacement = [placements.copy(), currentValue]
                                     tempPlacementValue = addObstaclesConcern(tempPlacement)
                                     if tempPlacementValue > nowMaxValue:
                                         nowMaxValue = tempPlacementValue
                                         self.allPlacements = [tempPlacement]
+                                        print(
+                                            f"更新当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
                                     elif tempPlacementValue == nowMaxValue:
                                         self.allPlacements.append(tempPlacement)
-                        else:
-                            if currentValue >= nowMaxValue:
-                                tempPlacement = [placements.copy(), currentValue]
-                                tempPlacementValue = addObstaclesConcern(tempPlacement)
-                                if tempPlacementValue > nowMaxValue:
-                                    nowMaxValue = tempPlacementValue
-                                    self.allPlacements = [tempPlacement]
-                                    print(
-                                        f"更新当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
-                                elif tempPlacementValue == nowMaxValue:
-                                    self.allPlacements.append(tempPlacement)
-                        placements.pop()
-                        currentValue -= screenedArrangements[ID].value
-                # if finishFlag:
-                #     break
-                startX = 0
+                            placements.pop()
+                            currentValue -= screenedArrangements[ID].value
+                    if finishFlag:
+                        break
+                    startX = 0
+            else:
+                for y in range(startY, self.length):
+                    for x in range(startX, self.width):
+                        for i, ID in enumerate(IDArray[startI:]):
+                            # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
+                            #     print("debug1")
+                            # zzp：摆了也不如nowMax，那就直接跳过
+                            if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
+                                break
+                            if maxComponentCount < currentPanelCount + screenedArrangements[ID].componentNum:
+                                continue
+                            if layer > 0 and overlaps(x, y, screenedArrangements[ID], placements):
+                                continue
+                            if not canPlaceArrangementRoof(x, y, screenedArrangements[ID]):
+                                continue
+                            if len(placements) >= 1 and not canPlaceArrangementObstacle(
+                                    x, y, screenedArrangements[ID], obstacleArray, tempObstacleSumArray):
+                                continue
+                            # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
+                            #     print("debug2")
+                            newPlacement = {'ID': ID, 'start': (x, y)}
+                            placements.append(newPlacement)
+                            currentValue += screenedArrangements[ID].value
+                            if layer < maxArrangeCount:
+                                temp, nowMaxValue = dfs(x + screenedArrangements[ID].relativePositionArray[0][1][0], y,
+                                                        i,
+                                                        currentValue, placements, layer + 1, nowMaxValue)
+                                if temp:  # 上面的dfs找到了更好的方案，则说明当前方案不是最好的 todo:这一点存疑？
+                                    betterFlag = True
+                                else:  # 上面的dfs没有找到更好的方案，说明当前方案是最好的，将当前方案加入到allPlacements中
+                                    if currentValue >= nowMaxValue:
+                                        tempPlacement = [placements.copy(), currentValue]
+                                        tempPlacementValue = addObstaclesConcern(tempPlacement)
+                                        if tempPlacementValue > nowMaxValue:
+                                            nowMaxValue = tempPlacementValue
+                                            self.allPlacements = [tempPlacement]
+                                        elif tempPlacementValue == nowMaxValue:
+                                            self.allPlacements.append(tempPlacement)
+                            else:
+                                if currentValue >= nowMaxValue:
+                                    tempPlacement = [placements.copy(), currentValue]
+                                    tempPlacementValue = addObstaclesConcern(tempPlacement)
+                                    if tempPlacementValue > nowMaxValue:
+                                        nowMaxValue = tempPlacementValue
+                                        self.allPlacements = [tempPlacement]
+                                        print(
+                                            f"更新当前最大value为{nowMaxValue}，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}")
+                                    elif tempPlacementValue == nowMaxValue:
+                                        self.allPlacements.append(tempPlacement)
+                            placements.pop()
+                            currentValue -= screenedArrangements[ID].value
+                    startX = 0
             return betterFlag, nowMaxValue
 
         def canPlaceArrangementRoof(x, y, arrange):
