@@ -566,6 +566,27 @@ class Arrangement:
             for i in range(len(column_positions) - 1):
                 self.columnArray_x.append(column_positions[i + 1] - column_positions[i])
             self.columnArray_x.append(width - column_positions[-1])
+
+            n = len(self.columnArray_x) - 1
+            i = 2
+            x = self.columnArray_x[0]
+            while i < n:
+                x += self.columnArray_x[i]
+                if self.columnArray_x[i] + self.columnArray_x[i - 1] < 2000:
+                    if x in fixedColumn:
+                        i += 1
+                        continue
+                    self.columnArray_x[i - 1] += self.columnArray_x[i]
+                    self.columnArray_x.pop(i)
+                    n -= 1
+                else:
+                    i += 1
+            pre = []
+            pre.append(self.columnArray_x[0])
+            for i in range(1, len(self.columnArray_x)):
+                pre.append(pre[-1] + self.columnArray_x[i])
+            column_positions = pre
+
             result = []
             self.edgeColumn = []
             if leftNum == 0 and rightNum == 0:
