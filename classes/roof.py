@@ -363,15 +363,17 @@ class Roof:
                                                                rsY1:rsY1 + eY - rsY, rsX1:rsX1 + eX - rsX])
                 tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
-            finishFlag = False
+            # finishFlag = False
             currentPanelCount = sum([screenedArrangements[ii['ID']].componentNum for ii in placements])
-            for y in range(startY, self.length):
-                for x in range(startX, self.width):
-                    for i, ID in enumerate(IDArray[startI:]):
-                        # zzp：摆了也不如nowMax，那就直接跳过
-                        if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
-                            finishFlag = True
-                            break
+            for i, ID in enumerate(IDArray[startI:]):
+                # zzp：摆了也不如nowMax，那就直接跳过
+                if layer == maxArrangeCount and currentValue + screenedArrangements[ID].value < nowMaxValue:
+                    # finishFlag = True
+                    break
+                for y in range(startY, self.length):
+                    for x in range(startX, self.width):
+                        # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
+                        #     print("debug1")
                         if maxComponentCount < currentPanelCount + screenedArrangements[ID].componentNum:
                             continue
                         if layer > 0 and overlaps(x, y, screenedArrangements[ID], placements):
@@ -381,6 +383,8 @@ class Roof:
                         if len(placements) >= 1 and not canPlaceArrangementObstacle(
                                 x, y, screenedArrangements[ID], obstacleArray, tempObstacleSumArray):
                             continue
+                        # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
+                        #     print("debug2")
                         newPlacement = {'ID': ID, 'start': (x, y)}
                         placements.append(newPlacement)
                         currentValue += screenedArrangements[ID].value
@@ -411,8 +415,8 @@ class Roof:
                                     self.allPlacements.append(tempPlacement)
                         placements.pop()
                         currentValue -= screenedArrangements[ID].value
-                if finishFlag:
-                    break
+                # if finishFlag:
+                #     break
                 startX = 0
             return betterFlag, nowMaxValue
 
@@ -537,7 +541,8 @@ class Roof:
                                                                                               self.realWidth,
                                                                                               self.obstacleArraySelf,
                                                                                               placement[2][arrangeI],
-                                                                                              self.type, self.obstaclerange)
+                                                                                              self.type,
+                                                                                              self.obstaclerange)
                 tempTxt = f"第{arrangeI + 1}个阵列的立柱排布：\n" + tempTxt + "\n"
                 tempSum += len(tempArray)
                 allTempArray.append(tempArray)
