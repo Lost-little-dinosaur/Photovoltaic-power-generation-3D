@@ -1,4 +1,5 @@
 from ui import demo_UI as UI
+import multiprocessing
 
 # 输入和输出的单位是都是毫米
 if __name__ == '__main__':
@@ -18,6 +19,7 @@ if __name__ == '__main__':
     # roof.addObstaclesConcern(jsonData["scene"]["roof"]["obstacles"], screenedArrangements)
     # roof.obstacleArraySelf = roof.calculateObstacleSelf()
     # roof.calculate_column(screenedArrangements)
+    multiprocessing.freeze_support()
     UI.main()
 
 

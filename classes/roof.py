@@ -363,11 +363,10 @@ class Roof:
                                                                rsY1:rsY1 + eY - rsY, rsX1:rsX1 + eX - rsX])
                 tempObstacleSumArray = np.cumsum(np.cumsum(obstacleArray, axis=0), axis=1)
 
-            finishFlag = False
             currentPanelCount = sum([screenedArrangements[ii['ID']].componentNum for ii in placements])
-            for y in range(startY, self.length, 20):
-                for x in range(startX, self.width, 20):
-                    for i, ID in enumerate(IDArray[startI:]):
+            for i, ID in enumerate(IDArray[startI:]):
+                for y in range(startY, self.length, 20):
+                    for x in range(startX, self.width, 20):
                         # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
                         #     print("debug1")
                         # zzp：摆了也不如nowMax，那就直接跳过
@@ -415,7 +414,7 @@ class Roof:
                                     self.allPlacements.append(tempPlacement)
                         placements.pop()
                         currentValue -= screenedArrangements[ID].value
-                startX = 0
+                    startX = 0
             return betterFlag, nowMaxValue
 
         def canPlaceArrangementRoof(x, y, arrange):
