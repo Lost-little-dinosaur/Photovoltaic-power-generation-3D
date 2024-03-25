@@ -949,7 +949,8 @@ class Arrangement:
 
             y_range = np.arange(min_y, max_y + 1)
             x_range = np.arange(min_x, max_x + 1)
-            return_list[np.ix_(y_range, x_range)] = hMin + temp * (length - y_range[:, np.newaxis])
+            return_list[np.ix_(y_range, x_range)] = hMin + temp * (length - y_range[:, np.newaxis] * UNIT)
+
         return return_list
 
 def calculateVerticalWidth(verticalNum, componentWidth):
