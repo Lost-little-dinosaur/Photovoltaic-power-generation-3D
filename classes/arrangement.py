@@ -960,6 +960,7 @@ def calculateCrossWidth(crossNum, componentLength):
 
 
 def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeType, windPressure):
+    componentSpecification = "182-78"
     tempArrangements = [
         # [1, 0, "182-78", "膨胀常规", "高压"], [1, 1, "182-78", "膨胀常规", "高压"],
         #                 [2, 0, "182-78", "膨胀常规", "高压"], [2, 1, "182-78", "膨胀常规", "高压"],
@@ -1276,6 +1277,7 @@ def calculateMixedArrangement(params):
 
 
 def estimateComponentCount(roofArea, componentSpecification, minAlpha=0.7):
+    componentSpecification = "182-78"
     component = getComponent(componentSpecification, getUnit())
     componentArea = component.realLength * component.realWidth
     maxComponentCount = int(roofArea / componentArea)

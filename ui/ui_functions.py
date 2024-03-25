@@ -1270,10 +1270,10 @@ class UI:
     def calculate_layout(self):
         allTimeStart = time.time()
         print(
-            f"算法精度：{self.algorithm_info['precision']} mm，最大方案数量：{self.algorithm_info['maxArrangeCount']}，最小组件数量：{self.algorithm_info['minComponent']}")
+            f"算法精度：{self.algorithm_info['precision']} mm，最大方案数量：{self.algorithm_info['maxArrangeCount']}")
         jsonData = self.get_input_json()
         const.const.changeUnit(jsonData['algorithm']['precision'])
-        # const.const.changeMinComponent(jsonData['algorithm']['minComponent'])
+    #    const.const.changeMinComponent(jsonData['algorithm']['minComponent'])
         const.const.changeMaxArrangeCount(jsonData['algorithm']['maxArrangeCount'])
 
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])

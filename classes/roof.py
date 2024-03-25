@@ -366,8 +366,8 @@ class Roof:
             finishFlag = False
             currentPanelCount = sum([screenedArrangements[ii['ID']].componentNum for ii in placements])
             if self.type != "上凸形":
-                for y in range(startY, self.length):
-                    for x in range(startX, self.width):
+                for y in range(startY, self.length,20):
+                    for x in range(startX, self.width,20):
                         for i, ID in enumerate(IDArray[startI:]):
                             # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
                             #     print("debug1")
@@ -421,8 +421,8 @@ class Roof:
                         break
                     startX = 0
             else:
-                for y in range(startY, self.length):
-                    for x in range(startX, self.width):
+                for y in range(startY, self.length,20):
+                    for x in range(startX, self.width,20):
                         for i, ID in enumerate(IDArray[startI:]):
                             # if screenedArrangements[ID].componentLayoutArray == [10, 10, 16, 16]:
                             #     print("debug1")
