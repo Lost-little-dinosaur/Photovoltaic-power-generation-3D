@@ -99,8 +99,8 @@ class Roof:
                             (jsonRoof["A"] + jsonRoof["C"]) * jsonRoof["D"]
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
-        self.roofAngle = jsonRoof["roofAngle"]
-        self.roofDirection = jsonRoof["roofDirection"]
+        # self.roofAngle = jsonRoof["roofAngle"]
+        # self.roofDirection = jsonRoof["roofDirection"]
         self.latitude = latitude
         self.obstacles = []
         self.sceneObstacles = []
