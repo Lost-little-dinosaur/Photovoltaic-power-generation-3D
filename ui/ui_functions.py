@@ -1294,9 +1294,12 @@ class UI:
         print(f"自动估计最小光伏板数量:{minComponentCount}，最大光伏板数量:{maxComponentCount}")
 
         start_time = time.time()
+    #    screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
+    #                                              jsonData["arrangeType"],
+    #                                              jsonData["scene"]["location"]["windPressure"])
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                                   jsonData["arrangeType"],
-                                                  jsonData["scene"]["location"]["windPressure"])
+                                                  "低压")
 
         end_time = time.time()
         execution_time = end_time - start_time

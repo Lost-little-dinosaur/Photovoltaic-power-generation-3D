@@ -211,8 +211,8 @@ class Arrangement:
                 if len(column_positions) == n_columns:
                     break
                 column_positions.pop()  # 回溯，移除当前数
-                self.columnArray_x.append(column_positions[0])
 
+            self.columnArray_x.append(column_positions[0])
             for i in range(len(column_positions) - 1):
                 self.columnArray_x.append(column_positions[i + 1] - column_positions[i])
             self.columnArray_x.append(width - column_positions[-1])
