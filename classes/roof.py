@@ -328,13 +328,9 @@ class Roof:
                         falsePosition = np.argwhere(~boolArray)
                         for y, x in falsePosition:
                             if mergeObstacleArray[p01 + y, p00 + x] > arrangement.componentHeightArray[
-                                p01 - arrangeStartY + y, p00 - arrangeStartX + x] + 540:
-                                if mergeObstacleArray[p01 + y, p00 + x] > arrangement.componentHeightArray[
-                                    p01 - arrangeStartY + y, p00 - arrangeStartX + x] + 1000:
-                                    deletedIndices.append(i)
-                                    break
-                                else:
-                                    raiseLevel = 2
+                                p01 - arrangeStartY + y, p00 - arrangeStartX + x] + 460:
+                                deletedIndices.append(i)
+                                break
                             else:
                                 raiseLevel = 1
                 arrange["raiseLevel"] = raiseLevel

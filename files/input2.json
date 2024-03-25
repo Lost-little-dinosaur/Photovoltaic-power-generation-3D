@@ -49,7 +49,7 @@
           "isRound": false,
           "length": 500,
           "width": 500,
-          "height": 900,
+          "height": 4000,
           "upLeftPosition": [
             5000,
             1000
@@ -209,8 +209,7 @@
   },
   "algorithm": {
     "precision": 10,
-    "maxArrangeCount": 1,
-    "minComponent": 1
+    "maxArrangeCount": 1
   }
 }
 

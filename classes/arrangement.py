@@ -937,8 +937,10 @@ class Arrangement:
         #             return_list[y][x] = hMin + temp * (length - y)
 
         # 换numpy
+        templength = length
         length = int(length / UNIT)
         return_list = np.zeros((length + 1, width + 1), dtype=np.float64)
+        length = templength
         for node in self.relativePositionArray:
             max_x = node[1][0]
             min_x = node[0][0]
@@ -949,7 +951,6 @@ class Arrangement:
             x_range = np.arange(min_x, max_x + 1)
             return_list[np.ix_(y_range, x_range)] = hMin + temp * (length - y_range[:, np.newaxis])
         return return_list
-
 
 def calculateVerticalWidth(verticalNum, componentWidth):
     return verticalNum * componentWidth + (verticalNum - 1) * PhotovoltaicPanelCrossMargin

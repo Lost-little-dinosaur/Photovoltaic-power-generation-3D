@@ -1273,7 +1273,7 @@ class UI:
             f"算法精度：{self.algorithm_info['precision']} mm，最大方案数量：{self.algorithm_info['maxArrangeCount']}")
         jsonData = self.get_input_json()
         const.const.changeUnit(jsonData['algorithm']['precision'])
-    #    const.const.changeMinComponent(jsonData['algorithm']['minComponent'])
+        #    const.const.changeMinComponent(jsonData['algorithm']['minComponent'])
         const.const.changeMaxArrangeCount(jsonData['algorithm']['maxArrangeCount'])
 
         roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
@@ -1294,9 +1294,9 @@ class UI:
         print(f"自动估计最小光伏板数量:{minComponentCount}，最大光伏板数量:{maxComponentCount}")
 
         start_time = time.time()
-    #    screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
-    #                                              jsonData["arrangeType"],
-    #                                              jsonData["scene"]["location"]["windPressure"])
+        #    screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
+        #                                              jsonData["arrangeType"],
+        #                                              jsonData["scene"]["location"]["windPressure"])
         screenedArrangements = screenArrangements(roof.width, roof.length, jsonData["component"]["specification"],
                                                   jsonData["arrangeType"],
                                                   "低压")
@@ -1386,9 +1386,11 @@ class UI:
         for placement in roof.allPlacements:
             raiseText = ""
             for i, arrangement in enumerate(placement[0]):
-                if arrangement["raiseLevel"] > 0:
-                    raiseText += f"第{i + 1}阵列抬高{540 if arrangement['raiseLevel'] == 1 else 1000}mm\n"
-            placement[4] += raiseText+"\n\n"
+                if arrangement["raiseLevel"] == 1:
+                    raiseText += f"第{i + 1}阵列高度为{1000}mm\n"
+                else:
+                    raiseText += f"第{i + 1}阵列高度为{540}mm\n"
+            placement[4] += raiseText + "\n\n"
 
         # return roof.drawPlacement(screenedArrangements)
         start_time = time.time()
