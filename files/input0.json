@@ -65,8 +65,7 @@
   },
   "algorithm": {
     "precision": 10,
-    "maxArrangeCount": 1,
-    "minComponent": 20
+    "maxArrangeCount": 1
   }
 }
 
