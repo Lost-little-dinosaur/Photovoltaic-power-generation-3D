@@ -74,6 +74,44 @@ class Roof:
             self.realWidth = jsonRoof["B"]
             self.realLength = jsonRoof["A"]
             self.realArea = jsonRoof["A"] * jsonRoof["F"] + jsonRoof["C"] * jsonRoof["D"]
+        elif self.type == "正L形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = self.edgeA - self.edgeC
+            self.edgeF = self.edgeB + self.edgeC
+            self.height = jsonRoof["height"]
+            self.length = self.edgeA
+            self.width = self.edgeF
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[0:self.edgeC, self.edgeB:] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.obstaclerange = []
+            self.realWidth = jsonRoof["F"]
+            self.realLength = jsonRoof["A"]
+            self.realArea = jsonRoof["A"] * jsonRoof["B"] + jsonRoof["D"] * jsonRoof["E"]
+        elif self.type == "反L形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = self.edgeA + self.edgeC
+            self.edgeF = self.edgeB + self.edgeD
+            self.height = jsonRoof["height"]
+            self.length = self.edgeE
+            self.width = self.edgeF
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[0:self.edgeC, 0:self.edgeB] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.obstaclerange = []
+            self.realWidth = jsonRoof["F"]
+            self.realLength = jsonRoof["A"] + jsonRoof["C"]
+            self.realArea = jsonRoof["A"] * jsonRoof["B"] + jsonRoof["D"] * jsonRoof["E"]
         elif self.type == "上凸形":
             self.edgeA = round(jsonRoof["A"] / UNIT)
             self.edgeB = round(jsonRoof["B"] / UNIT)
@@ -97,6 +135,167 @@ class Roof:
             self.realLength = jsonRoof["A"] + jsonRoof["C"]
             self.realArea = jsonRoof["A"] * jsonRoof["B"] + jsonRoof["G"] * jsonRoof["F"] + \
                             (jsonRoof["A"] + jsonRoof["C"]) * jsonRoof["D"]
+        elif self.type == "下凸形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = round(jsonRoof["E"] / UNIT)
+            self.edgeF = round(jsonRoof["F"] / UNIT)
+            self.edgeH = self.edgeD - self.edgeB - self.edgeF
+            self.edgeG = self.edgeA + self.edgeC - self.edgeE
+            self.height = jsonRoof["height"]
+            self.length = self.edgeA + self.edgeC
+            self.width = self.edgeD
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[self.edgeC:, 0:self.edgeB] = INF
+            self.roofArray[self.edgeE:, (self.edgeB + self.edgeH):] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.obstaclerange = []
+            self.realWidth = jsonRoof["D"]
+            self.realLength = jsonRoof["A"] + jsonRoof["C"]
+            self.realArea = jsonRoof["C"] * jsonRoof["B"] + jsonRoof["E"] * jsonRoof["F"] + \
+                            (jsonRoof["A"] + jsonRoof["C"]) * jsonRoof["H"]
+        elif self.type == "左凸形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = round(jsonRoof["E"] / UNIT)
+            self.edgeF = round(jsonRoof["F"] / UNIT)
+            self.edgeH = self.edgeF + self.edgeD - self.edgeB
+            self.edgeG = self.edgeA + self.edgeC + self.edgeE
+            self.height = jsonRoof["height"]
+            self.length = self.edgeG
+            self.width = self.edgeD + self.edgeF
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[0:self.edgeE, 0:self.edgeD] = INF
+            self.roofArray[(self.edgeE + self.edgeC):, 0:self.edgeB] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.obstaclerange = []
+            self.realWidth = jsonRoof["D"] + jsonRoof["F"]
+            self.realLength = jsonRoof["E"] + jsonRoof["C"] + jsonRoof["A"]
+            self.realArea = jsonRoof["E"] * jsonRoof["F"] + jsonRoof["A"] * jsonRoof["H"] + \
+                            (jsonRoof["D"] + jsonRoof["F"]) * jsonRoof["C"]
+        elif self.type == "右凸形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = round(jsonRoof["E"] / UNIT)
+            self.edgeF = round(jsonRoof["F"] / UNIT)
+            self.edgeH = self.edgeB + self.edgeD - self.edgeF
+            self.edgeG = self.edgeA - self.edgeC - self.edgeE
+            self.height = jsonRoof["height"]
+            self.length = self.edgeA
+            self.width = self.edgeB + self.edgeD
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[0:self.edgeC, self.edgeB:] = INF
+            self.roofArray[self.edgeC + self.edgeE:, self.edgeH:] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.obstaclerange = []
+            self.realWidth = jsonRoof["B"] + jsonRoof["D"]
+            self.realLength = jsonRoof["A"]
+            self.realArea = jsonRoof["B"] * jsonRoof["C"] + jsonRoof["G"] * jsonRoof["H"] + \
+                            (jsonRoof["B"] + jsonRoof["D"]) * jsonRoof["E"]
+        elif self.type == "上凹形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = round(jsonRoof["E"] / UNIT)
+            self.edgeF = round(jsonRoof["F"] / UNIT)
+            self.edgeH = self.edgeB + self.edgeD + self.edgeF
+            self.edgeG = self.edgeA - self.edgeC + self.edgeE
+            self.height = jsonRoof["height"]
+            self.length = self.edgeH
+            self.width = self.edgeA
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[0:self.edgeC, self.edgeB:self.edgeB + self.edgeD] = INF
+            self.roofArray[0:self.edgeA - self.edgeG, self.edgeB + self.edgeD:self.edgeH] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.obstaclerange = []
+            self.realWidth = jsonRoof["B"] + jsonRoof["D"] + jsonRoof["F"]
+            self.realLength = jsonRoof["A"]
+            self.realArea = jsonRoof["B"] * jsonRoof["A"] + jsonRoof["G"] * jsonRoof["F"] + \
+                            (jsonRoof["A"] - jsonRoof["C"]) * jsonRoof["D"]
+        elif self.type == "下凹形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = round(jsonRoof["E"] / UNIT)
+            self.edgeF = round(jsonRoof["F"] / UNIT)
+            self.edgeH = self.edgeB - self.edgeD - self.edgeF
+            self.edgeG = self.edgeA - self.edgeC + self.edgeE
+            self.height = jsonRoof["height"]
+            self.length = self.edgeC
+            self.width = self.edgeB
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[self.edgeA:, 0:self.edgeH] = INF
+            self.roofArray[self.edgeA - self.edgeE:, self.edgeH:self.edgeH + self.edgeF] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.obstaclerange = []
+            self.realWidth = jsonRoof["B"]
+            self.realLength = jsonRoof["C"]
+            self.realArea = jsonRoof["H"] * jsonRoof["A"] + jsonRoof["D"] * jsonRoof["C"] + \
+                            (jsonRoof["C"] - jsonRoof["E"]) * jsonRoof["F"]
+        elif self.type == "左凹形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = round(jsonRoof["E"] / UNIT)
+            self.edgeF = round(jsonRoof["F"] / UNIT)
+            self.edgeH = self.edgeF - self.edgeD + self.edgeB
+            self.edgeG = self.edgeA + self.edgeC + self.edgeE
+            self.height = jsonRoof["height"]
+            self.length = self.edgeG
+            self.width = self.edgeH
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[0:self.edgeH - self.edgeF, 0:self.edgeE] = INF
+            self.roofArray[self.edgeE:self.edgeE + self.edgeC, 0:self.edgeB] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.obstaclerange = []
+            self.realWidth = jsonRoof["H"]
+            self.realLength = jsonRoof["G"]
+            self.realArea = jsonRoof["H"] * jsonRoof["A"] + jsonRoof["E"] * jsonRoof["F"] + \
+                            (jsonRoof["H"] - jsonRoof["B"]) * jsonRoof["C"]
+        elif self.type == "右凹形":
+            self.edgeA = round(jsonRoof["A"] / UNIT)
+            self.edgeB = round(jsonRoof["B"] / UNIT)
+            self.edgeC = round(jsonRoof["C"] / UNIT)
+            self.edgeD = round(jsonRoof["D"] / UNIT)
+            self.edgeE = round(jsonRoof["E"] / UNIT)
+            self.edgeF = round(jsonRoof["F"] / UNIT)
+            self.edgeH = self.edgeB - self.edgeD + self.edgeF
+            self.edgeG = self.edgeA - self.edgeC - self.edgeE
+            self.height = jsonRoof["height"]
+            self.length = self.edgeA
+            self.width = self.edgeB
+            self.roofArray = np.zeros((self.length, self.width))
+            self.roofArray[self.edgeC:self.edgeC + self.edgeE, self.edgeB - self.edgeD:] = INF
+            self.roofArray[self.edgeC + self.edgeE:, self.edgeH:] = INF
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.obstaclerange = []
+            self.realWidth = jsonRoof["B"]
+            self.realLength = jsonRoof["A"]
+            self.realArea = jsonRoof["B"] * jsonRoof["C"] + jsonRoof["G"] * jsonRoof["H"] + \
+                            (jsonRoof["B"] - jsonRoof["D"]) * jsonRoof["E"]
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         # self.roofAngle = jsonRoof["roofAngle"]
