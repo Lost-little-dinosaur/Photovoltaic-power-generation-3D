@@ -354,6 +354,18 @@ class Arrangement:
                         up = 1
                         height = self.relativePositionArray[0][1][1] * UNIT
         self.calculateComponentPositionArrayreal(startX, startY)
+        #拼接本身存在的悬挑
+        boundcolumn_x = INF
+        boundcolumn_y = 0
+        for i in range(len(self.componentPositionArray) - 1):
+            if self.componentPositionArray[i][0][1] != self.componentPositionArray[i + 1][0][1]:
+                if self.componentPositionArray[i][1][0] < boundcolumn_x:
+                    boundcolumn_x = self.componentPositionArray[i][1][0]
+                    boundcolumn_y = self.componentPositionArray[i][0][1]
+        if self.componentPositionArray[-1][1][0] < boundcolumn_x:
+            boundcolumn_x = self.componentPositionArray[-1][1][0]
+            boundcolumn_y = self.componentPositionArray[i][0][1]
+
         result_y = []
         result_yleft = []
         result_yright = []
@@ -411,7 +423,7 @@ class Arrangement:
                 width = component[1][0]
         width += 1
         width = width - self.componentPositionArray[0][0][0]  # 绝对宽度
-        if len(deletedIndices) == 0:  # 没有扣除情况
+        if len(deletedIndices) == 0 and leftNum == 0 and rightNum == 0:  # 没有扣除和拼接情况
             column_min = int(width / max_spacing) + 1
             if width - (column_min * max_spacing) < 1400:
                 column_min += 1
@@ -443,6 +455,8 @@ class Arrangement:
             column_positions = []
             self.columnArray_x = []
             fixedColumn = []  # 确定的立柱位置
+            if leftNum != 0 or rightNum != 0:
+                fixedColumn.append([boundcolumn_x - 500 - startX, boundcolumn_y])
             for i in deletedIndices:
                 left_x = self.componentPositionArray[i][0][0] - 500 - startX
                 right_x = self.componentPositionArray[i][1][0] + 500 - startX
