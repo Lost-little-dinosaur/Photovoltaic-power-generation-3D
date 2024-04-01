@@ -214,11 +214,15 @@ class Roof:
             self.edgeH = self.edgeB + self.edgeD + self.edgeF
             self.edgeG = self.edgeA - self.edgeC + self.edgeE
             self.height = jsonRoof["height"]
-            self.length = self.edgeH
-            self.width = self.edgeA
+            self.length = max(self.edgeA, self.edgeG)
+            self.width = self.edgeH
             self.roofArray = np.zeros((self.length, self.width))
-            self.roofArray[0:self.edgeC, self.edgeB:self.edgeB + self.edgeD] = INF
-            self.roofArray[0:self.edgeA - self.edgeG, self.edgeB + self.edgeD:self.edgeH] = INF
+            if self.edgeA >= self.edgeG:
+                self.roofArray[0:self.edgeC, self.edgeB:self.edgeB + self.edgeD] = INF
+                self.roofArray[0:self.edgeA - self.edgeG, self.edgeB + self.edgeD:self.edgeH] = INF
+            else:
+                self.roofArray[0:self.edgeE, self.edgeB:self.edgeB + self.edgeD] = INF
+                self.roofArray[0:self.edgeG - self.edgeA, 0:self.edgeB] = INF
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
@@ -237,11 +241,15 @@ class Roof:
             self.edgeH = self.edgeB - self.edgeD - self.edgeF
             self.edgeG = self.edgeA - self.edgeC + self.edgeE
             self.height = jsonRoof["height"]
-            self.length = max(self.edgeC,self.edgeA)
+            self.length = max(self.edgeC, self.edgeA)
             self.width = self.edgeB
             self.roofArray = np.zeros((self.length, self.width))
-            self.roofArray[self.edgeA:, 0:self.edgeH] = INF
-            self.roofArray[self.edgeA - self.edgeE:, self.edgeH:self.edgeH + self.edgeF] = INF
+            if self.edgeC >= self.edgeA:
+                self.roofArray[self.edgeA:, 0:self.edgeH] = INF
+                self.roofArray[self.edgeC - self.edgeE:, self.edgeH:self.edgeH + self.edgeF] = INF
+            else:
+                self.roofArray[self.edgeC:, self.edgeH + self.edgeF:] = INF
+                self.roofArray[self.edgeC - self.edgeE:, self.edgeH:self.edgeH + self.edgeF] = INF
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
@@ -261,10 +269,14 @@ class Roof:
             self.edgeG = self.edgeA + self.edgeC + self.edgeE
             self.height = jsonRoof["height"]
             self.length = self.edgeG
-            self.width = self.edgeH
+            self.width = max(self.edgeH, self.edgeF)
             self.roofArray = np.zeros((self.length, self.width))
-            self.roofArray[0:self.edgeH - self.edgeF, 0:self.edgeE] = INF
-            self.roofArray[self.edgeE:self.edgeE + self.edgeC, 0:self.edgeB] = INF
+            if self.edgeH >= self.edgeF:
+                self.roofArray[0:self.edgeE, 0:self.edgeB - self.edgeD] = INF
+                self.roofArray[self.edgeE:self.edgeE + self.edgeC, 0:self.edgeB] = INF
+            else:
+                self.roofArray[self.edgeE + self.edgeC:, 0:self.edgeD - self.edgeB] = INF
+                self.roofArray[self.edgeE:self.edgeE + self.edgeC, 0:self.edgeD] = INF
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
@@ -284,10 +296,14 @@ class Roof:
             self.edgeG = self.edgeA - self.edgeC - self.edgeE
             self.height = jsonRoof["height"]
             self.length = self.edgeA
-            self.width = self.edgeB
+            self.width = max(self.edgeB, self.edgeH)
             self.roofArray = np.zeros((self.length, self.width))
-            self.roofArray[self.edgeC:self.edgeC + self.edgeE, self.edgeB - self.edgeD:] = INF
-            self.roofArray[self.edgeC + self.edgeE:, self.edgeH:] = INF
+            if self.edgeB > self.edgeH:
+                self.roofArray[self.edgeC:self.edgeC + self.edgeE, self.edgeB - self.edgeD:] = INF
+                self.roofArray[self.edgeC + self.edgeE:, self.edgeH:] = INF
+            else:
+                self.roofArray[self.edgeC:self.edgeC + self.edgeE, self.edgeH - self.edgeF:] = INF
+                self.roofArray[0:self.edgeC, self.edgeB:] = INF
             self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
             self.obstacleArray = np.full((self.length, self.width), 0)
             self.obstacleArraySelf = []
@@ -909,7 +925,7 @@ class Roof:
                 publicMatrix[:roofBoardLength, MB + MD + roofBoardLength:, :] = RoofMarginColor  # F边
                 publicMatrix[roofBoardLength:, -roofBoardLength:, :] = RoofMarginColor  # G边
             publicMatrix[-roofBoardLength:, roofBoardLength:-roofBoardLength, :] = RoofMarginColor  # H边
-        elif self.type == "下凹形":
+        elif self.type == "下凹形":  # ok1
             MA, MB, MC, MD, ME, MF, MG, MH = self.edgeA * magnification, self.edgeB * magnification, self.edgeC * magnification, self.edgeD * magnification, self.edgeE * magnification, self.edgeF * magnification, self.edgeG * magnification, self.edgeH * magnification
             if MG <= ME:
                 publicMatrix[MA - roofBoardLength:MA, roofBoardLength:MH, :] = RoofMarginColor  # H边
@@ -924,45 +940,49 @@ class Roof:
                 publicMatrix[-MG - roofBoardLength:-MG, MH:MH + MF + roofBoardLength, :] = RoofMarginColor  # F边
                 publicMatrix[-MG:-MG + ME, MH + MF:MH + MF + roofBoardLength, :] = RoofMarginColor  # E边
                 publicMatrix[-MG + ME - roofBoardLength:-MG + ME, MH + MF + roofBoardLength:, :] = RoofMarginColor  # D边
-                publicMatrix[:MC-roofBoardLength, -roofBoardLength:, :] = RoofMarginColor  # C边
+                publicMatrix[:MC - roofBoardLength, -roofBoardLength:, :] = RoofMarginColor  # C边
             publicMatrix[:MA, :roofBoardLength, :] = RoofMarginColor  # A边
             publicMatrix[:roofBoardLength, roofBoardLength:-roofBoardLength, :] = RoofMarginColor  # B边
-        elif self.type == "左凹形":
+        elif self.type == "左凹形":  # ok1
             MA, MB, MC, MD, ME, MF, MG, MH = self.edgeA * magnification, self.edgeB * magnification, self.edgeC * magnification, self.edgeD * magnification, self.edgeE * magnification, self.edgeF * magnification, self.edgeG * magnification, self.edgeH * magnification
             if MB >= MD:
-                publicMatrix[:, :roofBoardLength, :] = RoofMarginColor  # A边
-                publicMatrix[:roofBoardLength, MB - MD:MB, :] = RoofMarginColor  # B边
-                publicMatrix[roofBoardLength:MD, MB:MB + roofBoardLength, :] = RoofMarginColor  # D边
-                publicMatrix[MD:MD + roofBoardLength, :MB, :] = RoofMarginColor  # C边
-                publicMatrix[MD:, :roofBoardLength, :] = RoofMarginColor  # E边
-                publicMatrix[-roofBoardLength:, :MB, :] = RoofMarginColor  # F边
-                publicMatrix[roofBoardLength:-roofBoardLength, -roofBoardLength:, :] = RoofMarginColor  # G边
+                publicMatrix[-MA:, :roofBoardLength, :] = RoofMarginColor  # A边
+                publicMatrix[-MA:-MA + roofBoardLength, roofBoardLength:MB + roofBoardLength, :] = RoofMarginColor  # B边
+                publicMatrix[ME - roofBoardLength:ME + MC, MB:MB + roofBoardLength, :] = RoofMarginColor  # C边
+                publicMatrix[ME - roofBoardLength:ME, MB - MD:MB, :] = RoofMarginColor  # D边
+                publicMatrix[:ME - roofBoardLength, MB - MD:MB - MD + roofBoardLength, :] = RoofMarginColor  # E边
+                publicMatrix[:roofBoardLength, MB - MD:, :] = RoofMarginColor  # F边
+                publicMatrix[-roofBoardLength:, roofBoardLength:-roofBoardLength, :] = RoofMarginColor  # H边
             else:
-                publicMatrix[MD - MB:, :roofBoardLength, :] = RoofMarginColor  # A边
-                publicMatrix[:roofBoardLength, :MB, :] = RoofMarginColor  # B边
-                publicMatrix[roofBoardLength:MD - MB, MB:MB + roofBoardLength, :] = RoofMarginColor  # D边
-                publicMatrix[MD - MB:MD - MB + roofBoardLength, :MB, :] = RoofMarginColor  # C边
-                publicMatrix[MD - MB:, :roofBoardLength, :] = RoofMarginColor  # E边
-                publicMatrix[-roofBoardLength:, :MB, :] = RoofMarginColor  # F边
-                publicMatrix[roofBoardLength:-roofBoardLength, -roofBoardLength:, :] = RoofMarginColor  # G边
+                publicMatrix[-MA:, MD - MB:MD - MB + roofBoardLength, :] = RoofMarginColor  # A边
+                publicMatrix[-MA:-MA + roofBoardLength, MD - MB + roofBoardLength:MD + roofBoardLength,
+                :] = RoofMarginColor  # B边
+                publicMatrix[ME - roofBoardLength:ME + MC, MD:MD + roofBoardLength, :] = RoofMarginColor  # C边
+                publicMatrix[ME - roofBoardLength:ME, :MD, :] = RoofMarginColor  # D边
+                publicMatrix[:ME - roofBoardLength, :roofBoardLength, :] = RoofMarginColor  # E边
+                publicMatrix[:roofBoardLength, roofBoardLength:MF, :] = RoofMarginColor  # F边
+                publicMatrix[-roofBoardLength:, MD - MB:, :] = RoofMarginColor  # H边
+            publicMatrix[roofBoardLength:, -roofBoardLength:, :] = RoofMarginColor  # G边
         elif self.type == "右凹形":
             MA, MB, MC, MD, ME, MF, MG, MH = self.edgeA * magnification, self.edgeB * magnification, self.edgeC * magnification, self.edgeD * magnification, self.edgeE * magnification, self.edgeF * magnification, self.edgeG * magnification, self.edgeH * magnification
+            publicMatrix[:, :roofBoardLength, :] = RoofMarginColor  # A边
             if MD >= MF:
-                publicMatrix[:, :roofBoardLength, :] = RoofMarginColor  # A边
-                publicMatrix[:roofBoardLength, :-roofBoardLength, :] = RoofMarginColor  # B边
-                publicMatrix[MD:MD + roofBoardLength, :MB, :] = RoofMarginColor  # C边
-                publicMatrix[MD:, MB - roofBoardLength:MB, :] = RoofMarginColor  # D边
-                publicMatrix[MD - MF:MD, MB:, :] = RoofMarginColor  # E边
-                publicMatrix[MD - MF:MD - MF + roofBoardLength, MB + roofBoardLength:, :] = RoofMarginColor  # F边
-                publicMatrix[MD - MF + roofBoardLength:, -roofBoardLength:, :] = RoofMarginColor  # G边
+                publicMatrix[:roofBoardLength, roofBoardLength:, :] = RoofMarginColor  # B边
+                publicMatrix[roofBoardLength:MC, -roofBoardLength:, :] = RoofMarginColor  # C边
+                publicMatrix[MC - roofBoardLength:MC, -MD - roofBoardLength:-roofBoardLength, :] = RoofMarginColor  # D边
+                publicMatrix[MC:MC + ME + roofBoardLength, -MD - roofBoardLength:-MD, :] = RoofMarginColor  # E边
+                publicMatrix[MC + ME:MC + ME + roofBoardLength, -MD:-MD - MF, :] = RoofMarginColor  # F边
+                publicMatrix[-MG + roofBoardLength:, -MD + MF - roofBoardLength:-MD + MF, :] = RoofMarginColor  # G边
+                publicMatrix[-roofBoardLength:, roofBoardLength:MH - roofBoardLength, :] = RoofMarginColor  # H边
             else:
-                publicMatrix[MF - MD:, :roofBoardLength, :] = RoofMarginColor  # A边
-                publicMatrix[:roofBoardLength, :-roofBoardLength, :] = RoofMarginColor  # B边
-                publicMatrix[:MF - MD, MB - roofBoardLength:MB, :] = RoofMarginColor  # C边
-                publicMatrix[MF - MD:MF - MD + roofBoardLength, MB:, :] = RoofMarginColor  # D边
-                publicMatrix[:MF, MB + roofBoardLength:, :] = RoofMarginColor  # E边
-                publicMatrix[:roofBoardLength, MB + roofBoardLength:, :] = RoofMarginColor  # F边
-                publicMatrix[roofBoardLength:, -roofBoardLength:, :] = RoofMarginColor  # G边
+                publicMatrix[:roofBoardLength, roofBoardLength:MB, :] = RoofMarginColor  # B边
+                publicMatrix[roofBoardLength:MC, MB - roofBoardLength:MB, :] = RoofMarginColor  # C边
+                publicMatrix[MC - roofBoardLength:MC, MB - MD - roofBoardLength:MB - roofBoardLength,
+                :] = RoofMarginColor  # D边
+                publicMatrix[MC:MC + ME + roofBoardLength, MB - MD - roofBoardLength:MB - MD, :] = RoofMarginColor  # E边
+                publicMatrix[MC + ME:MC + ME + roofBoardLength, -MF:, :] = RoofMarginColor  # F边
+                publicMatrix[-MG + roofBoardLength:, -roofBoardLength:, :] = RoofMarginColor  # G边
+                publicMatrix[-roofBoardLength:, roofBoardLength:-roofBoardLength, :] = RoofMarginColor  # H边
 
         for point in obstaclePointArray:
             publicMatrix[point[1], point[0]] = ObstacleColor
