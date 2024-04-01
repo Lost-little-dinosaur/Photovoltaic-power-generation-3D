@@ -24,6 +24,7 @@
       "A": 9100,
       "B": 7700,
       "height": 3000,
+      "layer":2,
       "roofDirection": 0,
       "roofAngle": 0,
       "extensibleDistance": [

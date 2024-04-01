@@ -316,9 +316,15 @@ class Roof:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         # self.roofAngle = jsonRoof["roofAngle"]
         # self.roofDirection = jsonRoof["roofDirection"]
+        self.windPressure = jsonRoof["windPressure"]
+        self.snowPressure = jsonRoof["snowPressure"]
+        self.windSnowPressure = jsonRoof["windAndSnowPressure"]
         self.latitude = latitude
         self.obstacles = []
         self.sceneObstacles = []
+        self.height = jsonRoof["height"]
+        self.layer = jsonRoof["layer"]
+        self.columnType = ""
         # self.maxRects = []
         # self.allPlacements = collections.deque()
         self.allPlacements = []
@@ -751,7 +757,8 @@ class Roof:
                                                                                               self.obstacleArraySelf,
                                                                                               placement[2][arrangeI],
                                                                                               self.type,
-                                                                                              self.obstaclerange)
+                                                                                              self.obstaclerange,
+                                                                                              self.columnType)
                 tempTxt = f"第{arrangeI + 1}个阵列的立柱排布：\n" + tempTxt + "\n"
                 tempSum += len(tempArray)
                 allTempArray.append(tempArray)

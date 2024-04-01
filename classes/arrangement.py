@@ -120,7 +120,7 @@ class Arrangement:
         self.edgeColumn = []  # 边缘立柱
         self.shadowRelativePosition = []
 
-    def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices, type, obstaclerange):
+    def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices, type, obstaclerange, columnType):
         UNIT = const.const.getUnit()
         column, limit_column, arrangement_height = const.const.getColumnsInformation()
         startX = int(startXunit * UNIT)
@@ -130,14 +130,16 @@ class Arrangement:
             temp.append([node[0] - startX, node[1] - startX])
         obstaclerange = temp
         sys.setrecursionlimit(10000)
-
+        edgeLimit = 250
+        if columnType == "基墩":
+            edgeLimit = 300
         def dfsColumn_position(x, n_columns, width, answer, obstaclerange, max_spacing, type, k=0):
             # type == 1表示常规情况，2表示有扣除
             result = []
             if x > width:
                 return result
             if n_columns <= 0 and type == 1:
-                if 250 <= (width - x) <= 700:
+                if edgeLimit <= (width - x) <= 700:
                     return answer
             if n_columns <= 0 and type == 2:
                 if (width - x) <= max_spacing + k and (max_spacing + k) <= 2000:
@@ -197,8 +199,7 @@ class Arrangement:
             #     column_positions[0] = round(700 / UNIT)
             # if column_positions[-1] <= round(width - 700 / UNIT):
             #     column_positions[-1] = round(width - (700 / UNIT))
-            for num in range(250, 700, 50):
-
+            for num in range(edgeLimit, 700, 50):
                 column_positions.append(num)  # 将当前数加入组合
                 found_match = False
                 for node in obstaclerange:
@@ -498,7 +499,7 @@ class Arrangement:
                 else:
                     x1 = 500
                     #  最右侧立柱对障碍物的避让
-                    for num in range(250, 700, 50):
+                    for num in range(edgeLimit, 700, 50):
                         found_match = False
                         for node in obstaclerange:
                             if node[0] < num < node[1]:
@@ -513,7 +514,7 @@ class Arrangement:
             else:
                 if fixedColumn[0][0] < 700:
                     x1 = fixedColumn[0][0]
-                    for num in range(width - 700, width - 250, 50):
+                    for num in range(width - 700, width - edgeLimit, 50):
                         found_match = False
                         for node in obstaclerange:
                             if node[0] < num < node[1]:
@@ -526,7 +527,7 @@ class Arrangement:
                 else:
                     x1 = 500
                     #  最右侧立柱对障碍物的避让
-                    for num in range(250, 700, 50):
+                    for num in range(edgeLimit, 700, 50):
                         found_match = False
                         for node in obstaclerange:
                             if node[0] < num < node[1]:
@@ -693,7 +694,14 @@ class Arrangement:
 
     def calculateComponentPositionArray(self, startX, startY):
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
+        UNIT = const.const.getUnit()
         self.componentPositionArray = []
+        width = 0
+        for node in self.componentLayoutArray:
+            if node[1][0] > width:
+                width = node[1][0]
+        if width > 30000 / UNIT:
+            width = width / 2
         if self.crossPosition == 0:  # 只有横排布（横一）
             self.crossNum = self.componentLayoutArray[0]
             self.crossCount = 1
@@ -763,9 +771,20 @@ class Arrangement:
                 self.componentPositionArray.append(
                     [[node_c[0], node_c[1]], [node_c[0] + self.component.width - 1,
                                               node_c[1] + self.component.length - 1]])
+        for i in range(len(self.componentPositionArray)):
+            if self.componentPositionArray[i][0] > width:
+                self.componentPositionArray[i][0][0] += 500
+                self.componentPositionArray[i][1][0] += 500
 
     def calculateComponentPositionArrayreal(self, startX, startY):
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
+        self.componentPositionArray = []
+        width = 0
+        for node in self.componentLayoutArray:
+            if node[1][0] > width:
+                width = node[1][0]
+        if width > 30000 / UNIT:
+            width = width / 2
         self.componentPositionArray = []
         if self.crossPosition == 0:  # 只有横排布（横一）
             self.crossNum = self.componentLayoutArray[0]
@@ -840,6 +859,11 @@ class Arrangement:
                 self.componentPositionArray.append(
                     [[node_c[0], node_c[1]], [node_c[0] + self.component.realWidth - 1,
                                               node_c[1] + self.component.realLength - 1]])
+        for i in range(len(self.componentPositionArray)):
+            if self.componentPositionArray[i][0] > width:
+                self.componentPositionArray[i][0][0] += 500
+                self.componentPositionArray[i][1][0] += 500
+
 
     # def chooseLayout(self):
     #     if self.specification == "竖二" and self.type == "基墩":
