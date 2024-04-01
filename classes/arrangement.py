@@ -489,26 +489,55 @@ class Arrangement:
                 else:
                     i = i + 1
             # 计算得到需要固定的位置fixedColumn
-            if fixedColumn[0][0] < 700:
-                x1 = fixedColumn[0][0]
-                x2 = fixedColumn[1][0]
-                spanNums = len(fixedColumn)
-                k = 2
-            else:
-                x1 = 500
-                #  最右侧立柱对障碍物的避让
-                for num in range(250, 700, 50):
-                    found_match = False
-                    for node in obstaclerange:
-                        if node[0] < num < node[1]:
-                            found_match = True
+            if len(fixedColumn) > 1:
+                if fixedColumn[0][0] < 700:
+                    x1 = fixedColumn[0][0]
+                    x2 = fixedColumn[1][0]
+                    spanNums = len(fixedColumn)
+                    k = 2
+                else:
+                    x1 = 500
+                    #  最右侧立柱对障碍物的避让
+                    for num in range(250, 700, 50):
+                        found_match = False
+                        for node in obstaclerange:
+                            if node[0] < num < node[1]:
+                                found_match = True
+                                break
+                        if not found_match:
+                            x1 = num
                             break
-                    if not found_match:
-                        x1 = num
-                        break
-                x2 = fixedColumn[0][0]
-                spanNums = len(fixedColumn) + 1
-                k = 1
+                    x2 = fixedColumn[0][0]
+                    spanNums = len(fixedColumn) + 1
+                    k = 1
+            else:
+                if fixedColumn[0][0] < 700:
+                    x1 = fixedColumn[0][0]
+                    for num in range(width - 700, width - 250, 50):
+                        found_match = False
+                        for node in obstaclerange:
+                            if node[0] < num < node[1]:
+                                found_match = True
+                                break
+                        if not found_match:
+                            x2 = num
+                            break
+                    spanNums = 1
+                else:
+                    x1 = 500
+                    #  最右侧立柱对障碍物的避让
+                    for num in range(250, 700, 50):
+                        found_match = False
+                        for node in obstaclerange:
+                            if node[0] < num < node[1]:
+                                found_match = True
+                                break
+                        if not found_match:
+                            x1 = num
+                            break
+                    x2 = fixedColumn[0][0]
+                    spanNums = len(fixedColumn) + 1
+                    k = 1
             for i in range(spanNums - 1):
                 column_positions.append(x1)
                 spanWidth = x2 - x1
