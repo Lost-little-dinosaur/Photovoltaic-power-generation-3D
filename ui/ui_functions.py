@@ -874,7 +874,8 @@ class UI:
         elif roofSurfaceCategory == "上凹形":
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] + self.roof_info['B'] + self.roof_info['F']
-            scale = min(draw_width / float(self.roof_info['H']), draw_height / float(self.roof_info['A']))
+            max_height = max(self.roof_info['A'],self.roof_info['G'])
+            scale = min(draw_width / float(self.roof_info['H']), draw_height / float(max_height))
 
             roof_left = (frame_width - self.roof_info['H'] * scale) / 2
             roof_top = (frame_height - self.roof_info['A'] * scale) / 2
@@ -925,7 +926,8 @@ class UI:
         elif roofSurfaceCategory == "下凹形":
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] - self.roof_info['F']
-            scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['C']))
+            max_height = max(self.roof_info['A'],self.roof_info['C'])
+            scale = min(draw_width / float(self.roof_info['B']), draw_height / float(max_height))
 
             roof_left = (frame_width - self.roof_info['B'] * scale) / 2
             roof_top = (frame_height - self.roof_info['C'] * scale) / 2
@@ -976,7 +978,8 @@ class UI:
         elif roofSurfaceCategory == "左凹形":
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] + self.roof_info['F']
-            scale = min(draw_width / float(self.roof_info['H']), draw_height / float(self.roof_info['G']))
+            max_width = max(self.roof_info['F'],self.roof_info['H'])
+            scale = min(draw_width / float(max_width), draw_height / float(self.roof_info['G']))
 
             roof_left = (frame_width - self.roof_info['H'] * scale) / 2
             roof_top = (frame_height - self.roof_info['G'] * scale) / 2
@@ -1027,7 +1030,8 @@ class UI:
         elif roofSurfaceCategory == "右凹形":
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] + self.roof_info['F']
-            scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['A']))
+            max_width = max(self.roof_info['B'],self.roof_info['H'])
+            scale = min(draw_width / float(max_width), draw_height / float(self.roof_info['A']))
 
             roof_left = (frame_width - self.roof_info['B'] * scale) / 2
             roof_top = (frame_height - self.roof_info['A'] * scale) / 2
