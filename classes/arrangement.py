@@ -697,7 +697,7 @@ class Arrangement:
         UNIT = const.const.getUnit()
         self.componentPositionArray = []
         width = 0
-        for node in self.componentLayoutArray:
+        for node in self.relativePositionArray:
             if node[1][0] > width:
                 width = node[1][0]
         if width > 30000 / UNIT:
@@ -772,7 +772,7 @@ class Arrangement:
                     [[node_c[0], node_c[1]], [node_c[0] + self.component.width - 1,
                                               node_c[1] + self.component.length - 1]])
         for i in range(len(self.componentPositionArray)):
-            if self.componentPositionArray[i][0] > width:
+            if self.componentPositionArray[i][0][0] > width:
                 self.componentPositionArray[i][0][0] += 500
                 self.componentPositionArray[i][1][0] += 500
 
@@ -780,7 +780,7 @@ class Arrangement:
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
         self.componentPositionArray = []
         width = 0
-        for node in self.componentLayoutArray:
+        for node in self.relativePositionArray:
             if node[1][0] > width:
                 width = node[1][0]
         if width > 30000 / UNIT:
@@ -860,7 +860,7 @@ class Arrangement:
                     [[node_c[0], node_c[1]], [node_c[0] + self.component.realWidth - 1,
                                               node_c[1] + self.component.realLength - 1]])
         for i in range(len(self.componentPositionArray)):
-            if self.componentPositionArray[i][0] > width:
+            if self.componentPositionArray[i][0][0] > width:
                 self.componentPositionArray[i][0][0] += 500
                 self.componentPositionArray[i][1][0] += 500
 
