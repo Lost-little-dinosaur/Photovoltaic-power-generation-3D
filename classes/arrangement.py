@@ -698,12 +698,14 @@ class Arrangement:
         self.componentPositionArray = []
         tempStartX = startX
         tempStartY = startY
+        channel = False
         width = 0
         for node in self.relativePositionArray:
             if node[1][0] > width:
                 width = node[1][0]
         if width > 30000 / UNIT:
             width = width / 2
+            channel = True
         if self.crossPosition == 0:  # 只有横排布（横一）
             self.crossNum = self.componentLayoutArray[0]
             self.crossCount = 1
@@ -773,22 +775,27 @@ class Arrangement:
                 self.componentPositionArray.append(
                     [[node_c[0], node_c[1]], [node_c[0] + self.component.width - 1,
                                               node_c[1] + self.component.length - 1]])
-        for i in range(len(self.componentPositionArray)):
-            if self.componentPositionArray[i][0][0] - tempStartX > width:
-                self.componentPositionArray[i][0][0] += 500 / UNIT
-                self.componentPositionArray[i][1][0] += 500 / UNIT
+        if channel == True:
+            for i in range(len(self.componentPositionArray)):
+                if self.componentPositionArray[i][0][0] - tempStartX > width:
+                    self.componentPositionArray[i][0][0] += 500 / UNIT
+                    self.componentPositionArray[i][1][0] += 500 / UNIT
+
 
     def calculateComponentPositionArrayreal(self, startX, startY):
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
+        UNIT = const.const.getUnit()
         self.componentPositionArray = []
         tempStartX = startX
         tempStartY = startY
+        channel = False
         width = 0
         for node in self.relativePositionArray:
-            if node[1][0] > width:
-                width = node[1][0]
+            if node[1][0] * UNIT > width:
+                width = node[1][0] * UNIT
         if width > 30000 / UNIT:
             width = width / 2
+            channel = True
         self.componentPositionArray = []
         if self.crossPosition == 0:  # 只有横排布（横一）
             self.crossNum = self.componentLayoutArray[0]
@@ -863,10 +870,12 @@ class Arrangement:
                 self.componentPositionArray.append(
                     [[node_c[0], node_c[1]], [node_c[0] + self.component.realWidth - 1,
                                               node_c[1] + self.component.realLength - 1]])
-        for i in range(len(self.componentPositionArray)):
-            if self.componentPositionArray[i][0][0] - tempStartX > width:
-                self.componentPositionArray[i][0][0] += 500
-                self.componentPositionArray[i][1][0] += 500
+        if channel == True:
+            for i in range(len(self.componentPositionArray)):
+                if self.componentPositionArray[i][0][0] - tempStartX > width:
+                    self.componentPositionArray[i][0][0] += 500
+                    self.componentPositionArray[i][1][0] += 500
+
 
 
     # def chooseLayout(self):
