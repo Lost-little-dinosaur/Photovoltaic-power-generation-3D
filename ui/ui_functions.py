@@ -1280,7 +1280,7 @@ class UI:
         #    const.const.changeMinComponent(jsonData['algorithm']['minComponent'])
         const.const.changeMaxArrangeCount(jsonData['algorithm']['maxArrangeCount'])
 
-        roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"])
+        roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"],jsonData["scene"]["location"])
         assignComponentParameters(jsonData["component"])
 
         start_time = time.time()

@@ -14,7 +14,7 @@ import collections
 
 # 输入都是以毫米为单位的
 class Roof:
-    def __init__(self, jsonRoof, latitude):
+    def __init__(self, jsonRoof, latitude, jsonLocation):
         UNIT = getUnit()
         self.eastExtend, self.westExtend, self.southExtend, self.northExtend = jsonRoof["extensibleDistance"]
         self.type = jsonRoof["roofSurfaceCategory"]
@@ -316,9 +316,9 @@ class Roof:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         # self.roofAngle = jsonRoof["roofAngle"]
         # self.roofDirection = jsonRoof["roofDirection"]
-        self.windPressure = jsonRoof["windPressure"]
-        self.snowPressure = jsonRoof["snowPressure"]
-        self.windSnowPressure = jsonRoof["windAndSnowPressure"]
+        self.windPressure = jsonLocation["windPressure"]
+        self.snowPressure = jsonLocation["snowPressure"]
+        self.windSnowPressure = jsonLocation["windAndSnowPressure"]
         self.latitude = latitude
         self.obstacles = []
         self.sceneObstacles = []
