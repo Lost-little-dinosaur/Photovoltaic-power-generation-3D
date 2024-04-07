@@ -978,7 +978,7 @@ class Roof:
                 publicMatrix[roofBoardLength:MC, -roofBoardLength:, :] = RoofMarginColor  # C边
                 publicMatrix[MC - roofBoardLength:MC, -MD - roofBoardLength:-roofBoardLength, :] = RoofMarginColor  # D边
                 publicMatrix[MC:MC + ME + roofBoardLength, -MD - roofBoardLength:-MD, :] = RoofMarginColor  # E边
-                publicMatrix[MC + ME:MC + ME + roofBoardLength, -MD:-MD - MF, :] = RoofMarginColor  # F边
+                publicMatrix[MC + ME:MC + ME + roofBoardLength, -MD:-MD + MF, :] = RoofMarginColor  # F边
                 publicMatrix[-MG + roofBoardLength:, -MD + MF - roofBoardLength:-MD + MF, :] = RoofMarginColor  # G边
                 publicMatrix[-roofBoardLength:, roofBoardLength:MH - roofBoardLength, :] = RoofMarginColor  # H边
             else:
