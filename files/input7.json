@@ -74,32 +74,7 @@
           ],
           "adjustedHeight": 0
         },
-        {
-          "id": "水塔1",
-          "type": "水塔",
-          "isRound": false,
-          "northHeight": 20,
-          "eastWestLength": 20,
-          "northSouthLength": 20,
-          "diameter": 20,
-          "upLeftPosition": [
-            100,
-            200
-          ],
-          "adjustedHeight": 0
-        },
-        {
-          "id": "水塔2",
-          "type": "水塔",
-          "isRound": true,
-          "height": 20,
-          "diameter": 20,
-          "centerPosition": [
-            100,
-            200
-          ],
-          "adjustedHeight": 0
-        },
+
         {
           "id": "上人通道1",
           "type": "上人通道",
@@ -124,83 +99,16 @@
     },
     "obstacles": [
       {
-        "id": "邻居房屋1",
-        "type": "邻居房屋",
-        "isRound": false,
-        "shape": 1,
-        "eastWestLength": 20,
-        "northSouthLength": 20,
-        "height": 20,
-        "aLength": 20,
-        "bLength": 20,
-        "upLeftPosition": [
-          100,
-          200
-        ],
-        "adjustedHeight": 0
-      },
-      {
-        "id": "邻居房屋2",
-        "type": "邻居房屋",
-        "isRound": false,
-        "shape": 2,
-        "eastWestLength": 20,
-        "northSouthLength": 20,
-        "height": 20,
-        "orientation": 1,
-        "ridgeHeight": 20,
-        "eaveHeight": 20,
-        "aLength": 20,
-        "bLength": 20,
-        "upLeftPosition": [
-          100,
-          200
-        ],
-        "adjustedHeight": 0
-      },
-      {
-        "id": "邻居房屋3",
-        "type": "邻居房屋",
-        "isRound": false,
-        "shape": 3,
-        "selfHeight": 20,
-        "upLeftPosition": [
-          100,
-          200
-        ],
-        "adjustedHeight": 0
-      },
-      {
         "id": "树1",
         "type": "树",
         "diameter": 20,
         "height": 20,
         "isRound": true,
         "centerPosition": [
-          100,
-          200
+          -100,
+          -200
         ],
         "adjustedHeight": 0
-      },
-      {
-        "id": "电线1",
-        "type": "电线",
-        "direction": 1,
-        "distanceToSouthWestCorner": 20,
-        "distanceToSouthEastCorner": 20,
-        "eastHeight": 20,
-        "westHeight": 20,
-        "removable": 1
-      },
-      {
-        "id": "电线2",
-        "type": "电线",
-        "direction": 2,
-        "distanceToWestSouthCorner": 20,
-        "distanceToWestNorthCorner": 20,
-        "southHeight": 20,
-        "northHeight": 20,
-        "removable": 2
       }
     ]
   },

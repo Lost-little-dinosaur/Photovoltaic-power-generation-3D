@@ -137,7 +137,7 @@ class UI:
 
         if is_nonempty_list(outside_obstacle_ui_info):
             outside_obstacle_btn = tk.Button(left_frame, text="添加屋外障碍物信息",
-                                             command=partial(self.open_outside_obstacle_window, *obstacle_ui_info))
+                                             command=partial(self.open_outside_obstacle_window, *outside_obstacle_ui_info))
             outside_obstacle_btn.pack(fill=tk.X, pady=5)
 
         if is_nonempty_list(panel_ui_info):
@@ -634,6 +634,56 @@ class UI:
         half_int = lambda x, y: int(x + y) / 2
         self.clear_canvas()
 
+        def get_furthest_outside_obstacle_distance():
+            res = [0,0,0,0]
+            for obstacle in self.outside_obstacle_info:
+                centerX = float(obstacle['relativePositionX']) # 可以是负数
+                centerY = float(obstacle['relativePositionY']) # 可以是负数
+                x1, x2, y1, y2 = 0, 0, 0, 0
+                if obstacle['isRound']:
+                    # continue
+                    length = float(obstacle['diameter']) / 2
+                    x1 = centerX - length
+                    x2 = centerX + length
+                    y1 = centerY - length
+                    y2 = centerY + length
+                else:
+                    width = float(obstacle['width'])
+                    length = float(obstacle['length'])
+                    x1 = centerX
+                    y1 = centerY
+                    x2 = centerX + width
+                    y2 = centerY + length
+                res[0] = min(res[0], x1)
+                res[1] = min(res[1], y1)
+                res[2] = max(res[2], x2)
+                res[3] = max(res[3], y2)
+            return res
+
+        def get_scale_and_roofTopLeft(roof_width, roof_height):
+            scaleX = 1.0
+            scaleY = 1.0
+            if outside_furthest_distance[2] > 0:
+                scaleX = draw_width / float(outside_extension_x)
+            else:
+                scaleX = draw_width / float(roof_width + outside_extension_x)
+            if outside_furthest_distance[3] > 0:
+                scaleY = draw_height / float(outside_extension_y)
+            else:
+                scaleY = draw_height / float(roof_height + outside_extension_y)
+
+            scale = min(scaleX,scaleY)
+            if outside_extension_x == 0 and outside_extension_y == 0:
+                roof_left = (frame_width - roof_width * scale) / 2
+                roof_top = (frame_height - roof_height * scale) / 2
+            else:
+                roof_left = draw_gap + abs(outside_furthest_distance[0]) * scale
+                roof_top = draw_gap + abs(outside_furthest_distance[1]) * scale
+            return scale, roof_left, roof_top
+
+        outside_furthest_distance = get_furthest_outside_obstacle_distance()
+        outside_extension_x = abs(outside_furthest_distance[0]) + outside_furthest_distance[2]
+        outside_extension_y = abs(outside_furthest_distance[1]) + outside_furthest_distance[3]
         draw_width = frame_width - draw_gap * 2
         draw_height = frame_height - draw_gap * 2
 
@@ -642,12 +692,9 @@ class UI:
         roof_left = 0
         roof_top = 0
         if roofSurfaceCategory == "矩形":  # 绘制矩形屋顶
-            scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['A']))
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['B'],self.roof_info['A'])
             scaled_width = float(self.roof_info['B']) * scale
             scaled_height = float(self.roof_info['A']) * scale
-            # 计算矩形位置使其居中
-            roof_left = (frame_width - scaled_width) / 2
-            roof_top = (frame_height - scaled_height) / 2
             roof_right = roof_left + scaled_width
             roof_bottom = roof_top + scaled_height
             # 在 Canvas 上绘制缩放后的矩形
@@ -667,10 +714,9 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] + self.roof_info['D'] + self.roof_info['F']
             AC_height = self.roof_info['A'] + self.roof_info['C']
-            scale = min(draw_width / float(self.roof_info['H']), draw_height / float(AC_height))
-
-            roof_left = (frame_width - self.roof_info['H'] * scale) / 2
-            roof_top = (frame_height - AC_height * scale) / 2
+            
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['H'], AC_height)
+            # scale = min(draw_width / float(self.roof_info['H']), draw_height / float(AC_height))
 
             p1 = [roof_left, (frame_height + AC_height * scale) / 2]  # point between AH
             p0 = [p1[0], p1[1] - self.roof_info['A'] * scale]  # point between AB
@@ -719,10 +765,8 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] - self.roof_info['B'] - self.roof_info['F']
             AC_height = self.roof_info['A'] + self.roof_info['C']
-            scale = min(draw_width / float(self.roof_info['D']), draw_height / float(AC_height))
-
-            roof_left = (frame_width - self.roof_info['D'] * scale) / 2
-            roof_top = (frame_height - AC_height * scale) / 2
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['D'], AC_height)
+            # scale = min(draw_width / float(self.roof_info['D']), draw_height / float(AC_height))
 
             p0 = [roof_left, roof_top]  # CD
             p1 = [p0[0], p0[1] + self.roof_info['C'] * scale]  # BC
@@ -771,11 +815,9 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] - self.roof_info['B'] + self.roof_info['F']
             DF_width = self.roof_info['D'] + self.roof_info['F']
-            scale = min(draw_width / float(DF_width), draw_height / float(self.roof_info['G']))
-
-            roof_left = (frame_width - DF_width * scale) / 2
-            roof_top = (frame_height - self.roof_info['G'] * scale) / 2
-
+            
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(DF_width,self.roof_info['G'])
+            # scale = min(draw_width / float(DF_width), draw_height / float(self.roof_info['G']))
             p0 = [roof_left, roof_top + self.roof_info['E'] * scale]  # CD
             p1 = [p0[0], p0[1] + self.roof_info['C'] * scale]  # BC
             p2 = [p1[0] + self.roof_info['B'] * scale, p1[1]]  # AB
@@ -823,10 +865,11 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] + self.roof_info['B'] - self.roof_info['F']
             BD_width = self.roof_info['D'] + self.roof_info['B']
-            scale = min(draw_width / float(BD_width), draw_height / float(self.roof_info['A']))
-
-            roof_left = (frame_width - BD_width * scale) / 2
-            roof_top = (frame_height - self.roof_info['A'] * scale) / 2
+            
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(BD_width,self.roof_info['A'])
+            # scale = min(draw_width / float(BD_width), draw_height / float(self.roof_info['A']))
+            # roof_left = (frame_width - BD_width * scale) / 2
+            # roof_top = (frame_height - self.roof_info['A'] * scale) / 2
 
             p0 = [roof_left, roof_top]  # AB
             p1 = [p0[0], p0[1] + self.roof_info['A'] * scale]  # AH
@@ -875,10 +918,11 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] + self.roof_info['B'] + self.roof_info['F']
             max_height = max(self.roof_info['A'],self.roof_info['G'])
-            scale = min(draw_width / float(self.roof_info['H']), draw_height / float(max_height))
-
-            roof_left = (frame_width - self.roof_info['H'] * scale) / 2
-            roof_top = (frame_height - self.roof_info['A'] * scale) / 2
+            
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['H'], max_height)
+            # scale = min(draw_width / float(self.roof_info['H']), draw_height / float(max_height))
+            # roof_left = (frame_width - self.roof_info['H'] * scale) / 2
+            # roof_top = (frame_height - self.roof_info['A'] * scale) / 2
 
             p0 = [roof_left, roof_top]  # AB
             p1 = [p0[0], p0[1] + self.roof_info['A'] * scale]  # AH
@@ -927,10 +971,11 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] - self.roof_info['F']
             max_height = max(self.roof_info['A'],self.roof_info['C'])
-            scale = min(draw_width / float(self.roof_info['B']), draw_height / float(max_height))
 
-            roof_left = (frame_width - self.roof_info['B'] * scale) / 2
-            roof_top = (frame_height - self.roof_info['C'] * scale) / 2
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['B'], max_height)
+            # scale = min(draw_width / float(self.roof_info['B']), draw_height / float(max_height ))
+            # roof_left = (frame_width - self.roof_info['B'] * scale) / 2
+            # roof_top = (frame_height - self.roof_info['C'] * scale) / 2
 
             p0 = [roof_left, roof_top]  # AB
             p1 = [p0[0], p0[1] + self.roof_info['A'] * scale]  # AH
@@ -979,10 +1024,11 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] + self.roof_info['F']
             max_width = max(self.roof_info['F'],self.roof_info['H'])
-            scale = min(draw_width / float(max_width), draw_height / float(self.roof_info['G']))
 
-            roof_left = (frame_width - self.roof_info['H'] * scale) / 2
-            roof_top = (frame_height - self.roof_info['G'] * scale) / 2
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(max_width,self.roof_info['G'])
+            # scale = min(draw_width / float(max_width), draw_height / float(self.roof_info['G']))
+            # roof_left = (frame_width - self.roof_info['H'] * scale) / 2
+            # roof_top = (frame_height - self.roof_info['G'] * scale) / 2
 
             p0 = [roof_left, roof_top + (self.roof_info['E'] + self.roof_info['C']) * scale]  # AB
             p1 = [p0[0], p0[1] + self.roof_info['A'] * scale]  # AH
@@ -1031,10 +1077,10 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] + self.roof_info['F']
             max_width = max(self.roof_info['B'],self.roof_info['H'])
-            scale = min(draw_width / float(max_width), draw_height / float(self.roof_info['A']))
-
-            roof_left = (frame_width - self.roof_info['B'] * scale) / 2
-            roof_top = (frame_height - self.roof_info['A'] * scale) / 2
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(max_width,self.roof_info['A'])
+            # scale = min(draw_width / float(max_width), draw_height / float(self.roof_info['A']))
+            # roof_left = (frame_width - self.roof_info['B'] * scale) / 2
+            # roof_top = (frame_height - self.roof_info['A'] * scale) / 2
 
             p0 = [roof_left, roof_top]  # AB
             p1 = [p0[0], p0[1] + self.roof_info['A'] * scale]  # AH
@@ -1082,10 +1128,9 @@ class UI:
         elif roofSurfaceCategory == "正7形":
             self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C']
             self.roof_info['F'] = self.roof_info['D'] - self.roof_info['B']
-            scale = min(draw_width / float(self.roof_info['D']), draw_height / float(self.roof_info['E']))
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['D'],self.roof_info['E'])
+            # scale = min(draw_width / float(self.roof_info['D']), draw_height / float(self.roof_info['E']))
 
-            roof_left = (frame_width - self.roof_info['D'] * scale) / 2
-            roof_top = (frame_height - self.roof_info['E'] * scale) / 2
             p0 = [(frame_width - self.roof_info['D'] * scale) / 2,
                   (frame_height - self.roof_info['E'] * scale) / 2]  # point between CD
             p1 = [p0[0], p0[1] + self.roof_info['C'] * scale]  # point between BC
@@ -1123,10 +1168,10 @@ class UI:
         elif roofSurfaceCategory == "反7形":
             self.roof_info['E'] = self.roof_info['A'] - self.roof_info['C']
             self.roof_info['F'] = self.roof_info['B'] - self.roof_info['D']
-            scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['A']))
-
-            roof_left = (frame_width - self.roof_info['B'] * scale) / 2
-            roof_top = (frame_height - self.roof_info['A'] * scale) / 2
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['B'],self.roof_info['A'])
+            # scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['A']))
+            # roof_left = (frame_width - self.roof_info['B'] * scale) / 2
+            # roof_top = (frame_height - self.roof_info['A'] * scale) / 2
             p0 = [roof_left + self.roof_info['B'] * scale, roof_top + self.roof_info['C'] * scale]  # point between CD
             p1 = [p0[0], roof_top]  # point between BC
             p2 = [roof_left, p1[1]]  # AB
@@ -1163,10 +1208,10 @@ class UI:
         elif roofSurfaceCategory == "正L形":
             self.roof_info['E'] = self.roof_info['A'] - self.roof_info['C']
             self.roof_info['F'] = self.roof_info['B'] + self.roof_info['D']
-            scale = min(draw_width / float(self.roof_info['F']), draw_height / float(self.roof_info['A']))
-
-            roof_left = (frame_width - self.roof_info['F'] * scale) / 2
-            roof_top = (frame_height - self.roof_info['A'] * scale) / 2
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['F'],self.roof_info['A'])
+            # scale = min(draw_width / float(self.roof_info['F']), draw_height / float(self.roof_info['A']))
+            # roof_left = (frame_width - self.roof_info['F'] * scale) / 2
+            # roof_top = (frame_height - self.roof_info['A'] * scale) / 2
             p0 = [roof_left + self.roof_info['B'] * scale, roof_top + self.roof_info['C'] * scale]  # point between CD
             p1 = [p0[0], roof_top]  # point between BC
             p2 = [roof_left, p1[1]]  # AB
@@ -1200,14 +1245,14 @@ class UI:
                                               text=f"{self.roof_info['F']}",
                                               font=("Arial", 12),
                                               fill=text_color)
-
         elif roofSurfaceCategory == "反L形":
             self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C']
             self.roof_info['F'] = self.roof_info['B'] + self.roof_info['D']
-            scale = min(draw_width / float(self.roof_info['F']), draw_height / float(self.roof_info['E']))
-
-            roof_left = (frame_width - self.roof_info['F'] * scale) / 2
-            roof_top = (frame_height - self.roof_info['E'] * scale) / 2
+            
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['F'],self.roof_info['E'])
+            # scale = min(draw_width / float(self.roof_info['F']), draw_height / float(self.roof_info['E']))
+            # roof_left = (frame_width - self.roof_info['F'] * scale) / 2
+            # roof_top = (frame_height - self.roof_info['E'] * scale) / 2
             p0 = [roof_left + self.roof_info['B'] * scale, roof_top]  # point between CD
             p1 = [p0[0], p0[1] + self.roof_info['C'] * scale]  # point between BC
             p2 = [roof_left, p1[1]]  # AB
@@ -1241,13 +1286,15 @@ class UI:
                                               text=f"{self.roof_info['F']}",
                                               font=("Arial", 12),
                                               fill=text_color)
-        # 绘制屋内障碍物
-        for obstacle in self.obstacle_info:
+        
+        obstacles = self.obstacle_info + self.outside_obstacle_info
+        # 绘制障碍物障碍物
+        for obstacle in obstacles:
             try:
                 centerX = float(obstacle['relativePositionX'])
                 centerY = float(obstacle['relativePositionY'])
                 if obstacle['isRound']:
-                    continue
+                    # continue
                     length = float(obstacle['diameter']) / 2
                     x1 = roof_left + (centerX - length) * scale
                     y1 = roof_top + (centerY - length) * scale
@@ -1269,6 +1316,9 @@ class UI:
                                                       fill="red")
             except:
                 continue
+        
+
+        
         # print(self.get_input_json())
 
     def calculate_layout(self):
@@ -1492,11 +1542,25 @@ class UI:
                         else:
                             new_item['relativePositionX'] = new_item['upLeftPosition'][0]
                             new_item['relativePositionY'] = new_item['upLeftPosition'][1]
+                        new_item['isRound'] = obstacle['isRound']
                         self.obstacle_info.append(new_item)
 
-        # if "obstacles" in input_json:
-        # for key, value in input_json["obstacles"].items():
-        #     outside_self.obstacle_info[eng2chn[key]] = value
+            if "obstacles" in input_json["scene"]:
+                for obstacle in input_json["scene"]["obstacles"]:
+                    new_item = {}
+                    for key, value in obstacle.items():
+                        try:
+                            new_item[key] = value
+                        except:
+                            new_item[key] = value
+                    if obstacle['isRound']:
+                        new_item['relativePositionX'] = new_item['centerPosition'][0]
+                        new_item['relativePositionY'] = new_item['centerPosition'][1]
+                    else:
+                        new_item['relativePositionX'] = new_item['upLeftPosition'][0]
+                        new_item['relativePositionY'] = new_item['upLeftPosition'][1]
+                    new_item['isRound'] = obstacle['isRound']
+                    self.outside_obstacle_info.append(new_item)
 
         if "component" in input_json:
             for key, value in input_json["component"].items():

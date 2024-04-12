@@ -52,7 +52,21 @@
           "removable": 0
         }
       ]
-    }
+    },
+    "obstacles": [
+      {
+        "id": "电线杆1",
+        "type": "电线杆",
+        "isRound": true,
+        "diameter": 2000,
+        "centerPosition": [
+          25000,
+          15000
+        ],
+        "adjustedHeight": 0,
+        "removable": 0
+      }
+    ]
   },
   "arrangeType": "膨胀螺栓",
   "component": {
