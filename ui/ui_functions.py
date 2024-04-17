@@ -755,9 +755,11 @@ class UI:
                 scaleY = draw_height / float(roof_height + outside_extension_y)
 
             scale = min(scaleX,scaleY)
+            # 没有屋外障碍物，屋顶居中
             if outside_extension_x == 0 and outside_extension_y == 0:
                 roof_left = (frame_width - roof_width * scale) / 2
                 roof_top = (frame_height - roof_height * scale) / 2
+            # 存在屋外障碍物，屋顶不要求居中
             else:
                 roof_left = draw_gap + abs(outside_furthest_distance[0]) * scale
                 roof_top = draw_gap + abs(outside_furthest_distance[1]) * scale
@@ -1380,8 +1382,8 @@ class UI:
             max_height = max_y - min_y
             max_width = max_x - min_x
             scale, roof_left, roof_top = get_scale_and_roofTopLeft(max_width, max_height)
-
-            scaled_vertices = [(v[0] * scale, v[1] * scale) for v in vertices]
+            # 自定义坐标(0,0)映射上屋面后，为(roof_left, roof_top)
+            scaled_vertices = [(roof_left + v[0] * scale, roof_top + v[1] * scale) for v in vertices]
             self.roofscene_canvas.create_polygon(scaled_vertices, outline=roof_outline_color)
             # 显示屋顶尺寸
             for i in range(len(scaled_vertices)):
@@ -1395,7 +1397,7 @@ class UI:
                 else:
                     v1 = vertices[i+1]
                     scaled_v1 = scaled_vertices[i+1]
-                self.roofscene_canvas.create_text(half_int(scaled_v0[0],scaled_v1[0]), half_int(scaled_v0[1], scaled_v1[1]),
+                self.roofscene_canvas.create_text( half_int(scaled_v0[0],scaled_v1[0]), half_int(scaled_v0[1], scaled_v1[1]),
                                                 text=f"{round(get_distance(v0,v1))}",
                                                 font=("Arial", 12),
                                                 fill=text_color)
