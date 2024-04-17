@@ -1,4 +1,7 @@
+from math import sqrt
 import sys, os
+
+from numpy import square
 import const.const
 from tools.mutiProcessing import *
 
@@ -39,6 +42,7 @@ chn2eng = {
     "D边（mm）": "D",
     "E边（mm）": "E",
     "F边（mm）": "F",
+    "顶点数量": "vertexCount",
 
     "偏移角度": "roofDirection",
     "倾斜角度": "roofAngle",
@@ -77,6 +81,12 @@ chn2eng = {
     "贪心（单阵列）": "greedy",
     "DFS（多阵列）": "dfs",
 }
+
+max_custom_vertex_in_irregular_roof = 50
+for i in range(max_custom_vertex_in_irregular_roof):
+    chn2eng[f"自定义{i}顶点的X坐标"] = f"vertex{i}_X"
+    chn2eng[f"自定义{i}顶点的Y坐标"] = f"vertex{i}_Y"
+
 eng2chn = {v: k for k, v in chn2eng.items()}
 
 roof_outline_color = "yellow"
@@ -300,12 +310,15 @@ class UI:
         window.destroy()
 
     def open_roof_window(self, str_text, option_text, options, bool_text):
-        global str_components, str_entries, len_option_bool, submit_btn
+        global str_components, str_entries, vertex_components, vertex_entries, len_option_bool, submit_btn
+        
         roof_window = tk.Toplevel(self.root)
         roof_window.title("添加屋顶信息")
         # roof_window.geometry("250x200")
         str_components = []
         str_entries = {}
+        vertex_components = []
+        vertex_entries = {}
         option_entries = {}
         bool_entries = {}
         len_option_bool = 0
@@ -313,39 +326,102 @@ class UI:
         def create_input_options_for_irregular_roof(roof_window, value):
             global str_components, str_entries, len_option_bool, submit_btn
             roof_options = {
-                "矩形": ["A", "B"],
-                "上凸形": ["A", "B", "C", "D", "E", "F"],
-                "下凸形": ["A", "B", "C", "D", "E", "F"],
-                "左凸形": ["A", "B", "C", "D", "E", "F"],
-                "右凸形": ["A", "B", "C", "D", "E", "F"],
-                "上凹形": ["A", "B", "C", "D", "E", "F"],
-                "下凹形": ["A", "B", "C", "D", "E", "F"],
-                "左凹形": ["A", "B", "C", "D", "E", "F"],
-                "右凹形": ["A", "B", "C", "D", "E", "F"],
-                "正7形": ["A", "B", "C", "D"],
-                "反7形": ["A", "B", "C", "D"],
-                "正L形": ["A", "B", "C", "D"],
-                "反L形": ["A", "B", "C", "D"]
+                "矩形": ["A", "B","height"],
+                "上凸形": ["A", "B", "C", "D", "E", "F","height"],
+                "下凸形": ["A", "B", "C", "D", "E", "F","height"],
+                "左凸形": ["A", "B", "C", "D", "E", "F","height"],
+                "右凸形": ["A", "B", "C", "D", "E", "F","height"],
+                "上凹形": ["A", "B", "C", "D", "E", "F","height"],
+                "下凹形": ["A", "B", "C", "D", "E", "F","height"],
+                "左凹形": ["A", "B", "C", "D", "E", "F","height"],
+                "右凹形": ["A", "B", "C", "D", "E", "F","height"],
+                "正7形": ["A", "B", "C", "D","height"],
+                "反7形": ["A", "B", "C", "D","height"],
+                "正L形": ["A", "B", "C", "D","height"],
+                "反L形": ["A", "B", "C", "D","height"],
+                "自定义多边形": ["顶点数量"]
             }
+            # 斜屋顶
+            # roof_options = {
+            #     "矩形": ["A", "B","height","roofDirection","roofAngle"],
+            #     "上凸形": ["A", "B", "C", "D", "E", "F","height","roofDirection","roofAngle"],
+            #     "下凸形": ["A", "B", "C", "D", "E", "F","height","roofDirection","roofAngle"],
+            #     "左凸形": ["A", "B", "C", "D", "E", "F","height","roofDirection","roofAngle"],
+            #     "右凸形": ["A", "B", "C", "D", "E", "F","height","roofDirection","roofAngle"],
+            #     "上凹形": ["A", "B", "C", "D", "E", "F","height","roofDirection","roofAngle"],
+            #     "下凹形": ["A", "B", "C", "D", "E", "F","height","roofDirection","roofAngle"],
+            #     "左凹形": ["A", "B", "C", "D", "E", "F","height","roofDirection","roofAngle"],
+            #     "右凹形": ["A", "B", "C", "D", "E", "F","height","roofDirection","roofAngle"],
+            #     "正7形": ["A", "B", "C", "D","height","roofDirection","roofAngle"],
+            #     "反7形": ["A", "B", "C", "D","height","roofDirection","roofAngle"],
+            #     "正L形": ["A", "B", "C", "D","height","roofDirection","roofAngle"],
+            #     "反L形": ["A", "B", "C", "D","height","roofDirection","roofAngle"]
+            # }
+
+            def create_vertex_entries(event):
+                global vertex_components, vertex_entries
+                num_vertices = int(custom_polygon_vertices_entry.get())
+                if num_vertices > max_custom_vertex_in_irregular_roof:
+                    print(f"自定义屋面顶点数量过大,当前上限为{max_custom_vertex_in_irregular_roof}")
+                    return
+                remove_vertex_components()
+                for i in range(num_vertices):
+                    x_label = tk.Label(roof_window, text=f"顶点{i+1} X:")
+                    x_label.grid(row=len_option_bool + i + 1, column=0, padx=5, pady=5)
+                    x_entry = tk.Entry(roof_window)
+                    x_entry.grid(row=len_option_bool + i + 1, column=1, padx=5, pady=5)
+                    y_label = tk.Label(roof_window, text=f"顶点{i+1} Y:")
+                    y_label.grid(row=len_option_bool + i + 1, column=2, padx=5, pady=5)
+                    y_entry = tk.Entry(roof_window)
+                    y_entry.grid(row=len_option_bool + i + 1, column=3, padx=5, pady=5)
+                    vertex_components.append(x_label)
+                    vertex_components.append(x_entry)
+                    vertex_components.append(y_label)
+                    vertex_components.append(y_entry)
+                    vertex_entries[f"自定义{i}顶点的X坐标"] = x_entry
+                    vertex_entries[f"自定义{i}顶点的Y坐标"] = y_entry
+                submit_btn.grid(row=len(str_entries) + len(vertex_entries) + len_option_bool + 1, column=0, columnspan=2,
+                                padx=5,
+                                pady=5)
+
+            def remove_vertex_components():
+                global vertex_components, vertex_entries
+                for component in vertex_components:
+                    component.grid_forget()
+                vertex_components = []
+                vertex_entries = {}
+
             if value not in roof_options:
                 return
             for component in str_components:
                 component.grid_forget()
-
             str_components = []
             str_entries = {}
-            edges = [text + "边（mm）" for text in roof_options[value]] + ["高度（mm）"]
-            for i, text in enumerate(edges):
-                label = tk.Label(roof_window, text=text + ": ")
-                label.grid(row=len_option_bool + i, column=0, padx=5, pady=5)
-                entry = tk.Entry(roof_window)
-                entry.grid(row=len_option_bool + i, column=1, padx=5, pady=5)
-                str_entries[text] = entry
-                str_components.append(label)
-                str_components.append(entry)
-            submit_btn.grid(row=len(str_entries) + len_option_bool + 1, column=0, columnspan=2,
-                            padx=5,
-                            pady=5)
+            remove_vertex_components()
+            # str_names = [text + "边（mm）" for text in roof_options[value]] + ["高度（mm）"]
+            if value == "自定义多边形":
+                custom_polygon_vertices_label = tk.Label(roof_window, text="顶点数量:")
+                custom_polygon_vertices_label.grid(row=len_option_bool, column=0, padx=5, pady=5)
+                custom_polygon_vertices_entry = tk.Entry(roof_window)
+                custom_polygon_vertices_entry.grid(row=len_option_bool, column=1, padx=5, pady=5)
+                str_components.append(custom_polygon_vertices_label)
+                str_components.append(custom_polygon_vertices_entry)
+                str_entries["顶点数量"] = custom_polygon_vertices_entry
+                custom_polygon_vertices_entry.bind('<KeyRelease>', create_vertex_entries)
+
+            else:
+                str_names = [eng2chn[text] for text in roof_options[value]]
+                for i, text in enumerate(str_names):
+                    label = tk.Label(roof_window, text=text + ": ")
+                    label.grid(row=len_option_bool + i, column=0, padx=5, pady=5)
+                    entry = tk.Entry(roof_window)
+                    entry.grid(row=len_option_bool + i, column=1, padx=5, pady=5)
+                    str_entries[text] = entry
+                    str_components.append(label)
+                    str_components.append(entry)
+                submit_btn.grid(row=len(str_entries) + len_option_bool + 1, column=0, columnspan=2,
+                                padx=5,
+                                pady=5)
 
         for i, (text, option) in enumerate(zip(option_text, options)):
             label = tk.Label(roof_window, text=text)
@@ -358,7 +434,7 @@ class UI:
                 scheme_menu = tk.OptionMenu(roof_window, scheme_var, *option, command=update_roof_type_func)
             else:
                 scheme_menu = tk.OptionMenu(roof_window, scheme_var, *option, )
-            scheme_menu.config(width=5)
+            scheme_menu.config(width=10)
             scheme_menu.grid(row=i, column=1, padx=5, pady=5)
             option_entries[text] = scheme_var
 
@@ -383,12 +459,12 @@ class UI:
         # 创建按钮，用于获取所有输入的数据
         submit_btn = tk.Button(roof_window, text="提交",
                                command=lambda: self.get_roof_data(roof_window, str_entries, option_entries,
-                                                                  bool_entries))
+                                                                  bool_entries, vertex_entries))
         submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2,
                         padx=5,
                         pady=5)
 
-    def get_roof_data(self, window, str_entries, option_entries, bool_entries):
+    def get_roof_data(self, window, str_entries, option_entries, bool_entries, vertex_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
             self.roof_info[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
@@ -398,6 +474,11 @@ class UI:
         for text, entry in bool_entries.items():
             # print(text + ": ", entry.get())
             self.roof_info[chn2eng[text]] = entry.get()
+        # 屋顶类型
+        if self.roof_info["roofSurfaceCategory"] == "自定义多边形":
+            for text, entry in vertex_entries.items():
+                input_str = entry.get()
+                self.roof_info[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         window.destroy()
 
     def open_obstacle_window(self, str_text, option_text, options, bool_text):
@@ -632,6 +713,7 @@ class UI:
 
     def draw_roofscene(self):
         half_int = lambda x, y: int(x + y) / 2
+        get_distance = lambda x, y: sqrt(square(x[0] - y[0]) + square(x[1] - y[1]))
         self.clear_canvas()
 
         def get_furthest_outside_obstacle_distance():
@@ -1286,7 +1368,39 @@ class UI:
                                               text=f"{self.roof_info['F']}",
                                               font=("Arial", 12),
                                               fill=text_color)
+        elif roofSurfaceCategory == "自定义多边形":
+            min_x, max_x, min_y, max_y = const.const.INF, -const.const.INF, const.const.INF, -const.const.INF
+            vertices = [(self.roof_info[f"vertex{i}_X"],self.roof_info[f"vertex{i}_Y"]) 
+                                            for i in range(self.roof_info["vertexCount"])]
+            for x,y in vertices:
+                min_x = min(min_x, x)
+                max_x = max(max_x, x)
+                min_y = min(min_y, y)
+                max_y = max(max_y, y)
+            max_height = max_y - min_y
+            max_width = max_x - min_x
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(max_width, max_height)
+
+            scaled_vertices = [(v[0] * scale, v[1] * scale) for v in vertices]
+            self.roofscene_canvas.create_polygon(scaled_vertices, outline=roof_outline_color)
+            # 显示屋顶尺寸
+            for i in range(len(scaled_vertices)):
+                scaled_v0 = scaled_vertices[i]
+                scaled_v1 = None
+                v0 = vertices[i]
+                v1 = None
+                if i + 1 == len(scaled_vertices):
+                    v1 = vertices[0]
+                    scaled_v1 = scaled_vertices[0]
+                else:
+                    v1 = vertices[i+1]
+                    scaled_v1 = scaled_vertices[i+1]
+                self.roofscene_canvas.create_text(half_int(scaled_v0[0],scaled_v1[0]), half_int(scaled_v0[1], scaled_v1[1]),
+                                                text=f"{round(get_distance(v0,v1))}",
+                                                font=("Arial", 12),
+                                                fill=text_color)
         
+
         obstacles = self.obstacle_info + self.outside_obstacle_info
         # 绘制障碍物障碍物
         for obstacle in obstacles:
