@@ -1,3 +1,4 @@
+from tools.tools3D import create_bounding_box_with_holes, get_polygon_area, mark_polygon_edges
 from PIL import Image
 import numpy as np
 import time
@@ -312,6 +313,26 @@ class Roof:
             self.realLength = jsonRoof["A"]
             self.realArea = jsonRoof["B"] * jsonRoof["C"] + jsonRoof["G"] * jsonRoof["H"] + \
                             (jsonRoof["B"] - jsonRoof["D"]) * jsonRoof["E"]
+        elif self.type == "自定义多边形":
+            self.realVertices = []
+            for i in range(jsonRoof["vertexCount"]):
+                self.realVertices.append((jsonRoof[f"vertex{i}_X"],jsonRoof[f"vertex{i}_Y"])) 
+            self.vertices = [(round(x / UNIT), round(y / UNIT)) for x, y in self.realVertices]
+            self.height = jsonRoof["height"]
+            min_x = min(self.realVertices, key=lambda p: p[0])[0]
+            max_x = max(self.realVertices, key=lambda p: p[0])[0]
+            min_y = min(self.realVertices, key=lambda p: p[1])[1]
+            max_y = max(self.realVertices, key=lambda p: p[1])[1]
+            self.realLength = max_y - min_y
+            self.realWidth = max_x - min_x
+            self.length = round(self.realLength / UNIT)
+            self.width = round(self.realWidth / UNIT)
+            self.roofArray = create_bounding_box_with_holes(self.vertices)
+            self.roofSumArray = np.cumsum(np.cumsum(self.roofArray, axis=0), axis=1)
+            self.obstacleArray = np.full((self.length, self.width), 0)
+            self.obstacleArraySelf = []
+            self.obstaclerange = []
+            self.realArea = get_polygon_area(self.realVertices)
         else:
             pass  # todo: 复杂屋顶的情况暂时不做处理
         # self.roofAngle = jsonRoof["roofAngle"]
@@ -795,7 +816,7 @@ class Roof:
         else:
             roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 1, 1, 1, 1
             magnification = 5
-        publicMatrix = np.zeros((self.length * magnification, self.width * magnification, 3))
+        publicMatrix = np.zeros((self.length * magnification + 1, self.width * magnification + 1, 3))
 
         # 画障碍物（只需要轮廓就行）
         obstaclePointArray = np.empty((0, 2), dtype=np.int32)
@@ -990,6 +1011,9 @@ class Roof:
                 publicMatrix[MC + ME:MC + ME + roofBoardLength, -MF:, :] = RoofMarginColor  # F边
                 publicMatrix[-MG + roofBoardLength:, -roofBoardLength:, :] = RoofMarginColor  # G边
                 publicMatrix[-roofBoardLength:, roofBoardLength:-roofBoardLength, :] = RoofMarginColor  # H边
+        elif self.type == "自定义多边形":
+            magnified_vertices = [(x * magnification, y * magnification) for x,y in self.vertices]
+            publicMatrix = mark_polygon_edges(magnified_vertices, publicMatrix, RoofMarginColor)
 
         for point in obstaclePointArray:
             publicMatrix[point[1], point[0]] = ObstacleColor

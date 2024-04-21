@@ -7,15 +7,16 @@ import numpy as np
 from tools.getData import dataDict
 from typing import List
 from copy import deepcopy
-# import multiprocessing
-#
-# def multiprocess_func(func, iter):
-#     processes = multiprocessing.cpu_count()
-#     pool = multiprocessing.Pool(processes=processes)
-#     results = pool.map(func=func,iterable=iter)
-#     pool.close()
-#     pool.join()
-#     return results
+import multiprocessing
+
+def multiprocess_func(func, iter):
+    processes = multiprocessing.cpu_count()
+    # pool = multiprocessing.Pool(processes=processes)
+    with multiprocessing.Pool(processes=processes) as pool:
+        results = pool.map(func=func,iterable=iter)
+    # pool.close()
+    # pool.join()
+    return results
 
 
 def draw3dModel(model3DArray):
@@ -410,6 +411,94 @@ def calculateShadow(nodeArray, isRound, latitude, addSelfFlag, obstacleArray=Non
     else:
         pass  # 圆形的阴影暂时不做计算
 
+
+def point_in_polygon(point, polygon):
+    x, y = point
+    num_vertices = len(polygon)
+    inside = False
+    j = num_vertices - 1
+    for i in range(num_vertices):
+        xi, yi = polygon[i]
+        xj, yj = polygon[j]
+        if (yi < y and yj >= y or yj < y and yi >= y) and (xi <= x or xj <= x):
+            if xi + (y - yi) / (yj - yi) * (xj - xi) < x:
+                inside = not inside
+        j = i
+    return inside
+
+def check_point_in_polygon(args):
+    point, polygon = args
+    return point_in_polygon(point, polygon)
+
+def create_bounding_box_with_holes(polygon):
+    # 获取多边形的边界框
+    min_x = min(polygon, key=lambda p: p[0])[0]
+    max_x = max(polygon, key=lambda p: p[0])[0]
+    min_y = min(polygon, key=lambda p: p[1])[1]
+    max_y = max(polygon, key=lambda p: p[1])[1]
+    
+    bounding_box = np.zeros((max_y - min_y + 1, max_x - min_x + 1))
+    points_to_check = [(x, y) for y in range(min_y, max_y + 1) for x in range(min_x, max_x + 1)]
+    
+    # 使用多进程池进行并行计算
+    results = multiprocess_func(check_point_in_polygon, [(point, polygon) for point in points_to_check])
+
+    for idx, inside in enumerate(results):
+        y, x = divmod(idx, max_x - min_x + 1)
+        if not inside:
+            bounding_box[y, x] = INF
+    
+    return bounding_box
+
+
+def get_polygon_area(vertices):
+    # 初始化面积为0
+    area = 0.0
+    num_vertices = len(vertices)
+
+    # 遍历多边形的每个顶点
+    for i in range(num_vertices):
+        # 当前顶点的坐标
+        current_vertex = vertices[i]
+        x1, y1 = current_vertex
+        # 下一个顶点的坐标，如果当前顶点是最后一个，则下一个顶点是第一个顶点
+        next_vertex = vertices[(i + 1) % num_vertices]
+        x2, y2 = next_vertex
+        # 使用叉积公式计算当前边和x轴之间的有向面积
+        area += (x1 * y2 - x2 * y1)
+
+    # 最终面积取绝对值并除以2
+    area = abs(area) / 2.0
+    return area
+
+def mark_polygon_edges(vertices, bounding_box, color):
+    num_vertices = len(vertices)
+    # 遍历多边形的每个顶点，连接成边
+    for i in range(num_vertices):
+        start_point = vertices[i]
+        end_point = vertices[(i + 1) % num_vertices]
+        x1, y1 = start_point
+        x2, y2 = end_point
+        
+        # 使用 Bresenham 算法计算边上的所有点
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        sx = 1 if x1 < x2 else -1
+        sy = 1 if y1 < y2 else -1
+        err = dx - dy
+        
+        while x1 != x2 or y1 != y2:
+            if x1 < bounding_box.shape[1] and y1 < bounding_box.shape[0]:
+                bounding_box[y1, x1, :] = color
+            e2 = 2 * err
+            if e2 > -dy:
+                err -= dy
+                x1 += sx
+            if e2 < dx:
+                err += dx
+                y1 += sy
+    
+    return bounding_box
 
 if __name__ == '__main__':
     # 测试四点共面函数

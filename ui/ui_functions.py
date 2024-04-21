@@ -479,6 +479,7 @@ class UI:
             for text, entry in vertex_entries.items():
                 input_str = entry.get()
                 self.roof_info[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            self.adjust_irregular_roof_vertices()
         window.destroy()
 
     def open_obstacle_window(self, str_text, option_text, options, bool_text):
@@ -1371,16 +1372,15 @@ class UI:
                                               font=("Arial", 12),
                                               fill=text_color)
         elif roofSurfaceCategory == "自定义多边形":
-            min_x, max_x, min_y, max_y = const.const.INF, -const.const.INF, const.const.INF, -const.const.INF
             vertices = [(self.roof_info[f"vertex{i}_X"],self.roof_info[f"vertex{i}_Y"]) 
                                             for i in range(self.roof_info["vertexCount"])]
-            for x,y in vertices:
-                min_x = min(min_x, x)
-                max_x = max(max_x, x)
-                min_y = min(min_y, y)
-                max_y = max(max_y, y)
+            min_x = min(vertices, key=lambda p: p[0])[0]
+            max_x = max(vertices, key=lambda p: p[0])[0]
+            min_y = min(vertices, key=lambda p: p[1])[1]
+            max_y = max(vertices, key=lambda p: p[1])[1]
             max_height = max_y - min_y
             max_width = max_x - min_x
+            # 正常的话，minx,miny 顶点坐标为(0,0)
             scale, roof_left, roof_top = get_scale_and_roofTopLeft(max_width, max_height)
             # 自定义坐标(0,0)映射上屋面后，为(roof_left, roof_top)
             scaled_vertices = [(roof_left + v[0] * scale, roof_top + v[1] * scale) for v in vertices]
@@ -1402,7 +1402,6 @@ class UI:
                                                 font=("Arial", 12),
                                                 fill=text_color)
         
-
         obstacles = self.obstacle_info + self.outside_obstacle_info
         # 绘制障碍物障碍物
         for obstacle in obstacles:
@@ -1689,6 +1688,7 @@ class UI:
         if "arrangeType" in input_json:
             self.arrangeType_var.set(input_json["arrangeType"])
 
+        self.adjust_irregular_roof_vertices()
         self.draw_roofscene()
         return input_json
 
@@ -1766,6 +1766,15 @@ class UI:
     def update_arrangement_info_text(self):
         self.arrangement_info_text_var.set("展示文本\n展示文本\n")
 
+    def adjust_irregular_roof_vertices(self):
+        if self.roof_info["roofSurfaceCategory"] == "自定义多边形":
+            vertices = [(self.roof_info[f"vertex{i}_X"],self.roof_info[f"vertex{i}_Y"]) 
+                                        for i in range(self.roof_info["vertexCount"])]
+            min_x = min(vertices, key=lambda p: p[0])[0]
+            min_y = min(vertices, key=lambda p: p[1])[1]
+            for i, v in enumerate(vertices):
+                self.roof_info[f"vertex{i}_X"] = v[0] - min_x 
+                self.roof_info[f"vertex{i}_Y"] = v[1] - min_y
 
 def cAS(params):
     chunk, latitude, screenedArrangements = params
