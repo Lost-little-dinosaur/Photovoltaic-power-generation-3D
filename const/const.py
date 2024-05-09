@@ -27,6 +27,15 @@ def getUnit():
     return UNIT
 
 
+def changeOutputPlacementCount(count):
+    global outputPlacementCount
+    outputPlacementCount = count
+
+
+def getOutputPlacementCount():
+    global outputPlacementCount
+    return outputPlacementCount
+
 def changeMinComponent(count):
     global minComponent
     minComponent = count

@@ -749,7 +749,11 @@ class Roof:
         #         tempTest.append(placement)
         print(
             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
-        return int(nowMaxValue / screenedArrangements[list(screenedArrangements.keys())[0]].component.power)
+        
+        if len(screenedArrangements) == 0:
+            return 0
+        else:
+            return int(nowMaxValue / screenedArrangements[list(screenedArrangements.keys())[0]].component.power)
 
     def addObstacles(self, obstacles):
         for obstacle in obstacles:  # todo: 待优化，可以多进程计算
@@ -1018,42 +1022,8 @@ class Roof:
         for point in obstaclePointArray:
             publicMatrix[point[1], point[0]] = ObstacleColor
 
-        for placement in self.allPlacements[:outputPlacementCount]:
-            matrix = np.array(publicMatrix)
-            for j in range(len(placement[0])):  # j表示第几个arrangement
-                arrange = placement[0][j]
-                start_x, start_y = arrange['start']
-                screenedArrangements[arrange['ID']].calculateComponentPositionArray(start_x, start_y)
-                for i in range(len(screenedArrangements[arrange['ID']].componentPositionArray)):  # todo: 为什么要扣除？
-                    if i in placement[2][j]:  # 如果这个光伏板被删了，就不画了
-                        continue
-                    top_left, bottom_right = screenedArrangements[arrange['ID']].componentPositionArray[i]
-                    top_left[0], top_left[1] = top_left[0] * magnification, top_left[1] * magnification
-                    bottom_right[0], bottom_right[1] = bottom_right[0] * magnification, bottom_right[1] * magnification
-                    # 绘制边界（保证边界在光伏板内部）
-                    matrix[top_left[1]:top_left[1] + PhotovoltaicPanelBoardLength,
-                    top_left[0]:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
-                    matrix[bottom_right[1] - PhotovoltaicPanelBoardLength + 1:bottom_right[1] + 1,
-                    top_left[0]:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
-                    matrix[
-                    top_left[1] + PhotovoltaicPanelBoardLength:bottom_right[1] - PhotovoltaicPanelBoardLength + 1,
-                    top_left[0]:top_left[0] + PhotovoltaicPanelBoardLength] = PhotovoltaicPanelBordColor
-                    matrix[
-                    top_left[1] + PhotovoltaicPanelBoardLength:bottom_right[1] - PhotovoltaicPanelBoardLength + 1,
-                    bottom_right[0] - PhotovoltaicPanelBoardLength + 1:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
-
-                    # 填充光伏板内部
-                    # matrix[
-                    # top_left[1] + PhotovoltaicPanelBoardLength:bottom_right[1] - PhotovoltaicPanelBoardLength + 1,
-                    # top_left[0] + PhotovoltaicPanelBoardLength:bottom_right[0]] = PhotovoltaicPanelColor
-
-                # 接下去画立柱
-                for column in placement[3][j]:  # column形式：[centerX,centerY]
-                    matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
-                           round(column[1] * magnification / UNIT) + standColumnPadding + 1,
-                    round(column[0] * magnification / UNIT) - standColumnPadding:
-                    round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
-
+        if len(self.allPlacements) == 0:
+            matrix = np.array(publicMatrix)                
             # 绘制图像
             plt.imshow(matrix.astype("uint8"))
             plt.axis('off')
@@ -1073,8 +1043,65 @@ class Roof:
             # 判断屋面类型，决定是否要左右镜像翻转
             if self.type == "正7形":
                 image_array = np.fliplr(image_array)
-
             allMatrix.append(image_array)
+        else:
+            for placement in self.allPlacements[:outputPlacementCount]:
+                matrix = np.array(publicMatrix)
+                for j in range(len(placement[0])):  # j表示第几个arrangement
+                    arrange = placement[0][j]
+                    start_x, start_y = arrange['start']
+                    screenedArrangements[arrange['ID']].calculateComponentPositionArray(start_x, start_y)
+                    for i in range(len(screenedArrangements[arrange['ID']].componentPositionArray)):  # todo: 为什么要扣除？
+                        if i in placement[2][j]:  # 如果这个光伏板被删了，就不画了
+                            continue
+                        top_left, bottom_right = screenedArrangements[arrange['ID']].componentPositionArray[i]
+                        top_left[0], top_left[1] = top_left[0] * magnification, top_left[1] * magnification
+                        bottom_right[0], bottom_right[1] = bottom_right[0] * magnification, bottom_right[1] * magnification
+                        # 绘制边界（保证边界在光伏板内部）
+                        matrix[top_left[1]:top_left[1] + PhotovoltaicPanelBoardLength,
+                        top_left[0]:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
+                        matrix[bottom_right[1] - PhotovoltaicPanelBoardLength + 1:bottom_right[1] + 1,
+                        top_left[0]:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
+                        matrix[
+                        top_left[1] + PhotovoltaicPanelBoardLength:bottom_right[1] - PhotovoltaicPanelBoardLength + 1,
+                        top_left[0]:top_left[0] + PhotovoltaicPanelBoardLength] = PhotovoltaicPanelBordColor
+                        matrix[
+                        top_left[1] + PhotovoltaicPanelBoardLength:bottom_right[1] - PhotovoltaicPanelBoardLength + 1,
+                        bottom_right[0] - PhotovoltaicPanelBoardLength + 1:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
+
+                        # 填充光伏板内部
+                        # matrix[
+                        # top_left[1] + PhotovoltaicPanelBoardLength:bottom_right[1] - PhotovoltaicPanelBoardLength + 1,
+                        # top_left[0] + PhotovoltaicPanelBoardLength:bottom_right[0]] = PhotovoltaicPanelColor
+
+                    # 接下去画立柱
+                    for column in placement[3][j]:  # column形式：[centerX,centerY]
+                        matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
+                            round(column[1] * magnification / UNIT) + standColumnPadding + 1,
+                        round(column[0] * magnification / UNIT) - standColumnPadding:
+                        round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
+
+                # 绘制图像
+                plt.imshow(matrix.astype("uint8"))
+                plt.axis('off')
+                plt.tight_layout()
+                # plt.show()
+
+                # 获取当前的Figure对象
+                fig = plt.gcf()
+                fig.patch.set_facecolor('black')  # 设置背景颜色为黑色
+
+                # 获取绘图数据
+                fig.canvas.draw()
+                # 将绘图数据保存为PIL Image对象
+                image = Image.frombytes('RGB', fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
+                # 将PIL Image对象转换为长x宽x3的矩阵变量
+                image_array = np.array(image)
+                # 判断屋面类型，决定是否要左右镜像翻转
+                if self.type == "正7形":
+                    image_array = np.fliplr(image_array)
+
+                allMatrix.append(image_array)
         return allMatrix
 
 
