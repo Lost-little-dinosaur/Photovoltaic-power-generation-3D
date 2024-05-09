@@ -1,7 +1,6 @@
 from const.const import INF, getUnit
 import time
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from math import tan, radians, cos, sin, sqrt
 import numpy as np
 from tools.getData import dataDict

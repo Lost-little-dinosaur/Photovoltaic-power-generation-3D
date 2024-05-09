@@ -451,6 +451,7 @@ def run_sample(sample_index):
     file_path = os.path.join("test_imgs",f"{folder}",f"{sample_index}.jpg")
     os.makedirs(os.path.join("test_imgs",f"{folder}"),exist_ok=True)
     scaled_image.save(file_path)
+    plt.close()
     # return tempArray
 
 if __name__ == "__main__":
