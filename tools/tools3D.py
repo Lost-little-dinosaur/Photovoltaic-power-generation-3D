@@ -9,7 +9,8 @@ from copy import deepcopy
 import multiprocessing
 
 def multiprocess_func(func, args_list, timeout=600):
-    pool = multiprocessing.Pool()
+    processes = multiprocessing.cpu_count()
+    pool = multiprocessing.Pool(processes=processes)
     results = []
     for args in args_list:
         result = pool.apply_async(func, args)
@@ -23,14 +24,14 @@ def multiprocess_func(func, args_list, timeout=600):
     pool.join()
     return results
 
-# def multiprocess_func(func, iter):
-#     processes = multiprocessing.cpu_count()
-#     # pool = multiprocessing.Pool(processes=processes)
-#     with multiprocessing.Pool(processes=processes) as pool:
-#         results = pool.map(func=func,iterable=iter)
-#     # pool.close()
-#     # pool.join()
-#     return results
+def multiprocess_func(func, iter):
+    processes = multiprocessing.cpu_count()
+    # pool = multiprocessing.Pool(processes=processes)
+    with multiprocessing.Pool(processes=processes) as pool:
+        results = pool.map(func=func,iterable=iter)
+    # pool.close()
+    # pool.join()
+    return results
 
 
 def draw3dModel(model3DArray):
