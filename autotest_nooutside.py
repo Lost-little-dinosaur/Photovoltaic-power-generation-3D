@@ -17,6 +17,8 @@ from scipy.spatial import Delaunay
 from shapely.geometry import Polygon, Point
 from shapely.ops import cascaded_union
 
+import matplotlib
+matplotlib.use("agg")
 import matplotlib.pyplot as plt
 from matplotlib import patches
 
@@ -50,7 +52,8 @@ def draw_polygon(poly_vertices, save_path=None):
         plt.savefig(save_path, format='jpg')
         print(f"图像已保存为 {save_path}")
     else:
-        plt.show()
+        pass
+        # plt.show()
 
 
 """https://stackoverflow.com/questions/8997099/algorithm-to-generate-random-2d-polygon"""
@@ -304,7 +307,6 @@ def get_random_sample():
     }
     return jsonData
 
-
 def run_sample(sample_index):
     allTimeStart = time.time()
     jsonData = get_random_sample()
@@ -464,9 +466,9 @@ if __name__ == "__main__":
     count = 0
     
     timeout_seconds = 300 # 一个样例跑300s以上，认为是样本有问题，
-    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.signal(signal.SIGABRT, timeout_handler)
     while count < num_samples:
-        signal.alarm(timeout_seconds)
+        # signal.alarm(timeout_seconds)
         try:
             run_sample(count)
             count += 1
