@@ -243,7 +243,7 @@ def get_random_sample():
                             spikiness=0.2,
                             num_vertices=num_vertices)
 
-    draw_polygon(polygon,save_path="test_polygon.jpg")
+    # draw_polygon(polygon,save_path="test_polygon.jpg")
     jsonData["scene"]["roof"]["vertexCount"] = num_vertices
     for i in range(num_vertices):
         jsonData["scene"]["roof"][f"vertex{i}_X"] = polygon[i][0]
@@ -451,7 +451,7 @@ def run_sample(sample_index):
     file_path = os.path.join("test_imgs",f"{folder}",f"{sample_index}.jpg")
     os.makedirs(os.path.join("test_imgs",f"{folder}"),exist_ok=True)
     scaled_image.save(file_path)
-    plt.close()
+    plt.close('all')
     # return tempArray
 
 if __name__ == "__main__":
@@ -462,6 +462,10 @@ if __name__ == "__main__":
         try:
             run_sample(count)
             count += 1
+            if count % 10 == 0:
+                print(f"——————————————————————————————")
+                print(f"已经完成{count}个")
+                print(f"——————————————————————————————")
         except:
             continue
 

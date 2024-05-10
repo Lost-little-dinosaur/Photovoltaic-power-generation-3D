@@ -823,7 +823,8 @@ class Roof:
         publicMatrix = np.zeros((self.length * magnification + 1, self.width * magnification + 1, 3))
 
         # 画障碍物（只需要轮廓就行）
-        obstaclePointArray = np.empty((0, 2), dtype=np.int32)
+        obstaclePointArrayNoSmoke = np.empty((0, 2), dtype=np.int32)
+        obstaclePointArraySmoked = np.empty((0, 2), dtype=np.int32)
         for obstacle in self.obstacles:
             if obstacle.type == '无烟烟囱' or obstacle.type == '有烟烟囱':
                 if not obstacle.isRound:
@@ -840,7 +841,11 @@ class Roof:
                             column = np.tile([startX + pad, endX - pad], lenY)
                             tempMatrix = np.column_stack(
                                 (column, np.repeat(np.array(list(range(startY + pad, endY + 1 - pad))), 2)))
-                            obstaclePointArray = np.concatenate((obstaclePointArray, tempMatrix), axis=0)
+                                
+                            if obstacle.type == '无烟烟囱':
+                                obstaclePointArrayNoSmoke = np.concatenate((obstaclePointArrayNoSmoke, tempMatrix), axis=0)
+                            else:
+                                obstaclePointArraySmoked = np.concatenate((obstaclePointArraySmoked, tempMatrix), axis=0)
 
                         # 处理垂直边
                         lenX = endX + 1 - startX - pad * 2  # 调整宽度以考虑内部padding
@@ -848,7 +853,10 @@ class Roof:
                             column = np.tile([startY + pad, endY - pad], lenX)
                             tempMatrix = np.column_stack(
                                 (np.repeat(np.array(list(range(startX + pad, endX + 1 - pad))), 2), column))
-                            obstaclePointArray = np.concatenate((obstaclePointArray, tempMatrix), axis=0)
+                            if obstacle.type == '无烟烟囱':
+                                obstaclePointArrayNoSmoke = np.concatenate((obstaclePointArrayNoSmoke, tempMatrix), axis=0)
+                            else:
+                                obstaclePointArraySmoked = np.concatenate((obstaclePointArraySmoked, tempMatrix), axis=0)
 
         if self.type == "矩形":
             # 首先填充上下边界
@@ -1019,8 +1027,11 @@ class Roof:
             magnified_vertices = [(x * magnification, y * magnification) for x,y in self.vertices]
             publicMatrix = mark_polygon_edges(magnified_vertices, publicMatrix, RoofMarginColor)
 
-        for point in obstaclePointArray:
-            publicMatrix[point[1], point[0]] = ObstacleColor
+        for point in obstaclePointArrayNoSmoke:
+            publicMatrix[point[1], point[0]] = NoSmokeObstacleColor
+
+        for point in obstaclePointArraySmoked:
+            publicMatrix[point[1], point[0]] = SmokedObstacleColor
 
         if len(self.allPlacements) == 0:
             matrix = np.array(publicMatrix)                
@@ -1102,6 +1113,7 @@ class Roof:
                     image_array = np.fliplr(image_array)
 
                 allMatrix.append(image_array)
+        plt.close('all')
         return allMatrix
 
 
