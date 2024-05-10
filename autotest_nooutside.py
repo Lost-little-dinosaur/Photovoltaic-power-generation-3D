@@ -466,9 +466,9 @@ if __name__ == "__main__":
     count = 0
     
     timeout_seconds = 300 # 一个样例跑300s以上，认为是样本有问题，
-    signal.signal(signal.SIGABRT, timeout_handler)
+    signal.signal(signal.SIGALRM, timeout_handler)
     while count < num_samples:
-        # signal.alarm(timeout_seconds)
+        signal.alarm(timeout_seconds)
         try:
             run_sample(count)
             count += 1
