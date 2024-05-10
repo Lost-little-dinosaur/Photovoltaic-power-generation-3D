@@ -8,33 +8,6 @@ from typing import List
 from copy import deepcopy
 import multiprocessing
 
-def timeout_handler(timeout, pool_result):
-    while True:
-        if pool_result.ready():
-            return pool_result.get()
-        elif timeout <= 0:
-            pool_result.terminate()
-            raise multiprocessing.TimeoutError("Process timed out")
-        else:
-            time.sleep(0.1)
-            timeout -= 0.1
-
-# def multiprocess_func(func, args_list, timeout=600):
-#     processes = multiprocessing.cpu_count()
-#     pool = multiprocessing.Pool(processes=processes)
-#     results = []
-#     for args in args_list:
-#         result = pool.apply_async(func, args)
-#         try:
-#             result = result.get(timeout=timeout)  # 设置超时时间
-#             results.append(result)
-#         except multiprocessing.TimeoutError:
-#             # 如果超时，抛出异常
-#             raise TimeoutError("Multiprocessing function execution timed out")
-#     pool.close()
-#     pool.join()
-#     return results
-
 def multiprocess_func(func, iter):
     processes = multiprocessing.cpu_count()
     # pool = multiprocessing.Pool(processes=processes)
@@ -457,62 +430,23 @@ def check_point_in_polygon(args):
     return point_in_polygon(point, polygon)
 
 def create_bounding_box_with_holes(polygon):
+    # 获取多边形的边界框
     min_x = min(polygon, key=lambda p: p[0])[0]
     max_x = max(polygon, key=lambda p: p[0])[0]
     min_y = min(polygon, key=lambda p: p[1])[1]
     max_y = max(polygon, key=lambda p: p[1])[1]
     
-    bounding_box = np.zeros((max_y - min_y + 1, max_x - min_x + 1))
     points_to_check = [(x, y) for y in range(min_y, max_y + 1) for x in range(min_x, max_x + 1)]
-    
-    # try:
-    #     results = multiprocess_func(check_point_in_polygon, [(point, polygon) for point in points_to_check])
-    # except TimeoutError as e:
-    #     # 处理超时异常
-    #     print("Error:", e)
-    #     raise
-    
-    results = []
-    pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
-    for point in points_to_check:
-        results.append(pool.apply_async(check_point_in_polygon, (point, polygon, )))
+    # 使用多进程池进行并行计算
+    results = multiprocess_func(check_point_in_polygon, [(point, polygon) for point in points_to_check])
 
-    for r in results:
-        try:
-            timeout_handler(2, r)
-        except multiprocessing.TimeoutError as e:
-            print(e)
-            raise
-
-    pool.close()
-    pool.join()
-
+    bounding_box = np.zeros((max_y - min_y + 1, max_x - min_x + 1))
     for idx, inside in enumerate(results):
         y, x = divmod(idx, max_x - min_x + 1)
         if not inside:
             bounding_box[y, x] = INF
     
     return bounding_box
-
-# def create_bounding_box_with_holes(polygon):
-#     # 获取多边形的边界框
-#     min_x = min(polygon, key=lambda p: p[0])[0]
-#     max_x = max(polygon, key=lambda p: p[0])[0]
-#     min_y = min(polygon, key=lambda p: p[1])[1]
-#     max_y = max(polygon, key=lambda p: p[1])[1]
-    
-#     bounding_box = np.zeros((max_y - min_y + 1, max_x - min_x + 1))
-#     points_to_check = [(x, y) for y in range(min_y, max_y + 1) for x in range(min_x, max_x + 1)]
-    
-#     # 使用多进程池进行并行计算
-#     results = multiprocess_func(check_point_in_polygon, [(point, polygon) for point in points_to_check])
-
-#     for idx, inside in enumerate(results):
-#         y, x = divmod(idx, max_x - min_x + 1)
-#         if not inside:
-#             bounding_box[y, x] = INF
-    
-#     return bounding_box
 
 
 def get_polygon_area(vertices):

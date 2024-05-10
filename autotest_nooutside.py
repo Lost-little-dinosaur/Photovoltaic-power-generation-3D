@@ -243,7 +243,7 @@ def get_random_sample():
                             spikiness=0.2,
                             num_vertices=num_vertices)
 
-    # draw_polygon(polygon,save_path="test_polygon.jpg")
+    draw_polygon(polygon,save_path="test_polygon.jpg")
     jsonData["scene"]["roof"]["vertexCount"] = num_vertices
     for i in range(num_vertices):
         jsonData["scene"]["roof"][f"vertex{i}_X"] = polygon[i][0]
