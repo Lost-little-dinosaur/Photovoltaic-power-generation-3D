@@ -22,7 +22,7 @@ from matplotlib import patches
 
 import math
 from typing import List, Tuple
-
+import signal
 
 random.seed(0)
 
@@ -454,11 +454,19 @@ def run_sample(sample_index):
     plt.close('all')
     # return tempArray
 
+def timeout_handler(signum, frame):
+    print("运行超时，自动退出")
+    raise TimeoutError("Function execution timed out")
+
 if __name__ == "__main__":
     const.const.changeOutputPlacementCount(1)
     num_samples = 1000000
     count = 0
+    
+    timeout_seconds = 300 # 一个样例跑300s以上，认为是样本有问题，
+    signal.signal(signal.SIGALRM, timeout_handler)
     while count < num_samples:
+        signal.alarm(timeout_seconds)
         try:
             run_sample(count)
             count += 1
@@ -467,6 +475,4 @@ if __name__ == "__main__":
                 print(f"已经完成{count}个")
                 print(f"——————————————————————————————")
         except:
-            continue
-
-
+            pass
