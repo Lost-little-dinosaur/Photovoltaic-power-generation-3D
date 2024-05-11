@@ -454,6 +454,10 @@ def run_sample(sample_index):
     os.makedirs(os.path.join("test_imgs",f"{folder}"),exist_ok=True)
     scaled_image.save(file_path)
     plt.close('all')
+    json_file_path = os.path.join("test_imgs",f"{folder}",f"{sample_index}.json")
+    with open(json_file_path, "w") as json_file:
+        json.dump(jsonData, json_file)
+    
     # return tempArray
 
 def timeout_handler(signum, frame):
