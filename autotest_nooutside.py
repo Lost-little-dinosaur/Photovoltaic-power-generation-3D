@@ -302,8 +302,8 @@ def get_random_sample():
         "thickness": 350
     }
     jsonData["algorithm"] = {
-    "precision": 10,
-    "maxArrangeCount": 1
+    "precision": 100,
+    "maxArrangeCount": 2
     }
     return jsonData
 
@@ -449,12 +449,13 @@ def run_sample(sample_index):
     elif ratio < 0.8:
         folder = 3
     else:
-        folder = 4
-    file_path = os.path.join("test_imgs",f"{folder}",f"{sample_index}.jpg")
-    os.makedirs(os.path.join("test_imgs",f"{folder}"),exist_ok=True)
+        folder = 4 
+    folder_path = os.path.join("test_imgs",f"ArrangementCount_{jsonData['algorithm']['maxArrangeCount']}", f"{folder}",f"{sample_index}.jpg")
+    file_path = os.path.join(folder_path, f"{sample_index}.jpg")
+    os.makedirs(folder_path,exist_ok=True)
     scaled_image.save(file_path)
     plt.close('all')
-    json_file_path = os.path.join("test_imgs",f"{folder}",f"{sample_index}.json")
+    json_file_path = os.path.join(folder_path,f"{sample_index}.json")
     with open(json_file_path, "w") as json_file:
         json.dump(jsonData, json_file)
     
