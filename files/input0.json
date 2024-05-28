@@ -21,7 +21,7 @@
       "isComplex": true,
       "category": "平屋顶",
       "roofSurfaceCategory": "正7形",
-      "A": 1000,
+      "A": 3000,
       "B": 4300,
       "C": 7800,
       "D": 16400,
@@ -40,15 +40,15 @@
       "haveOverhangingEave": false,
       "obstacles": [
         {
-          "id": "无烟烟囱1",
-          "type": "无烟烟囱",
+          "id": "有烟烟囱1",
+          "type": "有烟烟囱",
           "isRound": false,
           "length": 500,
           "width": 500,
-          "height": 700,
+          "height": 100,
           "upLeftPosition": [
-            8300,
-            2800
+            9300,
+            8900
           ],
           "adjustedHeight": 0,
           "removable": 0
@@ -56,18 +56,6 @@
       ]
     },
     "obstacles": [
-      {
-        "id": "电线杆1",
-        "type": "电线杆",
-        "isRound": true,
-        "diameter": 2000,
-        "centerPosition": [
-          -5000,
-          -5000
-        ],
-        "adjustedHeight": 0,
-        "removable": 0
-      }
     ]
   },
   "arrangeType": "膨胀螺栓",

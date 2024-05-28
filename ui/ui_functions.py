@@ -1,6 +1,9 @@
 from math import sqrt
 import sys, os
 
+import numpy as np
+
+import Unet.test as UnetTest
 from numpy import square
 import const.const
 from tools.mutiProcessing import *
@@ -8,6 +11,7 @@ from tools.mutiProcessing import *
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import classes.roof
+from tkinter import filedialog
 from classes.arrangement import estimateComponentCount, screenArrangements
 from classes.component import assignComponentParameters
 import json
@@ -80,6 +84,9 @@ chn2eng = {
     "最大方案数量": "maxArrangeCount",
     "贪心（单阵列）": "greedy",
     "DFS（多阵列）": "dfs",
+
+    "图片路径": "imagePath",
+    "图片分辨率": "resolution",
 }
 
 max_custom_vertex_in_irregular_roof = 50
@@ -147,7 +154,8 @@ class UI:
 
         if is_nonempty_list(outside_obstacle_ui_info):
             outside_obstacle_btn = tk.Button(left_frame, text="添加屋外障碍物信息",
-                                             command=partial(self.open_outside_obstacle_window, *outside_obstacle_ui_info))
+                                             command=partial(self.open_outside_obstacle_window,
+                                                             *outside_obstacle_ui_info))
             outside_obstacle_btn.pack(fill=tk.X, pady=5)
 
         if is_nonempty_list(panel_ui_info):
@@ -239,7 +247,7 @@ class UI:
 
         # 界面切换按钮
         self.roofscene_btns = []
-        for i in range(16):
+        for i in range(21):
             roofscene_btn = tk.Button(roofscene_frame, text=f"{i + 1}", command=partial(self.get_demo_input, i))
             roofscene_btn.pack(side=tk.LEFT, anchor=tk.SW, padx=(0, 5), pady=(5, 0))
             if os.path.exists(os.path.join(file_dir, f"input{i}.json")):
@@ -311,7 +319,7 @@ class UI:
 
     def open_roof_window(self, str_text, option_text, options, bool_text):
         global str_components, str_entries, vertex_components, vertex_entries, len_option_bool, submit_btn
-        
+
         roof_window = tk.Toplevel(self.root)
         roof_window.title("添加屋顶信息")
         # roof_window.geometry("250x200")
@@ -326,21 +334,23 @@ class UI:
         def create_input_options_for_irregular_roof(roof_window, value):
             global str_components, str_entries, len_option_bool, submit_btn
             roof_options = {
-                "矩形": ["A", "B","height"],
-                "上凸形": ["A", "B", "C", "D", "E", "F","height"],
-                "下凸形": ["A", "B", "C", "D", "E", "F","height"],
-                "左凸形": ["A", "B", "C", "D", "E", "F","height"],
-                "右凸形": ["A", "B", "C", "D", "E", "F","height"],
-                "上凹形": ["A", "B", "C", "D", "E", "F","height"],
-                "下凹形": ["A", "B", "C", "D", "E", "F","height"],
-                "左凹形": ["A", "B", "C", "D", "E", "F","height"],
-                "右凹形": ["A", "B", "C", "D", "E", "F","height"],
-                "正7形": ["A", "B", "C", "D","height"],
-                "反7形": ["A", "B", "C", "D","height"],
-                "正L形": ["A", "B", "C", "D","height"],
-                "反L形": ["A", "B", "C", "D","height"],
-                "自定义多边形": ["顶点数量"]
+                "矩形": ["A", "B", "height"],
+                "上凸形": ["A", "B", "C", "D", "E", "F", "height"],
+                "下凸形": ["A", "B", "C", "D", "E", "F", "height"],
+                "左凸形": ["A", "B", "C", "D", "E", "F", "height"],
+                "右凸形": ["A", "B", "C", "D", "E", "F", "height"],
+                "上凹形": ["A", "B", "C", "D", "E", "F", "height"],
+                "下凹形": ["A", "B", "C", "D", "E", "F", "height"],
+                "左凹形": ["A", "B", "C", "D", "E", "F", "height"],
+                "右凹形": ["A", "B", "C", "D", "E", "F", "height"],
+                "正7形": ["A", "B", "C", "D", "height"],
+                "反7形": ["A", "B", "C", "D", "height"],
+                "正L形": ["A", "B", "C", "D", "height"],
+                "反L形": ["A", "B", "C", "D", "height"],
+                "自定义多边形": ["顶点数量"],
+                "屋顶图片输入": ["图片路径", "图片分辨率"]
             }
+
             # 斜屋顶
             # roof_options = {
             #     "矩形": ["A", "B","height","roofDirection","roofAngle"],
@@ -366,11 +376,11 @@ class UI:
                     return
                 remove_vertex_components()
                 for i in range(num_vertices):
-                    x_label = tk.Label(roof_window, text=f"顶点{i+1} X:")
+                    x_label = tk.Label(roof_window, text=f"顶点{i + 1} X:")
                     x_label.grid(row=len_option_bool + i + 1, column=0, padx=5, pady=5)
                     x_entry = tk.Entry(roof_window)
                     x_entry.grid(row=len_option_bool + i + 1, column=1, padx=5, pady=5)
-                    y_label = tk.Label(roof_window, text=f"顶点{i+1} Y:")
+                    y_label = tk.Label(roof_window, text=f"顶点{i + 1} Y:")
                     y_label.grid(row=len_option_bool + i + 1, column=2, padx=5, pady=5)
                     y_entry = tk.Entry(roof_window)
                     y_entry.grid(row=len_option_bool + i + 1, column=3, padx=5, pady=5)
@@ -380,7 +390,8 @@ class UI:
                     vertex_components.append(y_entry)
                     vertex_entries[f"自定义{i}顶点的X坐标"] = x_entry
                     vertex_entries[f"自定义{i}顶点的Y坐标"] = y_entry
-                submit_btn.grid(row=len(str_entries) + len(vertex_entries) + len_option_bool + 1, column=0, columnspan=2,
+                submit_btn.grid(row=len(str_entries) + len(vertex_entries) + len_option_bool + 1, column=0,
+                                columnspan=2,
                                 padx=5,
                                 pady=5)
 
@@ -390,6 +401,13 @@ class UI:
                     component.grid_forget()
                 vertex_components = []
                 vertex_entries = {}
+
+            # 打开文件对话框函数
+            def browse_file():
+                file_path = filedialog.askopenfilename()
+                if file_path:
+                    str_entries["图片路径"].delete(0, tk.END)
+                    str_entries["图片路径"].insert(0, file_path)
 
             if value not in roof_options:
                 return
@@ -408,7 +426,36 @@ class UI:
                 str_components.append(custom_polygon_vertices_entry)
                 str_entries["顶点数量"] = custom_polygon_vertices_entry
                 custom_polygon_vertices_entry.bind('<KeyRelease>', create_vertex_entries)
+            elif value == "屋顶图片输入":
+                img_path_label = tk.Label(roof_window, text="图片路径:")
+                img_path_label.grid(row=len_option_bool, column=0, padx=5, pady=5)
 
+                img_path_entry = tk.Entry(roof_window)
+                img_path_entry.grid(row=len_option_bool, column=1, padx=5, pady=5)
+
+                browse_button = tk.Button(roof_window, text="...", command=browse_file)
+                browse_button.grid(row=len_option_bool, column=2, padx=5, pady=5)
+
+                str_components.append(img_path_label)
+                str_components.append(img_path_entry)
+                str_components.append(browse_button)  # 添加按钮到组件列表中
+
+                str_entries["图片路径"] = img_path_entry
+                # 添加图片分辨率输入框及其标签
+                resolution_label = tk.Label(roof_window, text="图片分辨率:")
+                resolution_label.grid(row=len_option_bool + 1, column=0, padx=5, pady=5)
+
+                resolution_entry = tk.Entry(roof_window)
+                resolution_entry.grid(row=len_option_bool + 1, column=1, padx=5, pady=5)
+
+                resolution_unit_label = tk.Label(roof_window, text="厘米/像素")
+                resolution_unit_label.grid(row=len_option_bool + 1, column=2, padx=5, pady=5)
+
+                str_components.append(resolution_label)
+                str_components.append(resolution_entry)
+                str_components.append(resolution_unit_label)  # 添加分辨率相关组件到列表中
+
+                str_entries["图片分辨率"] = resolution_entry
             else:
                 str_names = [eng2chn[text] for text in roof_options[value]]
                 for i, text in enumerate(str_names):
@@ -420,8 +467,7 @@ class UI:
                     str_components.append(label)
                     str_components.append(entry)
                 submit_btn.grid(row=len(str_entries) + len_option_bool + 1, column=0, columnspan=2,
-                                padx=5,
-                                pady=5)
+                                padx=5, pady=5)
 
         for i, (text, option) in enumerate(zip(option_text, options)):
             label = tk.Label(roof_window, text=text)
@@ -461,13 +507,16 @@ class UI:
                                command=lambda: self.get_roof_data(roof_window, str_entries, option_entries,
                                                                   bool_entries, vertex_entries))
         submit_btn.grid(row=len(str_entries) + len(option_entries) + len(bool_entries) + 1, column=0, columnspan=2,
-                        padx=5,
-                        pady=5)
+                        padx=5, pady=5)
 
     def get_roof_data(self, window, str_entries, option_entries, bool_entries, vertex_entries):
         for text, entry in str_entries.items():
             input_str = entry.get()
-            self.roof_info[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
+            # 判断input_str是否是浮点数
+            if "." in input_str and input_str.replace('.', '', 1).isdigit():
+                self.roof_info[chn2eng[text]] = float(input_str)
+            else:
+                self.roof_info[chn2eng[text]] = int(input_str) if input_str.replace('.', '', 1).isdigit() else input_str
         for text, entry in option_entries.items():
             # print(text + ": ", entry.get())
             self.roof_info[chn2eng[text]] = entry.get()
@@ -484,7 +533,7 @@ class UI:
 
     def open_obstacle_window(self, str_text, option_text, options, bool_text):
         obstacle_window = tk.Toplevel(self.root)
-        obstacle_window.title("添加墙内障碍物信息")
+        obstacle_window.title("添加屋内障碍物信息")
         # 直径？长度（mm）？
         # str_text = ["ID", "直径", "长度（mm）", "宽度（mm）", "高度（mm）", "距离西侧屋顶距离", "距离北侧屋顶距离",
         #             "可调整高度（mm）"]
@@ -718,10 +767,10 @@ class UI:
         self.clear_canvas()
 
         def get_furthest_outside_obstacle_distance():
-            res = [0,0,0,0]
+            res = [0, 0, 0, 0]
             for obstacle in self.outside_obstacle_info:
-                centerX = float(obstacle['relativePositionX']) # 可以是负数
-                centerY = float(obstacle['relativePositionY']) # 可以是负数
+                centerX = float(obstacle['relativePositionX'])  # 可以是负数
+                centerY = float(obstacle['relativePositionY'])  # 可以是负数
                 x1, x2, y1, y2 = 0, 0, 0, 0
                 if obstacle['isRound']:
                     # continue
@@ -755,7 +804,7 @@ class UI:
             else:
                 scaleY = draw_height / float(roof_height + outside_extension_y)
 
-            scale = min(scaleX,scaleY)
+            scale = min(scaleX, scaleY)
             # 没有屋外障碍物，屋顶居中
             if outside_extension_x == 0 and outside_extension_y == 0:
                 roof_left = (frame_width - roof_width * scale) / 2
@@ -777,7 +826,7 @@ class UI:
         roof_left = 0
         roof_top = 0
         if roofSurfaceCategory == "矩形":  # 绘制矩形屋顶
-            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['B'],self.roof_info['A'])
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['B'], self.roof_info['A'])
             scaled_width = float(self.roof_info['B']) * scale
             scaled_height = float(self.roof_info['A']) * scale
             roof_right = roof_left + scaled_width
@@ -799,7 +848,7 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] + self.roof_info['D'] + self.roof_info['F']
             AC_height = self.roof_info['A'] + self.roof_info['C']
-            
+
             scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['H'], AC_height)
             # scale = min(draw_width / float(self.roof_info['H']), draw_height / float(AC_height))
 
@@ -900,8 +949,8 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] - self.roof_info['B'] + self.roof_info['F']
             DF_width = self.roof_info['D'] + self.roof_info['F']
-            
-            scale, roof_left, roof_top = get_scale_and_roofTopLeft(DF_width,self.roof_info['G'])
+
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(DF_width, self.roof_info['G'])
             # scale = min(draw_width / float(DF_width), draw_height / float(self.roof_info['G']))
             p0 = [roof_left, roof_top + self.roof_info['E'] * scale]  # CD
             p1 = [p0[0], p0[1] + self.roof_info['C'] * scale]  # BC
@@ -950,8 +999,8 @@ class UI:
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] + self.roof_info['B'] - self.roof_info['F']
             BD_width = self.roof_info['D'] + self.roof_info['B']
-            
-            scale, roof_left, roof_top = get_scale_and_roofTopLeft(BD_width,self.roof_info['A'])
+
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(BD_width, self.roof_info['A'])
             # scale = min(draw_width / float(BD_width), draw_height / float(self.roof_info['A']))
             # roof_left = (frame_width - BD_width * scale) / 2
             # roof_top = (frame_height - self.roof_info['A'] * scale) / 2
@@ -1002,8 +1051,8 @@ class UI:
         elif roofSurfaceCategory == "上凹形":
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['D'] + self.roof_info['B'] + self.roof_info['F']
-            max_height = max(self.roof_info['A'],self.roof_info['G'])
-            
+            max_height = max(self.roof_info['A'], self.roof_info['G'])
+
             scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['H'], max_height)
             # scale = min(draw_width / float(self.roof_info['H']), draw_height / float(max_height))
             # roof_left = (frame_width - self.roof_info['H'] * scale) / 2
@@ -1055,7 +1104,7 @@ class UI:
         elif roofSurfaceCategory == "下凹形":
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] - self.roof_info['F']
-            max_height = max(self.roof_info['A'],self.roof_info['C'])
+            max_height = max(self.roof_info['A'], self.roof_info['C'])
 
             scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['B'], max_height)
             # scale = min(draw_width / float(self.roof_info['B']), draw_height / float(max_height ))
@@ -1108,9 +1157,9 @@ class UI:
         elif roofSurfaceCategory == "左凹形":
             self.roof_info['G'] = self.roof_info['A'] + self.roof_info['C'] + self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] + self.roof_info['F']
-            max_width = max(self.roof_info['F'],self.roof_info['H'])
+            max_width = max(self.roof_info['F'], self.roof_info['H'])
 
-            scale, roof_left, roof_top = get_scale_and_roofTopLeft(max_width,self.roof_info['G'])
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(max_width, self.roof_info['G'])
             # scale = min(draw_width / float(max_width), draw_height / float(self.roof_info['G']))
             # roof_left = (frame_width - self.roof_info['H'] * scale) / 2
             # roof_top = (frame_height - self.roof_info['G'] * scale) / 2
@@ -1161,8 +1210,8 @@ class UI:
         elif roofSurfaceCategory == "右凹形":
             self.roof_info['G'] = self.roof_info['A'] - self.roof_info['C'] - self.roof_info['E']
             self.roof_info['H'] = self.roof_info['B'] - self.roof_info['D'] + self.roof_info['F']
-            max_width = max(self.roof_info['B'],self.roof_info['H'])
-            scale, roof_left, roof_top = get_scale_and_roofTopLeft(max_width,self.roof_info['A'])
+            max_width = max(self.roof_info['B'], self.roof_info['H'])
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(max_width, self.roof_info['A'])
             # scale = min(draw_width / float(max_width), draw_height / float(self.roof_info['A']))
             # roof_left = (frame_width - self.roof_info['B'] * scale) / 2
             # roof_top = (frame_height - self.roof_info['A'] * scale) / 2
@@ -1213,7 +1262,7 @@ class UI:
         elif roofSurfaceCategory == "正7形":
             self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C']
             self.roof_info['F'] = self.roof_info['D'] - self.roof_info['B']
-            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['D'],self.roof_info['E'])
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['D'], self.roof_info['E'])
             # scale = min(draw_width / float(self.roof_info['D']), draw_height / float(self.roof_info['E']))
 
             p0 = [(frame_width - self.roof_info['D'] * scale) / 2,
@@ -1253,7 +1302,7 @@ class UI:
         elif roofSurfaceCategory == "反7形":
             self.roof_info['E'] = self.roof_info['A'] - self.roof_info['C']
             self.roof_info['F'] = self.roof_info['B'] - self.roof_info['D']
-            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['B'],self.roof_info['A'])
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['B'], self.roof_info['A'])
             # scale = min(draw_width / float(self.roof_info['B']), draw_height / float(self.roof_info['A']))
             # roof_left = (frame_width - self.roof_info['B'] * scale) / 2
             # roof_top = (frame_height - self.roof_info['A'] * scale) / 2
@@ -1293,7 +1342,7 @@ class UI:
         elif roofSurfaceCategory == "正L形":
             self.roof_info['E'] = self.roof_info['A'] - self.roof_info['C']
             self.roof_info['F'] = self.roof_info['B'] + self.roof_info['D']
-            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['F'],self.roof_info['A'])
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['F'], self.roof_info['A'])
             # scale = min(draw_width / float(self.roof_info['F']), draw_height / float(self.roof_info['A']))
             # roof_left = (frame_width - self.roof_info['F'] * scale) / 2
             # roof_top = (frame_height - self.roof_info['A'] * scale) / 2
@@ -1333,8 +1382,8 @@ class UI:
         elif roofSurfaceCategory == "反L形":
             self.roof_info['E'] = self.roof_info['A'] + self.roof_info['C']
             self.roof_info['F'] = self.roof_info['B'] + self.roof_info['D']
-            
-            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['F'],self.roof_info['E'])
+
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(self.roof_info['F'], self.roof_info['E'])
             # scale = min(draw_width / float(self.roof_info['F']), draw_height / float(self.roof_info['E']))
             # roof_left = (frame_width - self.roof_info['F'] * scale) / 2
             # roof_top = (frame_height - self.roof_info['E'] * scale) / 2
@@ -1372,8 +1421,8 @@ class UI:
                                               font=("Arial", 12),
                                               fill=text_color)
         elif roofSurfaceCategory == "自定义多边形":
-            vertices = [(self.roof_info[f"vertex{i}_X"],self.roof_info[f"vertex{i}_Y"]) 
-                                            for i in range(self.roof_info["vertexCount"])]
+            vertices = [(self.roof_info[f"vertex{i}_X"], self.roof_info[f"vertex{i}_Y"])
+                        for i in range(self.roof_info["vertexCount"])]
             min_x = min(vertices, key=lambda p: p[0])[0]
             max_x = max(vertices, key=lambda p: p[0])[0]
             min_y = min(vertices, key=lambda p: p[1])[1]
@@ -1395,13 +1444,134 @@ class UI:
                     v1 = vertices[0]
                     scaled_v1 = scaled_vertices[0]
                 else:
-                    v1 = vertices[i+1]
-                    scaled_v1 = scaled_vertices[i+1]
-                self.roofscene_canvas.create_text( half_int(scaled_v0[0],scaled_v1[0]), half_int(scaled_v0[1], scaled_v1[1]),
-                                                text=f"{round(get_distance(v0,v1))}",
-                                                font=("Arial", 12),
-                                                fill=text_color)
-        
+                    v1 = vertices[i + 1]
+                    scaled_v1 = scaled_vertices[i + 1]
+                self.roofscene_canvas.create_text(half_int(scaled_v0[0], scaled_v1[0]),
+                                                  half_int(scaled_v0[1], scaled_v1[1]),
+                                                  text=f"{round(get_distance(v0, v1))}",
+                                                  font=("Arial", 12),
+                                                  fill=text_color)
+        elif roofSurfaceCategory == "屋顶图片输入":
+            def point_to_line_distance(line, x0, y0):
+                # 提取 x 和 y 坐标
+                x = [p[0] for p in line]
+                y = [p[1] for p in line]
+
+                # 检查是否所有的 x 坐标都相同
+                if len(set(x)) == 1:
+                    # 竖直线的情况
+                    distance = abs(x0 - x[0])
+                else:
+                    # 拟合直线，返回斜率和截距
+                    A = np.vstack([x, np.ones(len(x))]).T
+                    m, c = np.linalg.lstsq(A, y, rcond=None)[0]
+
+                    # 一般情况
+                    distance = abs(m * x0 - y0 + c) / np.sqrt(m ** 2 + 1)
+
+                return distance
+
+            self.roof_info["roofMatrix"] = UnetTest.img2data(self.roof_info[chn2eng["图片路径"]])
+            roof_matrix = self.roof_info["roofMatrix"]
+            resolution = self.roof_info["resolution"] * 10
+            rows = len(roof_matrix)
+            cols = len(roof_matrix[0]) if rows > 0 else 0
+            edge_points = []
+            directionX = [0, 1, 0, -1, 1, 1, -1, -1]
+            directionY = [1, 0, -1, 0, 1, -1, 1, -1]
+            straightDirectionX = [0, 1, 0, -1]
+            straightDirectionY = [1, 0, -1, 0]
+
+            # Detecting edge points
+            tempFlag = False
+            for ii in range(rows):
+                for jj in range(cols):
+                    if roof_matrix[ii][jj] == 1 and ((ii == 0 or roof_matrix[ii - 1][jj] == 0) or (
+                            ii == rows - 1 or roof_matrix[ii + 1][jj] == 0) or (
+                                                             jj == 0 or roof_matrix[ii][jj - 1] == 0) or (
+                                                             jj == cols - 1 or roof_matrix[ii][jj + 1] == 0)):
+                        edge_points.append((jj, ii))
+                        tempFlag = True
+                        break
+                if tempFlag:
+                    break
+            # 从这个点开始扩散寻找边界
+            if len(edge_points) == 0:
+                raise Exception("边界点数量为0")
+
+            addFlag = True
+            while addFlag:
+                addFlag = False
+                tempJ, tempI = edge_points[-1]
+                for ii in range(len(directionX)):  # 从第一个边界点的四面八方开始寻找边界
+                    tempI += directionY[ii]
+                    tempJ += directionX[ii]
+                    if 0 <= tempI < rows and 0 <= tempJ < cols and roof_matrix[tempI][tempJ] == 1:
+                        for jj in range(len(straightDirectionX)):  # 判断当前[i,j]是否是边界点（要求四个方向的点至少有一个是0）
+                            if 0 <= tempI + straightDirectionY[jj] < rows and 0 <= tempJ + straightDirectionX[
+                                jj] < cols and roof_matrix[tempI + straightDirectionY[jj]][tempJ + straightDirectionX[
+                                jj]] == 0 and (tempJ, tempI) not in edge_points:
+                                edge_points.append((tempJ, tempI))
+                                addFlag = True
+                                break
+                    if addFlag:
+                        break
+                    tempI -= directionY[ii]
+                    tempJ -= directionX[ii]
+
+            # Variables for tracking line segments
+            all_lines = []
+            temp_line = [edge_points[0]]
+
+            # Define a threshold for point-line distance (can be adjusted)
+            distance_threshold1 = 0.90
+            distance_threshold2 = 1.31
+            line_size_threshold = 3000000
+
+            for point in edge_points[1:]:
+                # Current line properties
+                x0, y0 = point
+
+                # Calculate the distance from the current point to the line defined by the start and end points of the temp_line
+                distance = point_to_line_distance(temp_line, x0, y0)
+
+                if len(temp_line) <= line_size_threshold and distance <= distance_threshold2 or len(
+                        temp_line) > line_size_threshold and distance <= distance_threshold1:
+                    temp_line.append(point)
+                else:
+                    all_lines.append(temp_line)
+                    temp_line = [point]
+                    # print(distance)
+
+            # Append the last line segment
+            if temp_line:
+                all_lines.append(temp_line)
+
+            # Drawing and annotating lines
+            scale, roof_left, roof_top = get_scale_and_roofTopLeft(cols * resolution, rows * resolution)
+            self.roof_info["vertexCount"] = len(all_lines)
+            for ii, line in enumerate(all_lines):
+                start_x, start_y = line[0]
+                self.roof_info[f"vertex{ii}_X"] = start_x * resolution
+                self.roof_info[f"vertex{ii}_Y"] = start_y * resolution
+                end_x, end_y = line[-1]
+                self.roofscene_canvas.create_line(
+                    roof_left + start_x * resolution * scale,
+                    roof_top + start_y * resolution * scale,
+                    roof_left + end_x * resolution * scale,
+                    roof_top + end_y * resolution * scale,
+                    fill='yellow', width=2)
+
+                # Calculate line length and display it
+                line_length = sqrt((end_x - start_x) ** 2 + (end_y - start_y) ** 2) * resolution
+                mid_x = (start_x + end_x) / 2
+                mid_y = (start_y + end_y) / 2
+                self.roofscene_canvas.create_text(
+                    roof_left + mid_x * resolution * scale,
+                    roof_top + mid_y * resolution * scale,
+                    text=f"{line_length:.0f}",
+                    font=("Arial", 12),
+                    fill="white")
         obstacles = self.obstacle_info + self.outside_obstacle_info
         # 绘制障碍物障碍物
         for obstacle in obstacles:
@@ -1431,9 +1601,7 @@ class UI:
                                                       fill="red")
             except:
                 continue
-        
 
-        
         # print(self.get_input_json())
 
     def calculate_layout(self):
@@ -1445,7 +1613,8 @@ class UI:
         #    const.const.changeMinComponent(jsonData['algorithm']['minComponent'])
         const.const.changeMaxArrangeCount(jsonData['algorithm']['maxArrangeCount'])
 
-        roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"],jsonData["scene"]["location"])
+        roof = classes.roof.Roof(jsonData["scene"]["roof"], jsonData["scene"]["location"]["latitude"],
+                                 jsonData["scene"]["location"])
         assignComponentParameters(jsonData["component"])
 
         start_time = time.time()
@@ -1768,13 +1937,14 @@ class UI:
 
     def adjust_irregular_roof_vertices(self):
         if self.roof_info["roofSurfaceCategory"] == "自定义多边形":
-            vertices = [(self.roof_info[f"vertex{i}_X"],self.roof_info[f"vertex{i}_Y"]) 
-                                        for i in range(self.roof_info["vertexCount"])]
+            vertices = [(self.roof_info[f"vertex{i}_X"], self.roof_info[f"vertex{i}_Y"])
+                        for i in range(self.roof_info["vertexCount"])]
             min_x = min(vertices, key=lambda p: p[0])[0]
             min_y = min(vertices, key=lambda p: p[1])[1]
             for i, v in enumerate(vertices):
-                self.roof_info[f"vertex{i}_X"] = v[0] - min_x 
+                self.roof_info[f"vertex{i}_X"] = v[0] - min_x
                 self.roof_info[f"vertex{i}_Y"] = v[1] - min_y
+
 
 def cAS(params):
     chunk, latitude, screenedArrangements = params

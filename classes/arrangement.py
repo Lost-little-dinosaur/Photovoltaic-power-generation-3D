@@ -120,7 +120,8 @@ class Arrangement:
         self.edgeColumn = []  # 边缘立柱
         self.shadowRelativePosition = []
 
-    def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices, type, obstaclerange, columnType):
+    def calculateStandColumn(self, startXunit, startYunit, roof_Width, obstacles, deletedIndices, type, obstaclerange,
+                             columnType):
         UNIT = const.const.getUnit()
         column, limit_column, arrangement_height = const.const.getColumnsInformation()
         startX = int(startXunit * UNIT)
@@ -133,6 +134,7 @@ class Arrangement:
         edgeLimit = 250
         if columnType == "基墩":
             edgeLimit = 300
+
         def dfsColumn_position(x, n_columns, width, answer, obstaclerange, max_spacing, type, k=0):
             # type == 1表示常规情况，2表示有扣除
             result = []
@@ -355,7 +357,7 @@ class Arrangement:
                         up = 1
                         height = self.relativePositionArray[0][1][1] * UNIT
         self.calculateComponentPositionArrayreal(startX, startY)
-        #拼接本身存在的悬挑
+        # 拼接本身存在的悬挑
         boundcolumn_x = INF
         boundcolumn_y = 0
         for i in range(len(self.componentPositionArray) - 1):
@@ -550,18 +552,17 @@ class Arrangement:
                         ideal_spacing = int(spanWidth / n_columns) + 1  # 计算理想间距
                         if ideal_spacing > max_spacing:
                             continue
-    #                    for i in range(1, n_columns):
-    #                        x = int(i * ideal_spacing + x1)
-    #                        column_positions.append(x)
-    #                    if len(column_positions) != 0:
-    #                        break
+                        #                    for i in range(1, n_columns):
+                        #                        x = int(i * ideal_spacing + x1)
+                        #                        column_positions.append(x)
+                        #                    if len(column_positions) != 0:
+                        #                        break
                         templist = []
                         templist, span_k = dfsColumn_position(x1, n_columns - 1, x2, column_positions,
-                                                            obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
+                                                              obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
                         if (x2 - templist[-1]) <= ideal_spacing + span_k:
                             column_positions += templist
                             break
-
 
                 column_positions = list(set(column_positions))
                 column_positions = sorted(column_positions)
@@ -589,15 +590,15 @@ class Arrangement:
                         if ideal_spacing > max_spacing:
                             continue
                         ideal_spacing = min(max_spacing, ideal_spacing)
-        #                for i in range(1, n_columns + 1):
-        #                    x = int(i * ideal_spacing + x1)
-        #                    column_positions.append(x)
-        #                if len(column_positions) != le:
-        #                    break
-                            # todo
+                        #                for i in range(1, n_columns + 1):
+                        #                    x = int(i * ideal_spacing + x1)
+                        #                    column_positions.append(x)
+                        #                if len(column_positions) != le:
+                        #                    break
+                        # todo
                         templist = []
                         templist, span_k = dfsColumn_position(x1, n_columns - 1, x2, column_positions,
-                                                      obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
+                                                              obstaclerange, ideal_spacing, 2)  # 递归搜索下一个数
                         if (x2 - templist[-1]) <= ideal_spacing + span_k:
                             column_positions += templist
                             break
@@ -781,7 +782,6 @@ class Arrangement:
                     self.componentPositionArray[i][0][0] += 500 / UNIT
                     self.componentPositionArray[i][1][0] += 500 / UNIT
 
-
     def calculateComponentPositionArrayreal(self, startX, startY):
         # 通过输入的startX, startY和Arrangement本就有的信息计算出组件的排布坐标，添加到self.componentArray里
         UNIT = const.const.getUnit()
@@ -875,8 +875,6 @@ class Arrangement:
                 if self.componentPositionArray[i][0][0] - tempStartX > width:
                     self.componentPositionArray[i][0][0] += 500
                     self.componentPositionArray[i][1][0] += 500
-
-
 
     # def chooseLayout(self):
     #     if self.specification == "竖二" and self.type == "基墩":
@@ -1033,6 +1031,7 @@ class Arrangement:
 
         return return_list
 
+
 def calculateVerticalWidth(verticalNum, componentWidth):
     return verticalNum * componentWidth + (verticalNum - 1) * PhotovoltaicPanelCrossMargin
 
@@ -1044,28 +1043,28 @@ def calculateCrossWidth(crossNum, componentLength):
 def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeType, windPressure):
     componentSpecification = "182-78"
     tempArrangements = [
-        # [1, 0, "182-78", "膨胀常规", "高压"], [1, 1, "182-78", "膨胀常规", "高压"],
-        #                 [2, 0, "182-78", "膨胀常规", "高压"], [2, 1, "182-78", "膨胀常规", "高压"],
-        #                 [3, 0, "182-78", "膨胀常规", "高压"], [3, 1, "182-78", "膨胀常规", "高压"],
-        #                 [4, 0, "182-78", "膨胀常规", "高压"], [4, 1, "182-78", "膨胀常规", "高压"],
-        #                 [5, 0, "182-78", "膨胀常规", "高压"],
-        #                 [0, 1, "182-78", "膨胀常规", "高压"],
+        [1, 0, "182-78", "膨胀常规", "高压"], [1, 1, "182-78", "膨胀常规", "高压"],
+        [2, 0, "182-78", "膨胀常规", "高压"], [2, 1, "182-78", "膨胀常规", "高压"],
+        [3, 0, "182-78", "膨胀常规", "高压"], [3, 1, "182-78", "膨胀常规", "高压"],
+        [4, 0, "182-78", "膨胀常规", "高压"], [4, 1, "182-78", "膨胀常规", "高压"],
+        [5, 0, "182-78", "膨胀常规", "高压"],
+        [0, 1, "182-78", "膨胀常规", "高压"],
 
         # [1, 0, "210-60", "膨胀常规", "低压"], [1, 1, "210-60", "膨胀常规", "低压"],
         # [0, 1, "210-60", "膨胀常规", "低压"], [2, 0, "210-60", "膨胀常规", "低压"],
         # [2, 1, "210-60", "膨胀常规", "低压"], [3, 0, "210-60", "膨胀常规", "低压"],
         # [3, 1, "210-60", "膨胀常规", "低压"], [4, 0, "210-60", "膨胀常规", "低压"],
         # [4, 1, "210-60", "膨胀常规", "低压"], [5, 0, "210-60", "膨胀常规", "低压"],
-
+        #
         # [0, 1, "210-60", "基墩", "低压"], [2, 0, "210-60", "基墩", "低压"],
         # [3, 0, "210-60", "基墩", "低压"], [4, 0, "210-60", "基墩", "低压"],
         # [1, 0, "210-60", "基墩", "低压"],
-
+        #
         # [2, 0, "210-60", "膨胀抬高", "低压"], [2, 1, "210-60", "膨胀抬高", "低压"],
         # [3, 0, "210-60", "膨胀抬高", "低压"], [3, 1, "210-60", "膨胀抬高", "低压"],
         # [4, 0, "210-60", "膨胀抬高", "低压"], [4, 1, "210-60", "膨胀抬高", "低压"],
         # [5, 0, "210-60", "膨胀抬高", "低压"],
-
+        #
         # [0, 1, "182-72", "基墩", "低压"], [2, 0, "182-72", "基墩", "低压"],
         # [3, 0, "182-72", "基墩", "低压"], [4, 0, "182-72", "基墩", "低压"],
         # [1, 0, "182-72", "基墩", "低压"],
@@ -1075,7 +1074,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
         # [2, 1, "182-72", "膨胀常规", "低压"], [3, 0, "182-72", "膨胀常规", "低压"],
         # [3, 1, "182-72", "膨胀常规", "低压"], [4, 0, "182-72", "膨胀常规", "低压"],
         # [4, 1, "182-72", "膨胀常规", "低压"], [5, 0, "182-72", "膨胀常规", "低压"],
-
+        #
         # [2, 0, "182-72", "膨胀抬高", "低压"], [2, 1, "182-72", "膨胀抬高", "低压"],
         # [3, 0, "182-72", "膨胀抬高", "低压"], [3, 1, "182-72", "膨胀抬高", "低压"],
         # [4, 0, "182-72", "膨胀抬高", "低压"], [4, 1, "182-72", "膨胀抬高", "低压"],
@@ -1104,7 +1103,7 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
     while calculateVerticalWidth(maxWidthCount, minComponentWidth) <= roofWidth:
         maxWidthCount += 1
     # print("maxWidthCount: ", maxWidthCount)
-    maxWidthCount = min(31, maxWidthCount)
+    maxWidthCount = min(32, maxWidthCount)
     global ID
     for tempElement in tempArrangements:
         if tempElement[1] == 0:  # 只有竖排
@@ -1167,18 +1166,18 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
             ID += 1
             arrangementDict[ID] = Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "低压", False)
             ID += 1
-            # arrangementDict[ID] = Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
-            # arrangementDict[ID] = Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
-            # arrangementDict[ID] = Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
-            # arrangementDict[ID] = Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
-            # arrangementDict[ID] = Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
-            # arrangementDict[ID] = Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
+            arrangementDict[ID] = Arrangement([i, i, i, i, j], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
+            arrangementDict[ID] = Arrangement([i, i, i, j, j], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
+            arrangementDict[ID] = Arrangement([i, i, j, j, j], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
+            arrangementDict[ID] = Arrangement([j, i, i, i, i], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
+            arrangementDict[ID] = Arrangement([j, j, i, i, i], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
+            arrangementDict[ID] = Arrangement([j, j, j, i, i], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
             if crossCountDict["182-78"][i] != 0:
                 arrangementDict[ID] = Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
                                                   "低压", False)
@@ -1192,18 +1191,18 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                 arrangementDict[ID] = Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规",
                                                   "低压", False)
                 ID += 1
-                # arrangementDict[ID] = Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
-                #                                   "高压", False)
-                # ID += 1
-                # arrangementDict[ID] = Arrangement([j, j, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
-                #                                   "高压", False)
-                # ID += 1
-                # arrangementDict[ID] = Arrangement([j, i, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
-                #                                   "高压", False)
-                # ID += 1
-                # arrangementDict[ID] = Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规",
-                #                                   "高压", False)
-                # ID += 1
+                arrangementDict[ID] = Arrangement([j, j, j, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
+                                                  "高压", False)
+                ID += 1
+                arrangementDict[ID] = Arrangement([j, j, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
+                                                  "高压", False)
+                ID += 1
+                arrangementDict[ID] = Arrangement([j, i, i, crossCountDict["182-78"][i], i], 3, "182-78", "膨胀常规",
+                                                  "高压", False)
+                ID += 1
+                arrangementDict[ID] = Arrangement([i, i, i, crossCountDict["182-78"][i], j], 3, "182-78", "膨胀常规",
+                                                  "高压", False)
+                ID += 1
                 arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
                                                   "低压", False)
                 ID += 1
@@ -1214,15 +1213,15 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                 arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规",
                                                   "低压", False)
                 ID += 1
-                # arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
-                #                                   "高压", False)
-                # ID += 1
-                # arrangementDict[ID] = Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
-                #                                   "高压", False)
-                # ID += 1
-                # arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规",
-                #                                   "高压", False)
-                # ID += 1
+                arrangementDict[ID] = Arrangement([j, j, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
+                                                  "高压", False)
+                ID += 1
+                arrangementDict[ID] = Arrangement([j, i, crossCountDict["182-78"][i], i], 2, "182-78", "膨胀常规",
+                                                  "高压", False)
+                ID += 1
+                arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][i], j], 2, "182-78", "膨胀常规",
+                                                  "高压", False)
+                ID += 1
             if crossCountDict["182-78"][j] != 0:
                 arrangementDict[ID] = Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
                                                   "低压", False)
@@ -1231,18 +1230,18 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
                                                   "低压", False)
                 ID += 1
 
-                # arrangementDict[ID] = Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
-                #                                   "高压", False)
-                # ID += 1
-                # arrangementDict[ID] = Arrangement([i, i, i, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
-                #                                   "高压", False)
-                # ID += 1
+                arrangementDict[ID] = Arrangement([i, i, j, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
+                                                  "高压", False)
+                ID += 1
+                arrangementDict[ID] = Arrangement([i, i, i, crossCountDict["182-78"][j], j], 3, "182-78", "膨胀常规",
+                                                  "高压", False)
+                ID += 1
                 arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规",
                                                   "低压", False)
                 ID += 1
-                # arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规",
-                #                                   "高压", False)
-                # ID += 1
+                arrangementDict[ID] = Arrangement([i, i, crossCountDict["182-78"][j], j], 2, "182-78", "膨胀常规",
+                                                  "高压", False)
+                ID += 1
 
             arrangementDict[ID] = Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "低压", False)
             ID += 1
@@ -1252,23 +1251,23 @@ def screenArrangements(roofWidth, roofLength, componentSpecification, arrangeTyp
             ID += 1
             arrangementDict[ID] = Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "低压", False)
             ID += 1
-            # arrangementDict[ID] = Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
-            # arrangementDict[ID] = Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
-            # arrangementDict[ID] = Arrangement([i, i, j, j], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
-            # arrangementDict[ID] = Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
+            arrangementDict[ID] = Arrangement([j, j, i, i], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
+            arrangementDict[ID] = Arrangement([j, i, i, i], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
+            arrangementDict[ID] = Arrangement([i, i, j, j], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
+            arrangementDict[ID] = Arrangement([i, i, i, j], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
 
             arrangementDict[ID] = Arrangement([j, i, i], INF, "182-78", "膨胀常规", "低压", False)
             ID += 1
             arrangementDict[ID] = Arrangement([i, i, j], INF, "182-78", "膨胀常规", "低压", False)
             ID += 1
-            # arrangementDict[ID] = Arrangement([j, i, i], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
-            # arrangementDict[ID] = Arrangement([i, i, j], INF, "182-78", "膨胀常规", "高压", False)
-            # ID += 1
+            arrangementDict[ID] = Arrangement([j, i, i], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
+            arrangementDict[ID] = Arrangement([i, i, j], INF, "182-78", "膨胀常规", "高压", False)
+            ID += 1
 
     # 通过输入的屋顶宽度、屋顶长度、组件类型、排布类型和风压，筛选出合适的排布
     result = {}

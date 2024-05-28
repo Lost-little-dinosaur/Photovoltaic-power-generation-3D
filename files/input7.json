@@ -98,18 +98,6 @@
       ]
     },
     "obstacles": [
-      {
-        "id": "树1",
-        "type": "树",
-        "diameter": 20,
-        "height": 20,
-        "isRound": true,
-        "centerPosition": [
-          -100,
-          -200
-        ],
-        "adjustedHeight": 0
-      }
     ]
   },
   "arrangeType": "膨胀螺栓",

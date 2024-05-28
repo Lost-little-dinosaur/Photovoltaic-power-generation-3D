@@ -313,18 +313,21 @@ class Roof:
             self.realLength = jsonRoof["A"]
             self.realArea = jsonRoof["B"] * jsonRoof["C"] + jsonRoof["G"] * jsonRoof["H"] + \
                             (jsonRoof["B"] - jsonRoof["D"]) * jsonRoof["E"]
-        elif self.type == "自定义多边形":
+        elif self.type == "自定义多边形" or self.type == "屋顶图片输入":
             self.realVertices = []
             for i in range(jsonRoof["vertexCount"]):
-                self.realVertices.append((jsonRoof[f"vertex{i}_X"],jsonRoof[f"vertex{i}_Y"])) 
+                self.realVertices.append((jsonRoof[f"vertex{i}_X"], jsonRoof[f"vertex{i}_Y"]))
+            minX = min(self.realVertices, key=lambda p: p[0])[0]
+            minY = min(self.realVertices, key=lambda p: p[1])[1]
+            self.realVertices = [(x - minX, y - minY) for x, y in self.realVertices]
             self.vertices = [(round(x / UNIT), round(y / UNIT)) for x, y in self.realVertices]
             self.height = jsonRoof["height"]
             min_x = min(self.realVertices, key=lambda p: p[0])[0]
             max_x = max(self.realVertices, key=lambda p: p[0])[0]
             min_y = min(self.realVertices, key=lambda p: p[1])[1]
             max_y = max(self.realVertices, key=lambda p: p[1])[1]
-            self.realLength = max_y - min_y
-            self.realWidth = max_x - min_x
+            self.realLength = int(max_y - min_y)
+            self.realWidth = int(max_x - min_x)
             self.length = round(self.realLength / UNIT)
             self.width = round(self.realWidth / UNIT)
             self.roofArray = create_bounding_box_with_holes(self.vertices)
@@ -749,7 +752,7 @@ class Roof:
         #         tempTest.append(placement)
         print(
             f"排布方案计算完成，共有{len(self.allPlacements)}个排布方案，当前时间为{time.strftime('%m-%d %H:%M:%S', time.localtime())}，耗时{time.time() - time1}秒\n")
-        
+
         if len(screenedArrangements) == 0:
             return 0
         else:
@@ -806,7 +809,7 @@ class Roof:
         allMatrix = []
         UNIT = getUnit()
         if UNIT <= 25:
-            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 3, 3, 4, 3
+            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 10, 5, 6, 5
             magnification = 1  # 放大倍数
         elif 25 < UNIT <= 50:
             roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 2, 2, 2, 2
@@ -841,11 +844,13 @@ class Roof:
                             column = np.tile([startX + pad, endX - pad], lenY)
                             tempMatrix = np.column_stack(
                                 (column, np.repeat(np.array(list(range(startY + pad, endY + 1 - pad))), 2)))
-                                
+
                             if obstacle.type == '无烟烟囱':
-                                obstaclePointArrayNoSmoke = np.concatenate((obstaclePointArrayNoSmoke, tempMatrix), axis=0)
+                                obstaclePointArrayNoSmoke = np.concatenate((obstaclePointArrayNoSmoke, tempMatrix),
+                                                                           axis=0)
                             else:
-                                obstaclePointArraySmoked = np.concatenate((obstaclePointArraySmoked, tempMatrix), axis=0)
+                                obstaclePointArraySmoked = np.concatenate((obstaclePointArraySmoked, tempMatrix),
+                                                                          axis=0)
 
                         # 处理垂直边
                         lenX = endX + 1 - startX - pad * 2  # 调整宽度以考虑内部padding
@@ -854,9 +859,11 @@ class Roof:
                             tempMatrix = np.column_stack(
                                 (np.repeat(np.array(list(range(startX + pad, endX + 1 - pad))), 2), column))
                             if obstacle.type == '无烟烟囱':
-                                obstaclePointArrayNoSmoke = np.concatenate((obstaclePointArrayNoSmoke, tempMatrix), axis=0)
+                                obstaclePointArrayNoSmoke = np.concatenate((obstaclePointArrayNoSmoke, tempMatrix),
+                                                                           axis=0)
                             else:
-                                obstaclePointArraySmoked = np.concatenate((obstaclePointArraySmoked, tempMatrix), axis=0)
+                                obstaclePointArraySmoked = np.concatenate((obstaclePointArraySmoked, tempMatrix),
+                                                                          axis=0)
 
         if self.type == "矩形":
             # 首先填充上下边界
@@ -1023,8 +1030,8 @@ class Roof:
                 publicMatrix[MC + ME:MC + ME + roofBoardLength, -MF:, :] = RoofMarginColor  # F边
                 publicMatrix[-MG + roofBoardLength:, -roofBoardLength:, :] = RoofMarginColor  # G边
                 publicMatrix[-roofBoardLength:, roofBoardLength:-roofBoardLength, :] = RoofMarginColor  # H边
-        elif self.type == "自定义多边形":
-            magnified_vertices = [(x * magnification, y * magnification) for x,y in self.vertices]
+        elif self.type == "自定义多边形" or self.type == "屋顶图片输入":
+            magnified_vertices = [(x * magnification, y * magnification) for x, y in self.vertices]
             publicMatrix = mark_polygon_edges(magnified_vertices, publicMatrix, RoofMarginColor)
 
         for point in obstaclePointArrayNoSmoke:
@@ -1034,7 +1041,7 @@ class Roof:
             publicMatrix[point[1], point[0]] = SmokedObstacleColor
 
         if len(self.allPlacements) == 0:
-            matrix = np.array(publicMatrix)                
+            matrix = np.array(publicMatrix)
             # 绘制图像
             plt.imshow(matrix.astype("uint8"))
             plt.axis('off')
@@ -1067,7 +1074,8 @@ class Roof:
                             continue
                         top_left, bottom_right = screenedArrangements[arrange['ID']].componentPositionArray[i]
                         top_left[0], top_left[1] = top_left[0] * magnification, top_left[1] * magnification
-                        bottom_right[0], bottom_right[1] = bottom_right[0] * magnification, bottom_right[1] * magnification
+                        bottom_right[0], bottom_right[1] = bottom_right[0] * magnification, bottom_right[
+                            1] * magnification
                         # 绘制边界（保证边界在光伏板内部）
                         matrix[top_left[1]:top_left[1] + PhotovoltaicPanelBoardLength,
                         top_left[0]:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
@@ -1078,7 +1086,8 @@ class Roof:
                         top_left[0]:top_left[0] + PhotovoltaicPanelBoardLength] = PhotovoltaicPanelBordColor
                         matrix[
                         top_left[1] + PhotovoltaicPanelBoardLength:bottom_right[1] - PhotovoltaicPanelBoardLength + 1,
-                        bottom_right[0] - PhotovoltaicPanelBoardLength + 1:bottom_right[0] + 1] = PhotovoltaicPanelBordColor
+                        bottom_right[0] - PhotovoltaicPanelBoardLength + 1:bottom_right[
+                                                                               0] + 1] = PhotovoltaicPanelBordColor
 
                         # 填充光伏板内部
                         # matrix[
@@ -1088,7 +1097,7 @@ class Roof:
                     # 接下去画立柱
                     for column in placement[3][j]:  # column形式：[centerX,centerY]
                         matrix[round(column[1] * magnification / UNIT) - standColumnPadding:
-                            round(column[1] * magnification / UNIT) + standColumnPadding + 1,
+                               round(column[1] * magnification / UNIT) + standColumnPadding + 1,
                         round(column[0] * magnification / UNIT) - standColumnPadding:
                         round(column[0] * magnification / UNIT) + standColumnPadding + 1] = StandColumnColor
 

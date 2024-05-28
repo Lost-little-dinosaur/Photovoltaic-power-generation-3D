@@ -190,7 +190,7 @@
 #
 # def open_obstacle_window():
 #     obstacle_window = tk.Toplevel(root)
-#     obstacle_window.title("添加墙内障碍物信息")
+#     obstacle_window.title("添加屋内障碍物信息")
 #     # 直径？长度（mm）？
 #     str_text = ["ID", "直径", "长度（mm）", "宽度（mm）", "高度（mm）", "距离西侧屋顶距离", "距离北侧屋顶距离",
 #                 "可调整高度（mm）"]
@@ -248,7 +248,7 @@
 #
 # def open_outside_obstacle_window():
 #     outside_obstacle_window = tk.Toplevel(root)
-#     outside_obstacle_window.title("添加墙内障碍物信息")
+#     outside_obstacle_window.title("添加屋内障碍物信息")
 #     # 直径？长度（mm）？
 #     str_text = ["ID", "直径", "长度（mm）", "宽度（mm）", "高度（mm）", "距离西侧屋顶距离", "距离北侧屋顶距离",
 #                 "可调整高度（mm）"]
