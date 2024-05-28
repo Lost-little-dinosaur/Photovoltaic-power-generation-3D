@@ -634,6 +634,7 @@ class Arrangement:
 
             result = []
             self.edgeColumn = []
+            column_positions.pop()
             if leftNum == 0 and rightNum == 0:
                 for x in column_positions:
                     for y in result_y:
