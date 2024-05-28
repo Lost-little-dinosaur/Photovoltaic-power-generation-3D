@@ -809,7 +809,7 @@ class Roof:
         allMatrix = []
         UNIT = getUnit()
         if UNIT <= 25:
-            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 10, 5, 6, 5
+            roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 3, 3, 4, 3
             magnification = 1  # 放大倍数
         elif 25 < UNIT <= 50:
             roofBoardLength, PhotovoltaicPanelBoardLength, standColumnPadding, obstaclePadding = 2, 2, 2, 2
@@ -1032,7 +1032,7 @@ class Roof:
                 publicMatrix[-roofBoardLength:, roofBoardLength:-roofBoardLength, :] = RoofMarginColor  # H边
         elif self.type == "自定义多边形" or self.type == "屋顶图片输入":
             magnified_vertices = [(x * magnification, y * magnification) for x, y in self.vertices]
-            publicMatrix = mark_polygon_edges(magnified_vertices, publicMatrix, RoofMarginColor)
+            publicMatrix = mark_polygon_edges(magnified_vertices, publicMatrix, RoofMarginColor, roofBoardLength)
 
         for point in obstaclePointArrayNoSmoke:
             publicMatrix[point[1], point[0]] = NoSmokeObstacleColor

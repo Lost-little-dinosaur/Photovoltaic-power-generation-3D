@@ -8,11 +8,12 @@ from typing import List
 from copy import deepcopy
 import multiprocessing
 
+
 def multiprocess_func(func, iter):
     processes = multiprocessing.cpu_count()
     # pool = multiprocessing.Pool(processes=processes)
     with multiprocessing.Pool(processes=processes) as pool:
-        results = pool.map(func=func,iterable=iter)
+        results = pool.map(func=func, iterable=iter)
     # pool.close()
     # pool.join()
     return results
@@ -101,7 +102,7 @@ def getLineSegmentNodes(start, end):
                 points.append([x, y, z])
         else:
             ### swap to numpy function if too many steps
-            points = np.linspace(start=start,stop=end,num=(max_steps+1),endpoint=True,dtype=np.int32)
+            points = np.linspace(start=start, stop=end, num=(max_steps + 1), endpoint=True, dtype=np.int32)
     return points
 
 
@@ -175,32 +176,29 @@ def findIntegerPointsInProjectedTriangle(node1, node2, node3):
 
     ### 切换到扫描线算法，稍微快点，总复杂度还是O(N^2)
     triangle = [p1, p2, p3]
-    for y in range(int(min_y), int(max_y)+1):
+    for y in range(int(min_y), int(max_y) + 1):
         for i in range(3):
             x0, y0 = triangle[i]
-            x1, y1 = triangle[(i+1)%3]
-            x2, y2 = triangle[(i+2)%3]
+            x1, y1 = triangle[(i + 1) % 3]
+            x2, y2 = triangle[(i + 2) % 3]
             if y0 > y1:
                 x0, x1, y0, y1 = x1, x0, y1, y0
             if y0 <= y < y1:
                 if y1 != y0:
                     x_inline = x0 + (x1 - x0) * (y - y0) // (y1 - y0)
-                    points_in_triangle.append([x_inline,y])
-                    if isPointInTriangle((x_inline+1,y),p1,p2,p3): # 往右扫描
+                    points_in_triangle.append([x_inline, y])
+                    if isPointInTriangle((x_inline + 1, y), p1, p2, p3):  # 往右扫描
                         for x in range(int(x_inline), int(max_x)):
-                            if isPointInTriangle((x,y),p1,p2,p3):
-                                points_in_triangle.append([x,y])
+                            if isPointInTriangle((x, y), p1, p2, p3):
+                                points_in_triangle.append([x, y])
                             else:
                                 break
-                    else: # 往左扫描
+                    else:  # 往左扫描
                         for x in range(int(min_x), int(x_inline)):
-                            if isPointInTriangle((x,y),p1,p2,p3):
-                                points_in_triangle.append([x,y])
+                            if isPointInTriangle((x, y), p1, p2, p3):
+                                points_in_triangle.append([x, y])
                             else:
                                 break
-
-
-
 
     for [x, y] in points_in_triangle:
         z = -(A * x + B * y + D) / C
@@ -238,10 +236,10 @@ def getOnePointShadow(point: List[int], latitude):  # x,y,z
             tempAllArray.append(tempArray)
     merged_array = np.concatenate(tempAllArray)
 
-    min_x = int(min(min_x, np.min(merged_array[:,0])))
-    max_x = int(max(max_x, np.max(merged_array[:,0])))
-    min_y = int(min(min_y, np.min(merged_array[:,1])))
-    max_y = int(max(max_y, np.max(merged_array[:,1])))
+    min_x = int(min(min_x, np.min(merged_array[:, 0])))
+    max_x = int(max(max_x, np.max(merged_array[:, 0])))
+    min_y = int(min(min_y, np.min(merged_array[:, 1])))
+    max_y = int(max(max_y, np.max(merged_array[:, 1])))
 
     ### 换矩阵操作
     # for node in merged_array:
@@ -250,7 +248,7 @@ def getOnePointShadow(point: List[int], latitude):  # x,y,z
     #     min_y = int(min(min_y, node[1]))
     #     max_y = int(max(max_y, node[1]))
     node_dict = {(node[0], node[1]): node[2] for node in merged_array}
-    
+
     # 转化成字典查询，用字典替换一个for循环
     final_list = [[0] * (max_x - min_x) for _ in range(max_y - min_y)]
     for y in range(0, max_y - min_y):
@@ -290,7 +288,7 @@ def getTriangleFlatNodes(node1, node2, node3):
     for node in returnList:
         x = node[0] - min_x
         y = node[1] - min_y
-        if(0 <= x <= (max_x - min_x)) and (0 <= y <= (max_y - min_y)):
+        if (0 <= x <= (max_x - min_x)) and (0 <= y <= (max_y - min_y)):
             final_list[y][x] = node[2]
 
     # for y in range(0, max_y - min_y + 1):
@@ -425,9 +423,11 @@ def point_in_polygon(point, polygon):
         j = i
     return inside
 
+
 def check_point_in_polygon(args):
     point, polygon = args
     return point_in_polygon(point, polygon)
+
 
 def create_bounding_box_with_holes(polygon):
     # 获取多边形的边界框
@@ -435,7 +435,7 @@ def create_bounding_box_with_holes(polygon):
     max_x = max(polygon, key=lambda p: p[0])[0]
     min_y = min(polygon, key=lambda p: p[1])[1]
     max_y = max(polygon, key=lambda p: p[1])[1]
-    
+
     points_to_check = [(x, y) for y in range(min_y, max_y + 1) for x in range(min_x, max_x + 1)]
     # 使用多进程池进行并行计算
     results = multiprocess_func(check_point_in_polygon, [(point, polygon) for point in points_to_check])
@@ -445,7 +445,7 @@ def create_bounding_box_with_holes(polygon):
         y, x = divmod(idx, max_x - min_x + 1)
         if not inside:
             bounding_box[y, x] = INF
-    
+
     return bounding_box
 
 
@@ -469,7 +469,8 @@ def get_polygon_area(vertices):
     area = abs(area) / 2.0
     return area
 
-def mark_polygon_edges(vertices, bounding_box, color):
+
+def mark_polygon_edges(vertices, bounding_box, color, roofBoardLength):
     num_vertices = len(vertices)
     # 遍历多边形的每个顶点，连接成边
     for i in range(num_vertices):
@@ -477,17 +478,20 @@ def mark_polygon_edges(vertices, bounding_box, color):
         end_point = vertices[(i + 1) % num_vertices]
         x1, y1 = start_point
         x2, y2 = end_point
-        
+
         # 使用 Bresenham 算法计算边上的所有点
         dx = abs(x2 - x1)
         dy = abs(y2 - y1)
         sx = 1 if x1 < x2 else -1
         sy = 1 if y1 < y2 else -1
         err = dx - dy
-        
+
         while x1 != x2 or y1 != y2:
             if x1 < bounding_box.shape[1] and y1 < bounding_box.shape[0]:
-                bounding_box[y1, x1, :] = color
+                # bounding_box[y1, x1, :] = color
+                # 以边为中线，向两边扩展roofBoardLength/2的距离
+                bounding_box[max(0, y1 - roofBoardLength // 2):min(bounding_box.shape[0], y1 + roofBoardLength // 2),
+                max(0, x1 - roofBoardLength // 2):min(bounding_box.shape[1], x1 + roofBoardLength // 2)] = color
             e2 = 2 * err
             if e2 > -dy:
                 err -= dy
@@ -495,8 +499,9 @@ def mark_polygon_edges(vertices, bounding_box, color):
             if e2 < dx:
                 err += dx
                 y1 += sy
-    
+
     return bounding_box
+
 
 if __name__ == '__main__':
     # 测试四点共面函数
