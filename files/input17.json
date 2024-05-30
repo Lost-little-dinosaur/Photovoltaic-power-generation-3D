@@ -1,0 +1,87 @@
+{
+  "guest": {
+    "name": "1234",
+    "phone": ""
+  },
+  "scene": {
+    "location": {
+      "province": "\u6cb3\u5317",
+      "city": "\u6ca7\u5dde",
+      "region": "\u65b0\u534e",
+      "longitude": 113.4,
+      "latitude": 33.5,
+      "heavySnow": false,
+      "windPressure": "\u4f4e\u538b",
+      "snowPressure": "\u4f4e\u538b",
+      "windAndSnowPressure": "\u4f4e\u538b",
+      "voltageLevel": 3,
+      "distanceToGridConnection": 2000
+    },
+    "roof": {
+      "isComplex": false,
+      "category": "\u5e73\u5c4b\u9876",
+      "roofSurfaceCategory": "\u81ea\u5b9a\u4e49\u591a\u8fb9\u5f62",
+      "layer": 2,
+      "roofDirection": 0,
+      "roofAngle": 0,
+      "extensibleDistance": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "maintenanceChannel": false,
+      "haveParapetWall": false,
+      "haveOverhangingEave": false,
+      "vertexCount": 10,
+      "vertex0_X": 9261,
+      "vertex0_Y": 2303,
+      "vertex1_X": 8328,
+      "vertex1_Y": 5818,
+      "vertex2_X": 7587,
+      "vertex2_Y": 9284,
+      "vertex3_X": 3740,
+      "vertex3_Y": 8280,
+      "vertex4_X": 664,
+      "vertex4_Y": 9232,
+      "vertex5_X": 486,
+      "vertex5_Y": 5945,
+      "vertex6_X": 0,
+      "vertex6_Y": 3169,
+      "vertex7_X": 704,
+      "vertex7_Y": 1424,
+      "vertex8_X": 3064,
+      "vertex8_Y": 0,
+      "vertex9_X": 5863,
+      "vertex9_Y": 817,
+      "height": 669,
+      "obstacles": [
+        {
+          "type": "\u65e0\u70df\u70df\u56f1",
+          "id": "\u65e0\u70df\u70df\u56f1",
+          "isRound": false,
+          "upLeftPosition": [
+            2743,
+            5085
+          ],
+          "length": 941,
+          "width": 341,
+          "height": 2594,
+          "adjustedHeight": 0,
+          "removable": 1
+        }
+      ]
+    },
+    "obstacles": {}
+  },
+  "arrangeType": "\u81a8\u80c0\u87ba\u6813",
+  "component": {
+    "specification": "182-78",
+    "power": 595,
+    "thickness": 350
+  },
+  "algorithm": {
+    "precision": 400,
+    "maxArrangeCount": 1
+  }
+}

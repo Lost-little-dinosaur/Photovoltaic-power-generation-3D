@@ -55,20 +55,7 @@
         "northHeight": 1200
       },
       "obstacles": [
-        {
-          "id": "有烟烟囱1",
-          "type": "有烟烟囱",
-          "isRound": false,
-          "length": 500,
-          "width": 500,
-          "height": 1000,
-          "upLeftPosition": [
-            2500,
-            4000
-          ],
-          "adjustedHeight": 0,
-          "removable": 1
-        },
+
         {
           "id": "热水器1",
           "type": "热水器",

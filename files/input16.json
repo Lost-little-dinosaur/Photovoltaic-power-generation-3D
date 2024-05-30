@@ -1,0 +1,77 @@
+{
+  "guest": {
+    "name": "1234",
+    "phone": ""
+  },
+  "scene": {
+    "location": {
+      "province": "\u6cb3\u5317",
+      "city": "\u6ca7\u5dde",
+      "region": "\u65b0\u534e",
+      "longitude": 113.4,
+      "latitude": 33.5,
+      "heavySnow": false,
+      "windPressure": "\u4f4e\u538b",
+      "snowPressure": "\u4f4e\u538b",
+      "windAndSnowPressure": "\u4f4e\u538b",
+      "voltageLevel": 3,
+      "distanceToGridConnection": 2000
+    },
+    "roof": {
+      "isComplex": false,
+      "category": "\u5e73\u5c4b\u9876",
+      "roofSurfaceCategory": "\u81ea\u5b9a\u4e49\u591a\u8fb9\u5f62",
+      "layer": 2,
+      "roofDirection": 0,
+      "roofAngle": 0,
+      "extensibleDistance": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "maintenanceChannel": false,
+      "haveParapetWall": false,
+      "haveOverhangingEave": false,
+      "vertexCount": 5,
+      "vertex0_X": 10548,
+      "vertex0_Y": 6119,
+      "vertex1_X": 4255,
+      "vertex1_Y": 10281,
+      "vertex2_X": 0,
+      "vertex2_Y": 4768,
+      "vertex3_X": 2651,
+      "vertex3_Y": 0,
+      "vertex4_X": 9324,
+      "vertex4_Y": 423,
+      "height": 3726,
+      "obstacles": [
+        {
+          "type": "无烟烟囱",
+          "id": "无烟烟囱1",
+          "isRound": false,
+          "upLeftPosition": [
+            4048,
+            7348
+          ],
+          "length": 600,
+          "width": 907,
+          "height": 965,
+          "adjustedHeight": 0,
+          "removable": 1
+        }
+      ]
+    },
+    "obstacles": {}
+  },
+  "arrangeType": "\u81a8\u80c0\u87ba\u6813",
+  "component": {
+    "specification": "182-78",
+    "power": 595,
+    "thickness": 350
+  },
+  "algorithm": {
+    "precision": 10,
+    "maxArrangeCount": 1
+  }
+}

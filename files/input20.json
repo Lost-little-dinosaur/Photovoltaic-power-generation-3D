@@ -20,13 +20,11 @@
     "roof": {
       "isComplex": true,
       "category": "平屋顶",
-      "roofSurfaceCategory": "正7形",
-      "A": 3000,
-      "B": 4300,
-      "C": 7800,
-      "D": 16400,
+      "roofSurfaceCategory": "屋顶图片输入",
+      "imagePath": "F:/other/BaoYan/zju/Project/src/Python/Photovoltaic-power-generation-3D/Unet/input.png",
+      "resolution": 6,
       "height": 5000,
-      "layer":2,
+      "layer": 2,
       "roofDirection": 0,
       "roofAngle": 0,
       "extensibleDistance": [
@@ -45,9 +43,9 @@
           "isRound": false,
           "length": 500,
           "width": 500,
-          "height": 3000,
+          "height": 100,
           "upLeftPosition": [
-            14000,
+            9300,
             8900
           ],
           "adjustedHeight": 0,
