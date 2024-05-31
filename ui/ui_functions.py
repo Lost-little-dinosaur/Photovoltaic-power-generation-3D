@@ -3,7 +3,7 @@ import sys, os
 
 import numpy as np
 
-import Unet.test as UnetTest
+# import Unet.test as UnetTest
 from numpy import square
 import const.const
 from tools.mutiProcessing import *
@@ -1908,7 +1908,6 @@ class UI:
                     new_item[key] = value
             if new_item["isRound"]:
                 new_item["centerPosition"] = position
-                continue
             else:
                 new_item["upLeftPosition"] = position
 

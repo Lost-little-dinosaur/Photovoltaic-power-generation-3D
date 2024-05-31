@@ -409,6 +409,54 @@ def calculateShadow(nodeArray, isRound, latitude, addSelfFlag, obstacleArray=Non
         pass  # 圆形的阴影暂时不做计算
 
 
+def calculateRoundShadow(center, radius, height, latitude, obstacleArray=None):
+    def getCircleShadow(center, radius, height, latitude):
+        # 假设该函数返回一个列表，列表中的每个元素是一个元组 (x, y, value)
+        # 表示圆形阴影在二维平面上的整数点及其属性值
+        shadowPoints = []
+        for x in range(int(center[0] - radius), int(center[0] + radius) + 1):
+            for y in range(int(center[1] - radius), int(center[1] + radius) + 1):
+                if (x - center[0]) ** 2 + (y - center[1]) ** 2 <= radius ** 2:
+                    shadowPoints.append((x, y, computeShadowValue(x, y, height, latitude)))
+        return shadowPoints
+
+    def computeShadowValue(x, y, height, latitude):
+        return height  # 先不考虑纬度
+
+    for x in range(int(center[0] - radius), int(center[0] + radius) + 1):
+        for y in range(int(center[1] - radius), int(center[1] + radius) + 1):
+            if (x - center[0]) ** 2 + (y - center[1]) ** 2 <= radius ** 2:
+                obstacleArray[y][x] = computeShadowValue(x, y, height, latitude)
+                
+    # shadowPoints = getCircleShadow(center, radius, height, latitude)
+    # min_x, min_y, max_x, max_y = float('inf'), float('inf'), -float('inf'), -float('inf')
+    
+    # for point in shadowPoints:
+    #     if point[0] < min_x:
+    #         min_x = point[0]
+    #     if point[0] > max_x:
+    #         max_x = point[0]
+    #     if point[1] < min_y:
+    #         min_y = point[1]
+    #     if point[1] > max_y:
+    #         max_y = point[1]
+
+    # shadowArray = np.zeros((max_y - min_y + 1, max_x - min_x + 1))
+    
+    # for point in shadowPoints:
+    #     x = point[0] - min_x
+    #     y = point[1] - min_y
+    #     shadowArray[y][x] = point[2]
+
+    # sX, sY = max(0, min_x), max(0, min_y)
+    # eX = min(obstacleArray.shape[1], min_x + shadowArray.shape[1])
+    # eY = min(obstacleArray.shape[0], min_y + shadowArray.shape[0])
+    # rsX1, rsY1 = max(0, -min_x), max(0, -min_y)
+
+    # obstacleArray[sY:eY, sX:eX] = np.maximum(obstacleArray[sY:eY, sX:eX],
+    #                                          shadowArray[rsY1:rsY1 + eY - sY, rsX1:rsX1 + eX - sX])
+
+
 def point_in_polygon(point, polygon):
     x, y = point
     num_vertices = len(polygon)

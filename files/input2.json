@@ -59,6 +59,19 @@
           "removable": 1
         },
         {
+          "id": "无烟烟囱1",
+          "type": "无烟烟囱",
+          "isRound": true,
+          "diameter": 500,
+          "height": 4000,
+          "centerPosition": [
+            1000,
+            1000
+          ],
+          "adjustedHeight": 0,
+          "removable": 1
+        },
+        {
           "id": "热水器1",
           "type": "热水器",
           "isRound": false,

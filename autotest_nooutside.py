@@ -241,7 +241,7 @@ def get_random_sample():
     num_vertices, x_range, y_range = random.choice([3,4,5,6,7,8,9,10]), (3000,20000), (3000,20000)
     
     polygon = generate_polygon(center=(250, 250),
-                            avg_radius=5000,
+                            avg_radius=10000,
                             irregularity=0.3,
                             spikiness=0.2,
                             num_vertices=num_vertices)
@@ -450,7 +450,7 @@ def run_sample(sample_index):
         folder = 3
     else:
         folder = 4 
-    folder_path = os.path.join("test_imgs",f"ArrangementCount_{jsonData['algorithm']['maxArrangeCount']}", f"{folder}",f"{sample_index}.jpg")
+    folder_path = os.path.join("test_imgs",f"ArrangementCount_{jsonData['algorithm']['maxArrangeCount']}", f"{folder}")
     file_path = os.path.join(folder_path, f"{sample_index}.jpg")
     os.makedirs(folder_path,exist_ok=True)
     scaled_image.save(file_path)
@@ -471,9 +471,9 @@ if __name__ == "__main__":
     count = 0
     
     timeout_seconds = 300 # 一个样例跑300s以上，认为是样本有问题，
-    signal.signal(signal.SIGALRM, timeout_handler)
+    # signal.signal(signal.SIGALRM, timeout_handler)
     while count < num_samples:
-        signal.alarm(timeout_seconds)
+        # signal.alarm(timeout_seconds)
         try:
             run_sample(count)
             count += 1
